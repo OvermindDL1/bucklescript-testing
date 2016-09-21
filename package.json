@@ -1,0 +1,28 @@
+{
+  "name": "testering",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "brunch build",
+    "start": "brunch watch",
+    "startd": "brunch watch -d",
+    "starts": "brunch watch --server --port 7070",
+    "startsd": "brunch watch --server --port 7070 -d",
+    "build": "brunch build",
+    "debug": "brunch build -d",
+    "prod": "brunch build --production"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "auto-reload-brunch": "^2.0.0",
+    "brunch": "^2.8.2",
+    "bs-platform": "^1.0.2",
+    "bucklescript-brunch": ">=0.1.0",
+    "clean-css-brunch": "^2.0.0",
+    "css-brunch": "^2.0.0",
+    "javascript-brunch": "^2.0.0",
+    "rebel": "0.0.3",
+    "uglify-js-brunch": "^2.0.0"
+  }
+}

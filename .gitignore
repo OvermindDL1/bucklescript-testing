@@ -1,0 +1,9 @@
+# Node stuff first
+/node_modules
+
+# Ocaml binary left-overs
+*.cmi
+*.cmj
+
+# Test sections
+/tmp
