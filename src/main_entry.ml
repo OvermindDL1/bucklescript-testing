@@ -74,6 +74,9 @@ let attachedElem = match Js.Null.to_opt (Web.document##getElementById "content")
   | Some e -> let attached = e##appendChild elem in Js.log attached
 
 
+
+let main = 42
+
 (* open Tea
 
 module Main = App.Make (struct

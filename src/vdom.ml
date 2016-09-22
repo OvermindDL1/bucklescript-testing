@@ -114,7 +114,7 @@ let createElementFromVNode_addProps properties elem = elem
 
 
 let rec createElementFromVNode_addChildren children elem =
-  List.fold_left (fun n child -> let _childelem = n##appendChild (createElementFromVNode child) in n) elem children
+  children |> List.fold_left (fun n child -> let _childelem = n##appendChild (createElementFromVNode child) in n) elem
     and createElementFromVNode = function
   | NoVNode -> Web.createComment ()
   | Text s -> Web.createTextNode s
@@ -122,6 +122,10 @@ let rec createElementFromVNode_addChildren children elem =
     Web.createElementNsOptional namespace tagName
     |> createElementFromVNode_addProps properties
     |> createElementFromVNode_addChildren children
+
+let createVNodesIntoElement vnodes elem =
+  vnodes |> List.fold_left (fun n vnode -> let _childelem = n##appendChild (createElementFromVNode vnode) in n) elem
+
 
 (* Node namespace key tagName properties children  *)
 (* | Node of string option * string option * string * 'msg property list * 'msg velem list *)

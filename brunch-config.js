@@ -17,7 +17,7 @@ module.exports = {
 
   plugins: {
     bucklescriptBrunch: {
-      // binPath: "", // If empty it will look in the node_modules then the global path
+      // binPaths: {}, // If empty it will look in the node_modules then the global path
       bscCwd: "src",
       tempOutputFolder: "tmp",
       compileAllAtOnce: false,

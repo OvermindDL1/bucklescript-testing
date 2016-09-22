@@ -28,7 +28,7 @@ type document = <
 external document : document = "document" [@@bs.val]
 
 
-(* Helpers *)
+(* exports *)
 
 let createElementNsOptional namespace tagName =
   match namespace with
