@@ -70,5 +70,26 @@ let () = Js.log (renderToHtmlString view_test)
 let elem = createElementFromVNode view_test
 
 let attachedElem = match Js.Null.to_opt (Web.document##getElementById "content") with
-  | None -> Js.log "Failed to attached"
+  | None -> Js.log "Failed to attach"
   | Some e -> let attached = e##appendChild elem in Js.log attached
+
+
+(* open Tea
+
+module Main = App.Make (struct
+    type flags = unit
+
+    type model =
+      { count : int
+      }
+
+    type msg =
+      | Increment
+      | Decrement
+      | Reset
+      | Set of int
+  end) *)
+
+(* let _ = App.main struct
+          type t = int
+        end *)

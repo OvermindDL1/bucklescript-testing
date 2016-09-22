@@ -9,7 +9,8 @@ type event
 type 'msg property =
   | NoProp
   | RawProp of string * string  (* This last string needs to be made something more generic, maybe a function... *)
-  | Attribute of string * string
+  (* Attribute is (namespace, key, value) *)
+  | Attribute of string option * string * string
   | Data of string * string
   | Event of string * (event -> 'msg)
   | Style of (string * string) list
@@ -53,7 +54,9 @@ let prop key value = RawProp (key, value)
 
 let on name cb = Event (name, cb)
 
-let attr key value = Attribute (key, value)
+let attr key value = Attribute (None, key, value)
+
+let attrNS namespace key value = (Some namespace, key, value)
 
 let data key value = Data (key, value)
 
@@ -71,7 +74,7 @@ let rec renderToHtmlString = function
     let rec renderProp = function
       | NoProp -> ""
       | RawProp (k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
-      | Attribute (k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
+      | Attribute (namespace, k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
       | Data (k, v) -> String.concat "" [" data-"; k; "=\""; v; "\""]
       | Event (ev, v) -> String.concat "" [" "; ev; "=\"func\""]
       | Style s -> String.concat "" [" style=\""; String.concat ";" (List.map (fun (k, v) -> String.concat "" [k;":";v;";"]) s); "\""]
@@ -96,7 +99,7 @@ let applyProperties elem curProperties =
     (fun elem -> function
        | NoProp -> elem
        | RawProp (k, v) -> elem
-       | Attribute (k, v) -> elem
+       | Attribute (namespace, k, v) -> elem
        | Data (k, v) -> elem
        | Event (ev, v) -> elem
        | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.setStyle elem##style k v in elem) elem s
@@ -111,7 +114,7 @@ let createElementFromVNode_addProps properties elem = elem
 
 
 let rec createElementFromVNode_addChildren children elem =
-  List.fold_left (fun n child -> let childelem = n##appendChild (createElementFromVNode child) in n) elem children
+  List.fold_left (fun n child -> let _childelem = n##appendChild (createElementFromVNode child) in n) elem children
     and createElementFromVNode = function
   | NoVNode -> Web.createComment ()
   | Text s -> Web.createTextNode s

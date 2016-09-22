@@ -9,7 +9,12 @@ type style
 type node = <
   appendChild : node -> node [@bs.meth];
   style : style [@bs.get];
+  setAttributeNS : string -> string -> string -> unit [@bs.meth];
+  setAttribute : string -> string -> unit [@bs.meth];
+  removeAttributeNS : string -> string -> unit [@bs.meth];
+  removeAttribute : string -> unit [@bs.meth];
 > Js.t
+
 
 type document = <
   body : node;
