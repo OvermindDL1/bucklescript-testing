@@ -165,6 +165,684 @@ exports.__ = __;
   })();
 });
 
+require.register("bs-platform/lib/js/curry.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_oo    = require("/bs-platform/lib/js/caml_oo");
+var Caml_array = require("/bs-platform/lib/js/caml_array");
+
+function app(_f, _args) {
+  while(true) {
+    var args = _args;
+    var f = _f;
+    var arity = f.length;
+    var arity$1 = arity ? arity : 1;
+    var len = args.length;
+    var d = arity$1 - len | 0;
+    if (d) {
+      if (d < 0) {
+        _args = Caml_array.caml_array_sub(args, arity$1, -d);
+        _f = f.apply(null, Caml_array.caml_array_sub(args, 0, arity$1));
+        continue ;
+
+      }
+      else {
+        return (function(f,args){
+        return function (x) {
+          return app(f, args.concat(/* array */[x]));
+        }
+        }(f,args));
+      }
+    }
+    else {
+      return f.apply(null, args);
+    }
+  };
+}
+
+function js(label, cacheid, obj, args) {
+  var meth = Caml_oo.caml_get_public_method(obj, label, cacheid);
+  return app(meth, args);
+}
+
+function curry_1(o, a0, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[a0]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return o(a0);
+      case 2 :
+          return function (param) {
+            return o(a0, param);
+          };
+      case 3 :
+          return function (param, param$1) {
+            return o(a0, param, param$1);
+          };
+      case 4 :
+          return function (param, param$1, param$2) {
+            return o(a0, param, param$1, param$2);
+          };
+      case 5 :
+          return function (param, param$1, param$2, param$3) {
+            return o(a0, param, param$1, param$2, param$3);
+          };
+      case 6 :
+          return function (param, param$1, param$2, param$3, param$4) {
+            return o(a0, param, param$1, param$2, param$3, param$4);
+          };
+      case 7 :
+          return function (param, param$1, param$2, param$3, param$4, param$5) {
+            return o(a0, param, param$1, param$2, param$3, param$4, param$5);
+          };
+
+    }
+  }
+}
+
+function _1(o, a0) {
+  var arity = o.length;
+  if (arity === 1) {
+    return o(a0);
+  }
+  else {
+    return curry_1(o, a0, arity);
+  }
+}
+
+function js1(label, cacheid, a0) {
+  return _1(Caml_oo.caml_get_public_method(a0, label, cacheid), a0);
+}
+
+function __1(o) {
+  var arity = o.length;
+  if (arity === 1) {
+    return o;
+  }
+  else {
+    return function (a0) {
+      return _1(o, a0);
+    };
+  }
+}
+
+function curry_2(o, a0, a1, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[a1]);
+      case 2 :
+          return o(a0, a1);
+      case 3 :
+          return function (param) {
+            return o(a0, a1, param);
+          };
+      case 4 :
+          return function (param, param$1) {
+            return o(a0, a1, param, param$1);
+          };
+      case 5 :
+          return function (param, param$1, param$2) {
+            return o(a0, a1, param, param$1, param$2);
+          };
+      case 6 :
+          return function (param, param$1, param$2, param$3) {
+            return o(a0, a1, param, param$1, param$2, param$3);
+          };
+      case 7 :
+          return function (param, param$1, param$2, param$3, param$4) {
+            return o(a0, a1, param, param$1, param$2, param$3, param$4);
+          };
+
+    }
+  }
+}
+
+function _2(o, a0, a1) {
+  var arity = o.length;
+  if (arity === 2) {
+    return o(a0, a1);
+  }
+  else {
+    return curry_2(o, a0, a1, arity);
+  }
+}
+
+function js2(label, cacheid, a0, a1) {
+  return _2(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1);
+}
+
+function __2(o) {
+  var arity = o.length;
+  if (arity === 2) {
+    return o;
+  }
+  else {
+    return function (a0, a1) {
+      return _2(o, a0, a1);
+    };
+  }
+}
+
+function curry_3(o, a0, a1, a2, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1,
+                a2
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[
+                      a1,
+                      a2
+                    ]);
+      case 2 :
+          return app(o(a0, a1), /* array */[a2]);
+      case 3 :
+          return o(a0, a1, a2);
+      case 4 :
+          return function (param) {
+            return o(a0, a1, a2, param);
+          };
+      case 5 :
+          return function (param, param$1) {
+            return o(a0, a1, a2, param, param$1);
+          };
+      case 6 :
+          return function (param, param$1, param$2) {
+            return o(a0, a1, a2, param, param$1, param$2);
+          };
+      case 7 :
+          return function (param, param$1, param$2, param$3) {
+            return o(a0, a1, a2, param, param$1, param$2, param$3);
+          };
+
+    }
+  }
+}
+
+function _3(o, a0, a1, a2) {
+  var arity = o.length;
+  if (arity === 3) {
+    return o(a0, a1, a2);
+  }
+  else {
+    return curry_3(o, a0, a1, a2, arity);
+  }
+}
+
+function js3(label, cacheid, a0, a1, a2) {
+  return _3(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1, a2);
+}
+
+function __3(o) {
+  var arity = o.length;
+  if (arity === 3) {
+    return o;
+  }
+  else {
+    return function (a0, a1, a2) {
+      return _3(o, a0, a1, a2);
+    };
+  }
+}
+
+function curry_4(o, a0, a1, a2, a3, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1,
+                a2,
+                a3
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[
+                      a1,
+                      a2,
+                      a3
+                    ]);
+      case 2 :
+          return app(o(a0, a1), /* array */[
+                      a2,
+                      a3
+                    ]);
+      case 3 :
+          return app(o(a0, a1, a2), /* array */[a3]);
+      case 4 :
+          return o(a0, a1, a2, a3);
+      case 5 :
+          return function (param) {
+            return o(a0, a1, a2, a3, param);
+          };
+      case 6 :
+          return function (param, param$1) {
+            return o(a0, a1, a2, a3, param, param$1);
+          };
+      case 7 :
+          return function (param, param$1, param$2) {
+            return o(a0, a1, a2, a3, param, param$1, param$2);
+          };
+
+    }
+  }
+}
+
+function _4(o, a0, a1, a2, a3) {
+  var arity = o.length;
+  if (arity === 4) {
+    return o(a0, a1, a2, a3);
+  }
+  else {
+    return curry_4(o, a0, a1, a2, a3, arity);
+  }
+}
+
+function js4(label, cacheid, a0, a1, a2, a3) {
+  return _4(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1, a2, a3);
+}
+
+function __4(o) {
+  var arity = o.length;
+  if (arity === 4) {
+    return o;
+  }
+  else {
+    return function (a0, a1, a2, a3) {
+      return _4(o, a0, a1, a2, a3);
+    };
+  }
+}
+
+function curry_5(o, a0, a1, a2, a3, a4, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1,
+                a2,
+                a3,
+                a4
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[
+                      a1,
+                      a2,
+                      a3,
+                      a4
+                    ]);
+      case 2 :
+          return app(o(a0, a1), /* array */[
+                      a2,
+                      a3,
+                      a4
+                    ]);
+      case 3 :
+          return app(o(a0, a1, a2), /* array */[
+                      a3,
+                      a4
+                    ]);
+      case 4 :
+          return app(o(a0, a1, a2, a3), /* array */[a4]);
+      case 5 :
+          return o(a0, a1, a2, a3, a4);
+      case 6 :
+          return function (param) {
+            return o(a0, a1, a2, a3, a4, param);
+          };
+      case 7 :
+          return function (param, param$1) {
+            return o(a0, a1, a2, a3, a4, param, param$1);
+          };
+
+    }
+  }
+}
+
+function _5(o, a0, a1, a2, a3, a4) {
+  var arity = o.length;
+  if (arity === 5) {
+    return o(a0, a1, a2, a3, a4);
+  }
+  else {
+    return curry_5(o, a0, a1, a2, a3, a4, arity);
+  }
+}
+
+function js5(label, cacheid, a0, a1, a2, a3, a4) {
+  return _5(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1, a2, a3, a4);
+}
+
+function __5(o) {
+  var arity = o.length;
+  if (arity === 5) {
+    return o;
+  }
+  else {
+    return function (a0, a1, a2, a3, a4) {
+      return _5(o, a0, a1, a2, a3, a4);
+    };
+  }
+}
+
+function curry_6(o, a0, a1, a2, a3, a4, a5, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1,
+                a2,
+                a3,
+                a4,
+                a5
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[
+                      a1,
+                      a2,
+                      a3,
+                      a4,
+                      a5
+                    ]);
+      case 2 :
+          return app(o(a0, a1), /* array */[
+                      a2,
+                      a3,
+                      a4,
+                      a5
+                    ]);
+      case 3 :
+          return app(o(a0, a1, a2), /* array */[
+                      a3,
+                      a4,
+                      a5
+                    ]);
+      case 4 :
+          return app(o(a0, a1, a2, a3), /* array */[
+                      a4,
+                      a5
+                    ]);
+      case 5 :
+          return app(o(a0, a1, a2, a3, a4), /* array */[a5]);
+      case 6 :
+          return o(a0, a1, a2, a3, a4, a5);
+      case 7 :
+          return function (param) {
+            return o(a0, a1, a2, a3, a4, a5, param);
+          };
+
+    }
+  }
+}
+
+function _6(o, a0, a1, a2, a3, a4, a5) {
+  var arity = o.length;
+  if (arity === 6) {
+    return o(a0, a1, a2, a3, a4, a5);
+  }
+  else {
+    return curry_6(o, a0, a1, a2, a3, a4, a5, arity);
+  }
+}
+
+function js6(label, cacheid, a0, a1, a2, a3, a4, a5) {
+  return _6(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1, a2, a3, a4, a5);
+}
+
+function __6(o) {
+  var arity = o.length;
+  if (arity === 6) {
+    return o;
+  }
+  else {
+    return function (a0, a1, a2, a3, a4, a5) {
+      return _6(o, a0, a1, a2, a3, a4, a5);
+    };
+  }
+}
+
+function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1,
+                a2,
+                a3,
+                a4,
+                a5,
+                a6
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[
+                      a1,
+                      a2,
+                      a3,
+                      a4,
+                      a5,
+                      a6
+                    ]);
+      case 2 :
+          return app(o(a0, a1), /* array */[
+                      a2,
+                      a3,
+                      a4,
+                      a5,
+                      a6
+                    ]);
+      case 3 :
+          return app(o(a0, a1, a2), /* array */[
+                      a3,
+                      a4,
+                      a5,
+                      a6
+                    ]);
+      case 4 :
+          return app(o(a0, a1, a2, a3), /* array */[
+                      a4,
+                      a5,
+                      a6
+                    ]);
+      case 5 :
+          return app(o(a0, a1, a2, a3, a4), /* array */[
+                      a5,
+                      a6
+                    ]);
+      case 6 :
+          return app(o(a0, a1, a2, a3, a4, a5), /* array */[a6]);
+      case 7 :
+          return o(a0, a1, a2, a3, a4, a5, a6);
+
+    }
+  }
+}
+
+function _7(o, a0, a1, a2, a3, a4, a5, a6) {
+  var arity = o.length;
+  if (arity === 7) {
+    return o(a0, a1, a2, a3, a4, a5, a6);
+  }
+  else {
+    return curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity);
+  }
+}
+
+function js7(label, cacheid, a0, a1, a2, a3, a4, a5, a6) {
+  return _7(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1, a2, a3, a4, a5, a6);
+}
+
+function __7(o) {
+  var arity = o.length;
+  if (arity === 7) {
+    return o;
+  }
+  else {
+    return function (a0, a1, a2, a3, a4, a5, a6) {
+      return _7(o, a0, a1, a2, a3, a4, a5, a6);
+    };
+  }
+}
+
+function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
+  if (arity > 7 || arity < 0) {
+    return app(o, /* array */[
+                a0,
+                a1,
+                a2,
+                a3,
+                a4,
+                a5,
+                a6,
+                a7
+              ]);
+  }
+  else {
+    switch (arity) {
+      case 0 :
+      case 1 :
+          return app(o(a0), /* array */[
+                      a1,
+                      a2,
+                      a3,
+                      a4,
+                      a5,
+                      a6,
+                      a7
+                    ]);
+      case 2 :
+          return app(o(a0, a1), /* array */[
+                      a2,
+                      a3,
+                      a4,
+                      a5,
+                      a6,
+                      a7
+                    ]);
+      case 3 :
+          return app(o(a0, a1, a2), /* array */[
+                      a3,
+                      a4,
+                      a5,
+                      a6,
+                      a7
+                    ]);
+      case 4 :
+          return app(o(a0, a1, a2, a3), /* array */[
+                      a4,
+                      a5,
+                      a6,
+                      a7
+                    ]);
+      case 5 :
+          return app(o(a0, a1, a2, a3, a4), /* array */[
+                      a5,
+                      a6,
+                      a7
+                    ]);
+      case 6 :
+          return app(o(a0, a1, a2, a3, a4, a5), /* array */[
+                      a6,
+                      a7
+                    ]);
+      case 7 :
+          return app(o(a0, a1, a2, a3, a4, a5, a6), /* array */[a7]);
+
+    }
+  }
+}
+
+function _8(o, a0, a1, a2, a3, a4, a5, a6, a7) {
+  var arity = o.length;
+  if (arity === 8) {
+    return o(a0, a1, a2, a3, a4, a5, a6, a7);
+  }
+  else {
+    return curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity);
+  }
+}
+
+function js8(label, cacheid, a0, a1, a2, a3, a4, a5, a6, a7) {
+  return _8(Caml_oo.caml_get_public_method(a0, label, cacheid), a0, a1, a2, a3, a4, a5, a6, a7);
+}
+
+function __8(o) {
+  var arity = o.length;
+  if (arity === 8) {
+    return o;
+  }
+  else {
+    return function (a0, a1, a2, a3, a4, a5, a6, a7) {
+      return _8(o, a0, a1, a2, a3, a4, a5, a6, a7);
+    };
+  }
+}
+
+exports.app     = app;
+exports.js      = js;
+exports.curry_1 = curry_1;
+exports._1      = _1;
+exports.js1     = js1;
+exports.__1     = __1;
+exports.curry_2 = curry_2;
+exports._2      = _2;
+exports.js2     = js2;
+exports.__2     = __2;
+exports.curry_3 = curry_3;
+exports._3      = _3;
+exports.js3     = js3;
+exports.__3     = __3;
+exports.curry_4 = curry_4;
+exports._4      = _4;
+exports.js4     = js4;
+exports.__4     = __4;
+exports.curry_5 = curry_5;
+exports._5      = _5;
+exports.js5     = js5;
+exports.__5     = __5;
+exports.curry_6 = curry_6;
+exports._6      = _6;
+exports.js6     = js6;
+exports.__6     = __6;
+exports.curry_7 = curry_7;
+exports._7      = _7;
+exports.js7     = js7;
+exports.__7     = __7;
+exports.curry_8 = curry_8;
+exports._8      = _8;
+exports.js8     = js8;
+exports.__8     = __8;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/list.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -2286,6 +2964,8 @@ exports.fib = fib;
 
 var Fib   = require("./fib");
 var Block = require("bs-platform/lib/js/block");
+var Web   = require("./web");
+var Curry = require("bs-platform/lib/js/curry");
 var Vdom  = require("./vdom");
 
 for(var i = 0; i <= 10; ++i){
@@ -2312,7 +2992,10 @@ var Five = /* module */[/* x */x$1];
 var inc_test = x + x$1 | 0;
 
 function init() {
-  return /* record */[/* count */0];
+  return /* record */[
+          /* count */0,
+          /* more */""
+        ];
 }
 
 function update(model, param) {
@@ -2320,17 +3003,26 @@ function update(model, param) {
     switch (param) {
       case 0 : 
           return /* tuple */[
-                  /* record */[/* count */model[/* count */0] + 1 | 0],
+                  /* record */[
+                    /* count */model[/* count */0] + 1 | 0,
+                    /* more */model[/* more */1]
+                  ],
                   /* None */0
                 ];
       case 1 : 
           return /* tuple */[
-                  /* record */[/* count */model[/* count */0] - 1 | 0],
+                  /* record */[
+                    /* count */model[/* count */0] - 1 | 0,
+                    /* more */model[/* more */1]
+                  ],
                   /* None */0
                 ];
       case 2 : 
           return /* tuple */[
-                  /* record */[/* count */0],
+                  /* record */[
+                    /* count */0,
+                    /* more */model[/* more */1]
+                  ],
                   /* None */0
                 ];
       
@@ -2338,7 +3030,10 @@ function update(model, param) {
   }
   else {
     return /* tuple */[
-            /* record */[/* count */param[0]],
+            /* record */[
+              /* count */param[0],
+              /* more */model[/* more */1]
+            ],
             /* None */0
           ];
   }
@@ -2384,7 +3079,10 @@ function view(model) {
             ]);
 }
 
-var view_test = view(/* record */[/* count */42]);
+var view_test = view(/* record */[
+      /* count */42,
+      /* more */""
+    ]);
 
 var renderTest = Vdom.renderToHtmlString(view_test);
 
@@ -2392,9 +3090,9 @@ console.log(Vdom.renderToHtmlString(view_test));
 
 var elem = Vdom.createElementFromVNode(view_test);
 
-var match = document.getElementById("content");
+var match = Curry._1(Web.Document[/* getElementById */3], "content");
 
-var attachedElem = match !== null ? (console.log(match.appendChild(elem)), /* () */0) : (console.log("Failed to attach"), /* () */0);
+var attachedElem = match !== null ? (console.log(Curry._2(Web.Node[/* appendChild */0], match, elem)), /* () */0) : (console.log("Failed to attach"), /* () */0);
 
 var main = 42;
 
@@ -2449,6 +3147,7 @@ exports.Make = Make;
 
 var Block    = require("bs-platform/lib/js/block");
 var Web      = require("./web");
+var Curry    = require("bs-platform/lib/js/curry");
 var $$String = require("bs-platform/lib/js/string");
 var List     = require("bs-platform/lib/js/list");
 
@@ -2695,7 +3394,7 @@ function applyProperties(elem, curProperties) {
                       return elem;
                   case 4 : 
                       return List.fold_left(function (elem, param) {
-                                  elem.style[param[0]] = param[1];
+                                  Curry._3(Web.Node[/* setStyle */3], elem, param[0], param[1]);
                                   return elem;
                                 }, elem, param[0]);
                   
@@ -2710,27 +3409,26 @@ function createElementFromVNode_addProps(_, elem) {
 
 function createElementFromVNode_addChildren(children, elem) {
   return List.fold_left(function (n, child) {
-              n.appendChild(createElementFromVNode(child));
+              Curry._2(Web.Node[/* appendChild */0], n, createElementFromVNode(child));
               return n;
             }, elem, children);
 }
 
 function createElementFromVNode(param) {
   if (typeof param === "number") {
-    return document.createComment();
+    return Curry._1(Web.Document[/* createComment */6], /* () */0);
   }
   else if (param.tag) {
-    return createElementFromVNode_addChildren(param[4], Web.createElementNsOptional(param[0], param[2]));
+    return createElementFromVNode_addChildren(param[4], Curry._2(Web.Document[/* createElementNsOptional */4], param[0], param[2]));
   }
   else {
-    var text = param[0];
-    return document.createTextNode(text);
+    return Curry._1(Web.Document[/* createTextNode */5], param[0]);
   }
 }
 
 function createVNodesIntoElement(vnodes, elem) {
   return List.fold_left(function (n, vnode) {
-              n.appendChild(createElementFromVNode(vnode));
+              Curry._2(Web.Node[/* appendChild */0], n, createElementFromVNode(vnode));
               return n;
             }, elem, vnodes);
 }
@@ -2768,6 +3466,65 @@ exports.createVNodesIntoElement            = createVNodesIntoElement;
 'use strict';
 
 
+function appendChild(n, child) {
+  return n.appendChild(child);
+}
+
+function style(n) {
+  return n.style;
+}
+
+function getStyle(n, key) {
+  return n.style[key];
+}
+
+function setStyle(n, key, value) {
+  return n.style[key] = value;
+}
+
+function setAttributeNS(n, namespace, key, value) {
+  return n.setAttributeNS(namespace, key, value);
+}
+
+function setAttribute(n, key, value) {
+  return n.setAttribute(key, value);
+}
+
+function removeAttributeNS(n, namespace, key) {
+  return n.removeAttributeNS(namespace, key);
+}
+
+function removeAttribute(n, key) {
+  return n.removeAttribute(key);
+}
+
+var Node = /* module */[
+  /* appendChild */appendChild,
+  /* style */style,
+  /* getStyle */getStyle,
+  /* setStyle */setStyle,
+  /* setAttributeNS */setAttributeNS,
+  /* setAttribute */setAttribute,
+  /* removeAttributeNS */removeAttributeNS,
+  /* removeAttribute */removeAttribute
+];
+
+function body() {
+  return document.body;
+}
+
+function createElement(typ) {
+  return document.createElement(typ);
+}
+
+function createElementNS(namespace, key) {
+  return document.createElementNS(namespace, key);
+}
+
+function getElementById(typ) {
+  return document.getElementById(typ);
+}
+
 function createElementNsOptional(namespace, tagName) {
   if (namespace) {
     return document.createElementNS(namespace[0], tagName);
@@ -2785,9 +3542,18 @@ function createComment() {
   return document.createComment();
 }
 
-exports.createElementNsOptional = createElementNsOptional;
-exports.createTextNode          = createTextNode;
-exports.createComment           = createComment;
+var Document = /* module */[
+  /* body */body,
+  /* createElement */createElement,
+  /* createElementNS */createElementNS,
+  /* getElementById */getElementById,
+  /* createElementNsOptional */createElementNsOptional,
+  /* createTextNode */createTextNode,
+  /* createComment */createComment
+];
+
+exports.Node     = Node;
+exports.Document = Document;
 /* No side effect */
 
 });
@@ -2796,5 +3562,91 @@ exports.createComment           = createComment;
   
 });})();require('___globals___');
 
-require('src/main_entry.ml');
+/* jshint ignore:start */
+(function() {
+  var WebSocket = window.WebSocket || window.MozWebSocket;
+  var br = window.brunch = (window.brunch || {});
+  var ar = br['auto-reload'] = (br['auto-reload'] || {});
+  if (!WebSocket || ar.disabled) return;
+  if (window._ar) return;
+  window._ar = true;
+
+  var cacheBuster = function(url){
+    var date = Math.round(Date.now() / 1000).toString();
+    url = url.replace(/(\&|\\?)cacheBuster=\d*/, '');
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
+  };
+
+  var browser = navigator.userAgent.toLowerCase();
+  var forceRepaint = ar.forceRepaint || browser.indexOf('chrome') > -1;
+
+  var reloaders = {
+    page: function(){
+      window.location.reload(true);
+    },
+
+    stylesheet: function(){
+      [].slice
+        .call(document.querySelectorAll('link[rel=stylesheet]'))
+        .filter(function(link) {
+          var val = link.getAttribute('data-autoreload');
+          return link.href && val != 'false';
+        })
+        .forEach(function(link) {
+          link.href = cacheBuster(link.href);
+        });
+
+      // Hack to force page repaint after 25ms.
+      if (forceRepaint) setTimeout(function() { document.body.offsetHeight; }, 25);
+    },
+
+    javascript: function(){
+      var scripts = [].slice.call(document.querySelectorAll('script'));
+      var textScripts = scripts.map(function(script) { return script.text }).filter(function(text) { return text.length > 0 });
+      var srcScripts = scripts.filter(function(script) { return script.src });
+
+      var loaded = 0;
+      var all = srcScripts.length;
+      var onLoad = function() {
+        loaded = loaded + 1;
+        if (loaded === all) {
+          textScripts.forEach(function(script) { eval(script); });
+        }
+      }
+
+      srcScripts
+        .forEach(function(script) {
+          var src = script.src;
+          script.remove();
+          var newScript = document.createElement('script');
+          newScript.src = cacheBuster(src);
+          newScript.async = true;
+          newScript.onload = onLoad;
+          document.head.appendChild(newScript);
+        });
+    }
+  };
+  var port = ar.port || 9485;
+  var host = br.server || window.location.hostname || 'localhost';
+
+  var connect = function(){
+    var connection = new WebSocket('ws://' + host + ':' + port);
+    connection.onmessage = function(event){
+      if (ar.disabled) return;
+      var message = event.data;
+      var reloader = reloaders[message] || reloaders.page;
+      reloader();
+    };
+    connection.onerror = function(){
+      if (connection.readyState) connection.close();
+    };
+    connection.onclose = function(){
+      window.setTimeout(connect, 1000);
+    };
+  };
+  connect();
+})();
+/* jshint ignore:end */
+
+;require('src/main_entry.ml');
 //# sourceMappingURL=app.js.map

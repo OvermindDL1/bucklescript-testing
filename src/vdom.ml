@@ -17,12 +17,12 @@ type 'msg property =
 
 type 'msg properties = 'msg property list
 
-type 'msg vnode =
+type 'msg t =
   | NoVNode
   | Text of string
   (* Node namespace key tagName properties children  *)
-  | Node of string option * string option * string * 'msg properties * 'msg vnode list
-  (* | NSKeyedNode of string option * string * 'msg property list * (int * 'msg vnode) list *)
+  | Node of string option * string option * string * 'msg properties * 'msg t list
+  (* | NSKeyedNode of string option * string * 'msg property list * (int * 'msg t) list *)
 
 
 (* Nodes *)
@@ -102,7 +102,7 @@ let applyProperties elem curProperties =
        | Attribute (namespace, k, v) -> elem
        | Data (k, v) -> elem
        | Event (ev, v) -> elem
-       | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.setStyle elem##style k v in elem) elem s
+       | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k v in elem) elem s
        (* | Style s -> List.fold_left (fun (k, v) elem -> let _ = elem##style##set k v in elem) elem s *)
     ) elem curProperties
 
@@ -114,17 +114,17 @@ let createElementFromVNode_addProps properties elem = elem
 
 
 let rec createElementFromVNode_addChildren children elem =
-  children |> List.fold_left (fun n child -> let _childelem = n##appendChild (createElementFromVNode child) in n) elem
+  children |> List.fold_left (fun n child -> let _childelem = Web.Node.appendChild n (createElementFromVNode child) in n) elem
     and createElementFromVNode = function
-  | NoVNode -> Web.createComment ()
-  | Text s -> Web.createTextNode s
+  | NoVNode -> Web.Document.createComment ()
+  | Text s -> Web.Document.createTextNode s
   | Node (namespace, _key_unused, tagName, properties, children) ->
-    Web.createElementNsOptional namespace tagName
+    Web.Document.createElementNsOptional namespace tagName
     |> createElementFromVNode_addProps properties
     |> createElementFromVNode_addChildren children
 
 let createVNodesIntoElement vnodes elem =
-  vnodes |> List.fold_left (fun n vnode -> let _childelem = n##appendChild (createElementFromVNode vnode) in n) elem
+  vnodes |> List.fold_left (fun n vnode -> let _childelem = Web.Node.appendChild n (createElementFromVNode vnode) in n) elem
 
 
 (* Node namespace key tagName properties children  *)

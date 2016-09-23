@@ -6,7 +6,7 @@ module type Program = sig
   type msg
   val init : flags -> model
   val update : model -> msg -> model * Cmd.t
-  val view : model -> msg Vdom.vnode
+  val view : model -> msg Vdom.t
 end
 
 

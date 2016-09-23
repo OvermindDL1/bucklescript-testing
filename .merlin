@@ -1,0 +1,8 @@
+#FLG -ppx node_modules/bs-platform/bin\bsppx.exe
+
+S node_modules/bs-platform/lib/ocaml/**
+B node_modules/bs-platform/lib/ocaml/**
+
+S src/**
+B src/**
+B tmp/**

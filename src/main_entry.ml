@@ -19,6 +19,7 @@ let inc_test = Four.x + Five.x
 
 type model =
   { count : int
+  ; more : string
   }
 
 type msg =
@@ -27,7 +28,7 @@ type msg =
   | Reset
   | Set of int
 
-let init () = { count = 0 }
+let init () = { count = 0; more = "" }
 
 let update model = function
   | Increment -> { model with count = model.count + 1 }, Cmd.none
@@ -58,7 +59,7 @@ let view model =
 
 
 let view_test =
-  let model = { count = 42 } in
+  let model = { count = 42; more = "" } in
   view model
 
 let renderTest =
@@ -69,9 +70,9 @@ let () = Js.log (renderToHtmlString view_test)
 
 let elem = createElementFromVNode view_test
 
-let attachedElem = match Js.Null.to_opt (Web.document##getElementById "content") with
+let attachedElem = match Js.Null.to_opt (Web.Document.getElementById "content") with
   | None -> Js.log "Failed to attach"
-  | Some e -> let attached = e##appendChild elem in Js.log attached
+  | Some e -> let attached = Web.Node.appendChild e elem in Js.log attached
 
 
 

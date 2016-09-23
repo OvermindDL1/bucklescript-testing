@@ -8,6 +8,7 @@
     "startd": "brunch watch -d",
     "starts": "brunch watch --server --port 7070",
     "startsd": "brunch watch --server --port 7070 -d",
+    "startsp": "brunch watch --server --port 7070 --production",
     "build": "brunch build",
     "debug": "brunch build -d",
     "prod": "brunch build --production"
@@ -17,7 +18,7 @@
   "devDependencies": {
     "auto-reload-brunch": "^2.0.0",
     "brunch": "^2.8.2",
-    "bucklescript-brunch": ">=0.1.0",
+    "bucklescript-brunch": "OvermindDL1/bucklescript-brunch",
     "clean-css-brunch": "^2.0.0",
     "css-brunch": "^2.0.0",
     "javascript-brunch": "^2.0.0",
