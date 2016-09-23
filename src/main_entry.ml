@@ -40,7 +40,7 @@ open Vdom
 
 let view_button title msg =
   node "button"
-    [ on "click" (fun ev -> msg)
+    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in msg)
     ]
     [ text title
     ]

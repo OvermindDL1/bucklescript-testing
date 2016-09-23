@@ -1,7 +1,6 @@
 
 (* https://github.com/Matt-Esch/virtual-dom/blob/master/docs/vnode.md *)
 
-type event
 
 (* Attributes are not properties *)
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes *)
@@ -12,7 +11,7 @@ type 'msg property =
   (* Attribute is (namespace, key, value) *)
   | Attribute of string option * string * string
   | Data of string * string
-  | Event of string * (event -> 'msg)
+  | Event of string * (Web.Event.t -> 'msg)
   | Style of (string * string) list
 
 type 'msg properties = 'msg property list
@@ -76,7 +75,7 @@ let rec renderToHtmlString = function
       | RawProp (k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
       | Attribute (namespace, k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
       | Data (k, v) -> String.concat "" [" data-"; k; "=\""; v; "\""]
-      | Event (ev, v) -> String.concat "" [" "; ev; "=\"func\""]
+      | Event (typ, v) -> String.concat "" [" "; typ; "=\"js:"; Js.typeof v; "\""]
       | Style s -> String.concat "" [" style=\""; String.concat ";" (List.map (fun (k, v) -> String.concat "" [k;":";v;";"]) s); "\""]
     in
     String.concat ""
@@ -101,7 +100,13 @@ let applyProperties elem curProperties =
        | RawProp (k, v) -> elem
        | Attribute (namespace, k, v) -> elem
        | Data (k, v) -> elem
-       | Event (ev, v) -> elem
+       | Event (typ, v) ->
+         let () = Js.log [|"Event:"; typ|] in
+         let cb : Web.Event.cb = fun [@bs] ev ->
+           let _msg = v ev in
+           () in
+         let () = Web_node.addEventListener elem typ cb false in
+         elem
        | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k v in elem) elem s
        (* | Style s -> List.fold_left (fun (k, v) elem -> let _ = elem##style##set k v in elem) elem s *)
     ) elem curProperties
@@ -110,7 +115,8 @@ let applyProperties elem curProperties =
 (* Creating actual DOM elements *)
 (* let doc = Web.document *)
 
-let createElementFromVNode_addProps properties elem = elem
+let createElementFromVNode_addProps properties elem =
+  applyProperties elem properties
 
 
 let rec createElementFromVNode_addChildren children elem =
