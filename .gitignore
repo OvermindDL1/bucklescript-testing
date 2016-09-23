@@ -6,4 +6,5 @@
 *.cmj
 
 # Test sections
-/tmp
+/tmp/*
+!/tmp/.gitkeep
