@@ -11,7 +11,8 @@
     "startsp": "brunch watch --server --port 7070 --production",
     "build": "brunch build",
     "debug": "brunch build -d",
-    "prod": "brunch build --production"
+    "prod": "brunch build --production",
+    "clean": "rm src/*.cmi src/*.cmj tmp/*.js"
   },
   "author": "",
   "license": "ISC",

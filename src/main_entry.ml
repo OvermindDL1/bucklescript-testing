@@ -1,3 +1,51 @@
+
+open Tea_app
+
+type model =
+  { count : int
+  ; more : string
+  }
+
+type msg =
+  | Increment
+  | Decrement
+  | Reset
+  | Set of int
+
+let update model = function
+  | Increment -> model + 1
+  | Decrement -> model - 1
+  | Reset -> 0
+  | Set v -> v
+
+open Vdom
+
+let view_button title msg =
+  node "button"
+    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in msg)
+    ]
+    [ text title
+    ]
+
+let view model =
+  node "div"
+    []
+    [ node "span"
+        [ style "text-weight" "bold" ]
+        [ text (string_of_int model) ]
+    ; view_button "Increment" Increment
+    ; view_button "Decrement" Decrement
+    ; if model <> 0 then view_button "Reset" Reset else noNode
+    ; view_button "Set to 42" (Set 42)
+    ]
+
+
+let main =
+  beginnerProgram { model = 0; view = view; update = update }
+
+
+
+(*
 let res =
   for i = 0 to 10 do
     Js.log (Fib.fib i)
@@ -16,48 +64,9 @@ module Four = Increment(Three)
 module Five = Increment(Four)
 
 let inc_test = Four.x + Five.x
+*)
 
-type model =
-  { count : int
-  ; more : string
-  }
-
-type msg =
-  | Increment
-  | Decrement
-  | Reset
-  | Set of int
-
-let init () = { count = 0; more = "" }
-
-let update model = function
-  | Increment -> { model with count = model.count + 1 }, Cmd.none
-  | Decrement -> { model with count = model.count - 1 }, Cmd.none
-  | Reset -> { model with count = 0 }, Cmd.none
-  | Set v -> { model with count = v }, Cmd.none
-
-open Vdom
-
-let view_button title msg =
-  node "button"
-    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in msg)
-    ]
-    [ text title
-    ]
-
-let view model =
-  node "div"
-    []
-    [ node "span"
-         [ style "text-weight" "bold" ]
-         [ text (string_of_int model.count) ]
-    ; view_button "Increment" Increment
-    ; view_button "Decrement" Decrement
-    ; if model.count <> 0 then view_button "Reset" Reset else noNode
-    ; view_button "Set to 42" (Set 42)
-    ]
-
-
+(*
 let view_test =
   let model = { count = 42; more = "" } in
   view model
@@ -73,14 +82,22 @@ let elem = createElementFromVNode view_test
 let attachedElem = match Js.Null.to_opt (Web.Document.getElementById "content") with
   | None -> Js.log "Failed to attach"
   | Some e -> let attached = Web.Node.appendChild e elem in Js.log attached
+*)
+
+(* let main p =
+  let module P = (val (Tea_app.makeProgram p) : Tea_app.ProgramState) in
+  P.x *)
 
 
+(* module CounterApp = module Tea.App.MakeProgram Counter *)
 
-let main = 42
+(* module App =
+  Tea.App.Make (struct
 
-(* open Tea
+  end) *)
 
-module Main = App.Make (struct
+
+(* module Main = App.Make (struct
     type flags = unit
 
     type model =

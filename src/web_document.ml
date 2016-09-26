@@ -20,7 +20,7 @@ let createComment () = document##createComment ()
 
 let createTextNode text = document##createTextNode text
 
-let getElementById typ = document##getElementById typ
+let getElementById id = document##getElementById id
 
 let createElementNsOptional namespace tagName =
   match namespace with
