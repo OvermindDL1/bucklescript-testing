@@ -14,7 +14,7 @@ let requestAnimationFrame callback = window##requestAnimationFrame callback
 
 (* Polyfills *)
 
-let requestAnimationFrame_polyfill () =
+let requestAnimationFrame_polyfill : unit -> unit = fun () ->
   [%bs.raw{|
   // requestAnimationFrame polyfill
   (function() {
@@ -40,5 +40,5 @@ let requestAnimationFrame_polyfill () =
           window.cancelAnimationFrame = function(id) {
               clearTimeout(id);
           };
-  }());
+  }())
   |}]

@@ -1,10 +1,5 @@
 
-open Tea_app
-
-type model =
-  { count : int
-  ; more : string
-  }
+open Tea.App
 
 type msg =
   | Increment
@@ -12,7 +7,9 @@ type msg =
   | Reset
   | Set of int
 
-let update model = function
+let update model =
+  let () = Js.log "Update called" in
+  function
   | Increment -> model + 1
   | Decrement -> model - 1
   | Reset -> 0
@@ -22,12 +19,13 @@ open Vdom
 
 let view_button title msg =
   node "button"
-    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in msg)
+    [ on "click" (fun ev -> let () = Js.log ("Event", ev, msg) in msg)
     ]
     [ text title
     ]
 
 let view model =
+  let () = Js.log "View called" in
   node "div"
     []
     [ node "span"
@@ -41,8 +39,28 @@ let view model =
 
 
 let main =
-  beginnerProgram { model = 0; view = view; update = update }
+  beginnerProgram {
+    model = 4;
+    update;
+    view;
+  }
 
+let m = main (Web.Document.getElementById "content")
+
+(* let () =
+  Js.log "inited";
+  Js.log "Resetting";
+  m Reset;
+  Js.log "Increment";
+  m Increment;
+  Js.log "Increment";
+  m Increment;
+  Js.log "Set";
+  m (Set 42); *)
+
+(* let main =
+  beginnerPrograms (Js.Null_undefined.return (Web.Document.body ()))
+  (* beginnerPrograms (Js.Null_undefined.return (Web.Document.body ())) *) *)
 
 
 (*

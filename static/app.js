@@ -117,7 +117,6 @@
 
 (function() {
 var global = window;
-var process;
 var __makeRelativeRequire = function(require, mappings, pref) {
   var none = {};
   var tryReq = function(name, pref) {
@@ -422,43 +421,43 @@ function escaped(s) {
       }
       else {
         switch (c) {
-          case 8 : 
+          case 8 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "b" */98;
               break;
-          case 9 : 
+          case 9 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "t" */116;
               break;
-          case 10 : 
+          case 10 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "n" */110;
               break;
-          case 0 : 
-          case 1 : 
-          case 2 : 
-          case 3 : 
-          case 4 : 
-          case 5 : 
-          case 6 : 
-          case 7 : 
-          case 11 : 
-          case 12 : 
+          case 0 :
+          case 1 :
+          case 2 :
+          case 3 :
+          case 4 :
+          case 5 :
+          case 6 :
+          case 7 :
+          case 11 :
+          case 12 :
               exit = 1;
               break;
-          case 13 : 
+          case 13 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "r" */114;
               break;
-          
+
         }
       }
       switch (exit) {
-        case 1 : 
+        case 1 :
             s$prime[n] = /* "\\" */92;
             n = n + 1 | 0;
             s$prime[n] = 48 + (c / 100 | 0) | 0;
@@ -467,12 +466,12 @@ function escaped(s) {
             n = n + 1 | 0;
             s$prime[n] = 48 + c % 10 | 0;
             break;
-        case 2 : 
+        case 2 :
             s$prime[n] = /* "\\" */92;
             n = n + 1 | 0;
             s$prime[n] = c;
             break;
-        
+
       }
       n = n + 1 | 0;
     }
@@ -547,7 +546,7 @@ function index_rec(s, lim, _i, c) {
     else {
       _i = i + 1 | 0;
       continue ;
-      
+
     }
   };
 }
@@ -581,7 +580,7 @@ function rindex_rec(s, _i, c) {
     else {
       _i = i - 1 | 0;
       continue ;
-      
+
     }
   };
 }
@@ -958,15 +957,15 @@ function parse_digit(c) {
 
 function int_of_string_base(param) {
   switch (param) {
-    case 0 : 
+    case 0 :
         return 8;
-    case 1 : 
+    case 1 :
         return 16;
-    case 2 : 
+    case 2 :
         return 10;
-    case 3 : 
+    case 3 :
         return 2;
-    
+
   }
 }
 
@@ -988,7 +987,7 @@ function parse_sign_and_base(s) {
             base = /* Hex */1;
             i = i + 2 | 0;
           }
-          
+
         }
         else {
           base = /* Oct */0;
@@ -1006,7 +1005,7 @@ function parse_sign_and_base(s) {
           base = /* Hex */1;
           i = i + 2 | 0;
         }
-        
+
       }
       else {
         base = /* Oct */0;
@@ -1051,7 +1050,7 @@ function caml_int_of_string(s) {
         if (a === /* "_" */95) {
           _k = k + 1 | 0;
           continue ;
-          
+
         }
         else {
           var v = parse_digit(a);
@@ -1073,7 +1072,7 @@ function caml_int_of_string(s) {
               _k = k + 1 | 0;
               _acc = acc$1;
               continue ;
-              
+
             }
           }
         }
@@ -1099,31 +1098,31 @@ function caml_int64_of_string(s) {
   var sign = Caml_int64.of_int32(match[1]);
   var threshold;
   switch (hbase) {
-    case 0 : 
+    case 0 :
         threshold = /* int64 */[
           /* hi */536870911,
           /* lo */4294967295
         ];
         break;
-    case 1 : 
+    case 1 :
         threshold = /* int64 */[
           /* hi */268435455,
           /* lo */4294967295
         ];
         break;
-    case 2 : 
+    case 2 :
         threshold = /* int64 */[
           /* hi */429496729,
           /* lo */2576980377
         ];
         break;
-    case 3 : 
+    case 3 :
         threshold = /* int64 */[
           /* hi */2147483647,
           /* lo */4294967295
         ];
         break;
-    
+
   }
   var len = s.length;
   var c = i < len ? s.charCodeAt(i) : /* "\000" */0;
@@ -1149,7 +1148,7 @@ function caml_int64_of_string(s) {
         if (a === /* "_" */95) {
           _k = k + 1 | 0;
           continue ;
-          
+
         }
         else {
           var v = Caml_int64.of_int32(parse_digit(a));
@@ -1174,7 +1173,7 @@ function caml_int64_of_string(s) {
               _k = k + 1 | 0;
               _acc = acc$1;
               continue ;
-              
+
             }
           }
         }
@@ -1202,13 +1201,13 @@ function caml_int64_of_string(s) {
 
 function int_of_base(param) {
   switch (param) {
-    case 0 : 
+    case 0 :
         return 8;
-    case 1 : 
+    case 1 :
         return 16;
-    case 2 : 
+    case 2 :
         return 10;
-    
+
   }
 }
 
@@ -1258,59 +1257,59 @@ function parse_format(fmt) {
           }
           else {
             switch (c - 88 | 0) {
-              case 0 : 
+              case 0 :
                   f[/* base */4] = /* Hex */1;
                   f[/* uppercase */7] = /* true */1;
                   _i = i + 1 | 0;
                   continue ;
-                  case 13 : 
-              case 14 : 
-              case 15 : 
+                  case 13 :
+              case 14 :
+              case 15 :
                   exit = 5;
                   break;
-              case 12 : 
-              case 17 : 
+              case 12 :
+              case 17 :
                   exit = 4;
                   break;
-              case 23 : 
+              case 23 :
                   f[/* base */4] = /* Oct */0;
                   _i = i + 1 | 0;
                   continue ;
-                  case 29 : 
+                  case 29 :
                   f[/* base */4] = /* Dec */2;
                   _i = i + 1 | 0;
                   continue ;
-                  case 1 : 
-              case 2 : 
-              case 3 : 
-              case 4 : 
-              case 5 : 
-              case 6 : 
-              case 7 : 
-              case 8 : 
-              case 9 : 
-              case 10 : 
-              case 11 : 
-              case 16 : 
-              case 18 : 
-              case 19 : 
-              case 20 : 
-              case 21 : 
-              case 22 : 
-              case 24 : 
-              case 25 : 
-              case 26 : 
-              case 27 : 
-              case 28 : 
-              case 30 : 
-              case 31 : 
+                  case 1 :
+              case 2 :
+              case 3 :
+              case 4 :
+              case 5 :
+              case 6 :
+              case 7 :
+              case 8 :
+              case 9 :
+              case 10 :
+              case 11 :
+              case 16 :
+              case 18 :
+              case 19 :
+              case 20 :
+              case 21 :
+              case 22 :
+              case 24 :
+              case 25 :
+              case 26 :
+              case 27 :
+              case 28 :
+              case 30 :
+              case 31 :
                   exit = 1;
                   break;
-              case 32 : 
+              case 32 :
                   f[/* base */4] = /* Hex */1;
                   _i = i + 1 | 0;
                   continue ;
-                  
+
             }
           }
         }
@@ -1323,7 +1322,7 @@ function parse_format(fmt) {
           f[/* conv */10] = String.fromCharCode(lowercase(c));
           _i = i + 1 | 0;
           continue ;
-          
+
         }
       }
       else {
@@ -1333,19 +1332,19 @@ function parse_format(fmt) {
         }
         else {
           switch (switcher) {
-            case 3 : 
+            case 3 :
                 f[/* alternate */3] = /* true */1;
                 _i = i + 1 | 0;
                 continue ;
-                case 0 : 
-            case 11 : 
+                case 0 :
+            case 11 :
                 exit = 2;
                 break;
-            case 13 : 
+            case 13 :
                 f[/* justify */0] = "-";
                 _i = i + 1 | 0;
                 continue ;
-                case 14 : 
+                case 14 :
                 f[/* prec */9] = 0;
                 var j = i + 1 | 0;
                 while((function(j){
@@ -1359,47 +1358,47 @@ function parse_format(fmt) {
                 };
                 _i = j;
                 continue ;
-                case 1 : 
-            case 2 : 
-            case 4 : 
-            case 5 : 
-            case 6 : 
-            case 7 : 
-            case 8 : 
-            case 9 : 
-            case 10 : 
-            case 12 : 
-            case 15 : 
+                case 1 :
+            case 2 :
+            case 4 :
+            case 5 :
+            case 6 :
+            case 7 :
+            case 8 :
+            case 9 :
+            case 10 :
+            case 12 :
+            case 15 :
                 exit = 1;
                 break;
-            case 16 : 
+            case 16 :
                 f[/* filter */2] = "0";
                 _i = i + 1 | 0;
                 continue ;
-                case 17 : 
-            case 18 : 
-            case 19 : 
-            case 20 : 
-            case 21 : 
-            case 22 : 
-            case 23 : 
-            case 24 : 
-            case 25 : 
+                case 17 :
+            case 18 :
+            case 19 :
+            case 20 :
+            case 21 :
+            case 22 :
+            case 23 :
+            case 24 :
+            case 25 :
                 exit = 3;
                 break;
-            
+
           }
         }
       }
       switch (exit) {
-        case 1 : 
+        case 1 :
             _i = i + 1 | 0;
             continue ;
-            case 2 : 
+            case 2 :
             f[/* signstyle */1] = String.fromCharCode(c);
             _i = i + 1 | 0;
             continue ;
-            case 3 : 
+            case 3 :
             f[/* width */6] = 0;
             var j$1 = i;
             while((function(j$1){
@@ -1413,17 +1412,17 @@ function parse_format(fmt) {
             };
             _i = j$1;
             continue ;
-            case 4 : 
+            case 4 :
             f[/* signedconv */5] = /* true */1;
             f[/* base */4] = /* Dec */2;
             _i = i + 1 | 0;
             continue ;
-            case 5 : 
+            case 5 :
             f[/* signedconv */5] = /* true */1;
             f[/* conv */10] = String.fromCharCode(c);
             _i = i + 1 | 0;
             continue ;
-            
+
       }
     }
   };
@@ -1448,7 +1447,7 @@ function finish_formatting(param, rawbuffer) {
       if (base === /* Hex */1) {
         len = len + 2 | 0;
       }
-      
+
     }
     else {
       len = len + 1 | 0;
@@ -1467,7 +1466,7 @@ function finish_formatting(param, rawbuffer) {
     else if (signstyle !== "-") {
       buffer = buffer + signstyle;
     }
-    
+
   }
   if (alternate && base === /* Oct */0) {
     buffer = buffer + "0";
@@ -1507,7 +1506,7 @@ function caml_format_int(fmt, i) {
       if (n > 0) {
         s = Caml_utils.repeat(n, "0") + s;
       }
-      
+
     }
     return finish_formatting(f$1, s);
   }
@@ -1522,7 +1521,7 @@ function caml_int64_format(fmt, x) {
   var s = "";
   var match = f[/* base */4];
   switch (match) {
-    case 0 : 
+    case 0 :
         var wbase = /* int64 */[
           /* hi */0,
           /* lo */8
@@ -1566,10 +1565,10 @@ function caml_int64_format(fmt, x) {
           };
         }
         break;
-    case 1 : 
+    case 1 :
         s = Caml_int64.to_hex(x$1) + s;
         break;
-    case 2 : 
+    case 2 :
         var wbase$1 = /* int64 */[
           /* hi */0,
           /* lo */10
@@ -1617,7 +1616,7 @@ function caml_int64_format(fmt, x) {
           };
         }
         break;
-    
+
   }
   if (f[/* prec */9] >= 0) {
     f[/* filter */2] = " ";
@@ -1625,7 +1624,7 @@ function caml_int64_format(fmt, x) {
     if (n > 0) {
       s = Caml_utils.repeat(n, "0") + s;
     }
-    
+
   }
   return finish_formatting(f, s);
 }
@@ -1642,17 +1641,17 @@ function caml_format_float(fmt, x) {
   else if (isFinite(x$1)) {
     var match = f[/* conv */10];
     switch (match) {
-      case "e" : 
+      case "e" :
           s = x$1.toExponential(prec);
           var i = s.length;
           if (s[i - 3 | 0] === "e") {
             s = s.slice(0, i - 1 | 0) + ("0" + s.slice(i - 1 | 0));
           }
           break;
-      case "f" : 
+      case "f" :
           s = x$1.toFixed(prec);
           break;
-      case "g" : 
+      case "g" :
           var prec$1 = prec !== 0 ? prec : 1;
           s = x$1.toExponential(prec$1 - 1 | 0);
           var j = s.indexOf("e");
@@ -1670,7 +1669,7 @@ function caml_format_float(fmt, x) {
             if (s[i$2 - 3 | 0] === "e") {
               s = s.slice(0, i$2 - 1 | 0) + ("0" + s.slice(i$2 - 1 | 0));
             }
-            
+
           }
           else {
             var p = prec$1;
@@ -1696,11 +1695,11 @@ function caml_format_float(fmt, x) {
               }
               s = s.slice(0, k + 1 | 0);
             }
-            
+
           }
           break;
       default:
-        
+
     }
   }
   else {
@@ -1797,7 +1796,7 @@ function caml_int32_bswap(x) {
 }
 
 var imul = ( Math.imul || function (x,y) {
-  y |= 0; return ((((x >> 16) * y) << 16) + (x & 0xffff) * y)|0; 
+  y |= 0; return ((((x >> 16) * y) << 16) + (x & 0xffff) * y)|0;
 }
 );
 
@@ -2046,7 +2045,7 @@ function mul(_this, _other) {
             _other = neg(other);
             _this = neg($$this);
             continue ;
-            
+
           }
           else {
             return neg(mul(neg($$this), other));
@@ -2087,7 +2086,7 @@ function mul(_this, _other) {
                 ];
         }
       }
-      
+
     }
     if (exit === 1) {
       if ((lo & 1) === 0) {
@@ -2097,7 +2096,7 @@ function mul(_this, _other) {
         return min_int;
       }
     }
-    
+
   };
 }
 
@@ -2240,7 +2239,7 @@ function div(_self, _other) {
           var rem = add(self, neg(y));
           return add(approx, div(rem, other));
         }
-        
+
       }
     }
     if (exit === 1) {
@@ -2261,7 +2260,7 @@ function div(_self, _other) {
             _other = neg(other);
             _self = neg(self);
             continue ;
-            
+
           }
           else {
             return neg(div(neg(self), other));
@@ -2293,9 +2292,9 @@ function div(_self, _other) {
           return res;
         }
       }
-      
+
     }
-    
+
   };
 }
 
@@ -2370,7 +2369,7 @@ function to_hex(x) {
       return aux(x[/* hi */0]) + "00000000";
     }
   }
-  
+
 }
 
 function discard_sign(x) {
@@ -2695,12 +2694,12 @@ function caml_compare(_a, _b) {
       if (tag_a === 250) {
         _a = a[0];
         continue ;
-        
+
       }
       else if (tag_b === 250) {
         _b = b[0];
         continue ;
-        
+
       }
       else if (tag_a === 248) {
         return caml_int_compare(a[1], b[1]);
@@ -2740,7 +2739,7 @@ function caml_compare(_a, _b) {
               else {
                 _i = i + 1 | 0;
                 continue ;
-                
+
               }
             }
           };
@@ -2763,7 +2762,7 @@ function caml_compare(_a, _b) {
               else {
                 _i$1 = i$1 + 1 | 0;
                 continue ;
-                
+
               }
             }
           };
@@ -2786,7 +2785,7 @@ function caml_compare(_a, _b) {
               else {
                 _i$2 = i$2 + 1 | 0;
                 continue ;
-                
+
               }
             }
           };
@@ -2809,12 +2808,12 @@ function caml_equal(_a, _b) {
       if (tag_a === 250) {
         _a = a[0];
         continue ;
-        
+
       }
       else if (tag_b === 250) {
         _b = b[0];
         continue ;
-        
+
       }
       else if (tag_a === 248) {
         return +(a[1] === b[1]);
@@ -2844,7 +2843,7 @@ function caml_equal(_a, _b) {
             else if (caml_equal(a$1[i], b$1[i])) {
               _i = i + 1 | 0;
               continue ;
-              
+
             }
             else {
               return /* false */0;
@@ -2938,7 +2937,7 @@ function caml_get_public_method(obj, tag, cacheid) {
         else {
           _i = i - 2 | 0;
           continue ;
-          
+
         }
       };
     };
@@ -3225,45 +3224,45 @@ function erase_rel(param) {
   }
   else {
     switch (param.tag | 0) {
-      case 0 : 
+      case 0 :
           return /* Char_ty */Block.__(0, [erase_rel(param[0])]);
-      case 1 : 
+      case 1 :
           return /* String_ty */Block.__(1, [erase_rel(param[0])]);
-      case 2 : 
+      case 2 :
           return /* Int_ty */Block.__(2, [erase_rel(param[0])]);
-      case 3 : 
+      case 3 :
           return /* Int32_ty */Block.__(3, [erase_rel(param[0])]);
-      case 4 : 
+      case 4 :
           return /* Nativeint_ty */Block.__(4, [erase_rel(param[0])]);
-      case 5 : 
+      case 5 :
           return /* Int64_ty */Block.__(5, [erase_rel(param[0])]);
-      case 6 : 
+      case 6 :
           return /* Float_ty */Block.__(6, [erase_rel(param[0])]);
-      case 7 : 
+      case 7 :
           return /* Bool_ty */Block.__(7, [erase_rel(param[0])]);
-      case 8 : 
+      case 8 :
           return /* Format_arg_ty */Block.__(8, [
                     param[0],
                     erase_rel(param[1])
                   ]);
-      case 9 : 
+      case 9 :
           var ty1 = param[0];
           return /* Format_subst_ty */Block.__(9, [
                     ty1,
                     ty1,
                     erase_rel(param[2])
                   ]);
-      case 10 : 
+      case 10 :
           return /* Alpha_ty */Block.__(10, [erase_rel(param[0])]);
-      case 11 : 
+      case 11 :
           return /* Theta_ty */Block.__(11, [erase_rel(param[0])]);
-      case 12 : 
+      case 12 :
           return /* Any_ty */Block.__(12, [erase_rel(param[0])]);
-      case 13 : 
+      case 13 :
           return /* Reader_ty */Block.__(13, [erase_rel(param[0])]);
-      case 14 : 
+      case 14 :
           return /* Ignored_reader_ty */Block.__(14, [erase_rel(param[0])]);
-      
+
     }
   }
 }
@@ -3274,44 +3273,44 @@ function concat_fmtty(fmtty1, fmtty2) {
   }
   else {
     switch (fmtty1.tag | 0) {
-      case 0 : 
+      case 0 :
           return /* Char_ty */Block.__(0, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 1 : 
+      case 1 :
           return /* String_ty */Block.__(1, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 2 : 
+      case 2 :
           return /* Int_ty */Block.__(2, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 3 : 
+      case 3 :
           return /* Int32_ty */Block.__(3, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 4 : 
+      case 4 :
           return /* Nativeint_ty */Block.__(4, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 5 : 
+      case 5 :
           return /* Int64_ty */Block.__(5, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 6 : 
+      case 6 :
           return /* Float_ty */Block.__(6, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 7 : 
+      case 7 :
           return /* Bool_ty */Block.__(7, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 8 : 
+      case 8 :
           return /* Format_arg_ty */Block.__(8, [
                     fmtty1[0],
                     concat_fmtty(fmtty1[1], fmtty2)
                   ]);
-      case 9 : 
+      case 9 :
           return /* Format_subst_ty */Block.__(9, [
                     fmtty1[0],
                     fmtty1[1],
                     concat_fmtty(fmtty1[2], fmtty2)
                   ]);
-      case 10 : 
+      case 10 :
           return /* Alpha_ty */Block.__(10, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 11 : 
+      case 11 :
           return /* Theta_ty */Block.__(11, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 12 : 
+      case 12 :
           return /* Any_ty */Block.__(12, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 13 : 
+      case 13 :
           return /* Reader_ty */Block.__(13, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 14 : 
+      case 14 :
           return /* Ignored_reader_ty */Block.__(14, [concat_fmtty(fmtty1[0], fmtty2)]);
-      
+
     }
   }
 }
@@ -3322,122 +3321,122 @@ function concat_fmt(fmt1, fmt2) {
   }
   else {
     switch (fmt1.tag | 0) {
-      case 0 : 
+      case 0 :
           return /* Char */Block.__(0, [concat_fmt(fmt1[0], fmt2)]);
-      case 1 : 
+      case 1 :
           return /* Caml_char */Block.__(1, [concat_fmt(fmt1[0], fmt2)]);
-      case 2 : 
+      case 2 :
           return /* String */Block.__(2, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 3 : 
+      case 3 :
           return /* Caml_string */Block.__(3, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 4 : 
+      case 4 :
           return /* Int */Block.__(4, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 5 : 
+      case 5 :
           return /* Int32 */Block.__(5, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 6 : 
+      case 6 :
           return /* Nativeint */Block.__(6, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 7 : 
+      case 7 :
           return /* Int64 */Block.__(7, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 8 : 
+      case 8 :
           return /* Float */Block.__(8, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 9 : 
+      case 9 :
           return /* Bool */Block.__(9, [concat_fmt(fmt1[0], fmt2)]);
-      case 10 : 
+      case 10 :
           return /* Flush */Block.__(10, [concat_fmt(fmt1[0], fmt2)]);
-      case 11 : 
+      case 11 :
           return /* String_literal */Block.__(11, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 12 : 
+      case 12 :
           return /* Char_literal */Block.__(12, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 13 : 
+      case 13 :
           return /* Format_arg */Block.__(13, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      case 14 : 
+      case 14 :
           return /* Format_subst */Block.__(14, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      case 15 : 
+      case 15 :
           return /* Alpha */Block.__(15, [concat_fmt(fmt1[0], fmt2)]);
-      case 16 : 
+      case 16 :
           return /* Theta */Block.__(16, [concat_fmt(fmt1[0], fmt2)]);
-      case 17 : 
+      case 17 :
           return /* Formatting_lit */Block.__(17, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 18 : 
+      case 18 :
           return /* Formatting_gen */Block.__(18, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 19 : 
+      case 19 :
           return /* Reader */Block.__(19, [concat_fmt(fmt1[0], fmt2)]);
-      case 20 : 
+      case 20 :
           return /* Scan_char_set */Block.__(20, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      case 21 : 
+      case 21 :
           return /* Scan_get_counter */Block.__(21, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 22 : 
+      case 22 :
           return /* Scan_next_char */Block.__(22, [concat_fmt(fmt1[0], fmt2)]);
-      case 23 : 
+      case 23 :
           return /* Ignored_param */Block.__(23, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 24 : 
+      case 24 :
           return /* Custom */Block.__(24, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      
+
     }
   }
 }
@@ -3492,42 +3491,42 @@ function escaped(c) {
   }
   else {
     switch (c) {
-      case 8 : 
+      case 8 :
           return "\\b";
-      case 9 : 
+      case 9 :
           return "\\t";
-      case 10 : 
+      case 10 :
           return "\\n";
-      case 0 : 
-      case 1 : 
-      case 2 : 
-      case 3 : 
-      case 4 : 
-      case 5 : 
-      case 6 : 
-      case 7 : 
-      case 11 : 
-      case 12 : 
+      case 0 :
+      case 1 :
+      case 2 :
+      case 3 :
+      case 4 :
+      case 5 :
+      case 6 :
+      case 7 :
+      case 11 :
+      case 12 :
           exit = 1;
           break;
-      case 13 : 
+      case 13 :
           return "\\r";
-      
+
     }
   }
   switch (exit) {
-    case 1 : 
+    case 1 :
         var s = new Array(4);
         s[0] = /* "\\" */92;
         s[1] = 48 + (c / 100 | 0) | 0;
         s[2] = 48 + (c / 10 | 0) % 10 | 0;
         s[3] = 48 + c % 10 | 0;
         return Caml_string.bytes_to_string(s);
-    case 2 : 
+    case 2 :
         var s$1 = new Array(1);
         s$1[0] = c;
         return Caml_string.bytes_to_string(s$1);
-    
+
   }
 }
 
@@ -3583,7 +3582,7 @@ function app(_f, _args) {
         _args = Caml_array.caml_array_sub(args, arity$1, -d);
         _f = f.apply(null, Caml_array.caml_array_sub(args, 0, arity$1));
         continue ;
-        
+
       }
       else {
         return (function(f,args){
@@ -3610,34 +3609,34 @@ function curry_1(o, a0, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return o(a0);
-      case 2 : 
+      case 2 :
           return function (param) {
             return o(a0, param);
           };
-      case 3 : 
+      case 3 :
           return function (param, param$1) {
             return o(a0, param, param$1);
           };
-      case 4 : 
+      case 4 :
           return function (param, param$1, param$2) {
             return o(a0, param, param$1, param$2);
           };
-      case 5 : 
+      case 5 :
           return function (param, param$1, param$2, param$3) {
             return o(a0, param, param$1, param$2, param$3);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1, param$2, param$3, param$4) {
             return o(a0, param, param$1, param$2, param$3, param$4);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2, param$3, param$4, param$5) {
             return o(a0, param, param$1, param$2, param$3, param$4, param$5);
           };
-      
+
     }
   }
 }
@@ -3677,32 +3676,32 @@ function curry_2(o, a0, a1, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[a1]);
-      case 2 : 
+      case 2 :
           return o(a0, a1);
-      case 3 : 
+      case 3 :
           return function (param) {
             return o(a0, a1, param);
           };
-      case 4 : 
+      case 4 :
           return function (param, param$1) {
             return o(a0, a1, param, param$1);
           };
-      case 5 : 
+      case 5 :
           return function (param, param$1, param$2) {
             return o(a0, a1, param, param$1, param$2);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1, param$2, param$3) {
             return o(a0, a1, param, param$1, param$2, param$3);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2, param$3, param$4) {
             return o(a0, a1, param, param$1, param$2, param$3, param$4);
           };
-      
+
     }
   }
 }
@@ -3743,33 +3742,33 @@ function curry_3(o, a0, a1, a2, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[a2]);
-      case 3 : 
+      case 3 :
           return o(a0, a1, a2);
-      case 4 : 
+      case 4 :
           return function (param) {
             return o(a0, a1, a2, param);
           };
-      case 5 : 
+      case 5 :
           return function (param, param$1) {
             return o(a0, a1, a2, param, param$1);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1, param$2) {
             return o(a0, a1, a2, param, param$1, param$2);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2, param$3) {
             return o(a0, a1, a2, param, param$1, param$2, param$3);
           };
-      
+
     }
   }
 }
@@ -3811,35 +3810,35 @@ function curry_4(o, a0, a1, a2, a3, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
                       a3
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[a3]);
-      case 4 : 
+      case 4 :
           return o(a0, a1, a2, a3);
-      case 5 : 
+      case 5 :
           return function (param) {
             return o(a0, a1, a2, a3, param);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1) {
             return o(a0, a1, a2, a3, param, param$1);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2) {
             return o(a0, a1, a2, a3, param, param$1, param$2);
           };
-      
+
     }
   }
 }
@@ -3882,38 +3881,38 @@ function curry_5(o, a0, a1, a2, a3, a4, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
                       a3,
                       a4
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
                       a4
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[a4]);
-      case 5 : 
+      case 5 :
           return o(a0, a1, a2, a3, a4);
-      case 6 : 
+      case 6 :
           return function (param) {
             return o(a0, a1, a2, a3, a4, param);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1) {
             return o(a0, a1, a2, a3, a4, param, param$1);
           };
-      
+
     }
   }
 }
@@ -3957,8 +3956,8 @@ function curry_6(o, a0, a1, a2, a3, a4, a5, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
@@ -3966,33 +3965,33 @@ function curry_6(o, a0, a1, a2, a3, a4, a5, arity) {
                       a4,
                       a5
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
                       a4,
                       a5
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4,
                       a5
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[
                       a4,
                       a5
                     ]);
-      case 5 : 
+      case 5 :
           return app(o(a0, a1, a2, a3, a4), /* array */[a5]);
-      case 6 : 
+      case 6 :
           return o(a0, a1, a2, a3, a4, a5);
-      case 7 : 
+      case 7 :
           return function (param) {
             return o(a0, a1, a2, a3, a4, a5, param);
           };
-      
+
     }
   }
 }
@@ -4037,8 +4036,8 @@ function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
@@ -4047,7 +4046,7 @@ function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
                       a5,
                       a6
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
@@ -4055,29 +4054,29 @@ function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
                       a5,
                       a6
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4,
                       a5,
                       a6
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[
                       a4,
                       a5,
                       a6
                     ]);
-      case 5 : 
+      case 5 :
           return app(o(a0, a1, a2, a3, a4), /* array */[
                       a5,
                       a6
                     ]);
-      case 6 : 
+      case 6 :
           return app(o(a0, a1, a2, a3, a4, a5), /* array */[a6]);
-      case 7 : 
+      case 7 :
           return o(a0, a1, a2, a3, a4, a5, a6);
-      
+
     }
   }
 }
@@ -4123,8 +4122,8 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
@@ -4134,7 +4133,7 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
                       a6,
                       a7
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
@@ -4143,7 +4142,7 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
                       a6,
                       a7
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4,
@@ -4151,27 +4150,27 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
                       a6,
                       a7
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[
                       a4,
                       a5,
                       a6,
                       a7
                     ]);
-      case 5 : 
+      case 5 :
           return app(o(a0, a1, a2, a3, a4), /* array */[
                       a5,
                       a6,
                       a7
                     ]);
-      case 6 : 
+      case 6 :
           return app(o(a0, a1, a2, a3, a4, a5), /* array */[
                       a6,
                       a7
                     ]);
-      case 7 : 
+      case 7 :
           return app(o(a0, a1, a2, a3, a4, a5, a6), /* array */[a7]);
-      
+
     }
   }
 }
@@ -4240,6 +4239,46 @@ exports.__8     = __8;
   })();
 });
 
+require.register("bs-platform/lib/js/js_primitive.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+
+function js_is_nil_undef(x) {
+  if (x === null) {
+    return /* true */1;
+  }
+  else {
+    return +(x === undefined);
+  }
+}
+
+function js_from_nullable_def(x) {
+  if (x === null || x === undefined) {
+    return /* None */0;
+  }
+  else {
+    return /* Some */[x];
+  }
+}
+
+function option_get(x) {
+  if (x) {
+    return x[0];
+  }
+  else {
+    return undefined;
+  }
+}
+
+exports.js_is_nil_undef      = js_is_nil_undef;
+exports.js_from_nullable_def = js_from_nullable_def;
+exports.option_get           = option_get;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/list.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -4260,7 +4299,7 @@ function length(l) {
       _param = param[1];
       _len = len + 1 | 0;
       continue ;
-      
+
     }
     else {
       return len;
@@ -4310,7 +4349,7 @@ function nth(l, n) {
           _n = n$1 - 1 | 0;
           _l = l$1[1];
           continue ;
-          
+
         }
         else {
           return l$1[0];
@@ -4337,7 +4376,7 @@ function rev_append(_l1, _l2) {
       ];
       _l1 = l1[1];
       continue ;
-      
+
     }
     else {
       return l2;
@@ -4401,7 +4440,7 @@ function rev_map(f, l) {
         accu
       ];
       continue ;
-      
+
     }
     else {
       return accu;
@@ -4416,7 +4455,7 @@ function iter(f, _param) {
       Curry._1(f, param[0]);
       _param = param[1];
       continue ;
-      
+
     }
     else {
       return /* () */0;
@@ -4436,7 +4475,7 @@ function iteri(f, l) {
       _param = param[1];
       _i = i + 1 | 0;
       continue ;
-      
+
     }
     else {
       return /* () */0;
@@ -4452,7 +4491,7 @@ function fold_left(f, _accu, _l) {
       _l = l[1];
       _accu = Curry._2(f, accu, l[0]);
       continue ;
-      
+
     }
     else {
       return accu;
@@ -4513,7 +4552,7 @@ function rev_map2(f, l1, l2) {
           accu
         ];
         continue ;
-        
+
       }
       else {
         throw [
@@ -4544,7 +4583,7 @@ function iter2(f, _l1, _l2) {
         _l2 = l2[1];
         _l1 = l1[1];
         continue ;
-        
+
       }
       else {
         throw [
@@ -4576,7 +4615,7 @@ function fold_left2(f, _accu, _l1, _l2) {
         _l1 = l1[1];
         _accu = Curry._3(f, accu, l1[0], l2[0]);
         continue ;
-        
+
       }
       else {
         throw [
@@ -4627,7 +4666,7 @@ function for_all(p, _param) {
       if (Curry._1(p, param[0])) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return /* false */0;
@@ -4649,7 +4688,7 @@ function exists(p, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4668,7 +4707,7 @@ function for_all2(p, _l1, _l2) {
           _l2 = l2[1];
           _l1 = l1[1];
           continue ;
-          
+
         }
         else {
           return /* false */0;
@@ -4706,7 +4745,7 @@ function exists2(p, _l1, _l2) {
           _l2 = l2[1];
           _l1 = l1[1];
           continue ;
-          
+
         }
       }
       else {
@@ -4735,7 +4774,7 @@ function mem(x, _param) {
       if (Caml_obj.caml_compare(param[0], x)) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return /* true */1;
@@ -4757,7 +4796,7 @@ function memq(x, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4774,7 +4813,7 @@ function assoc(x, _param) {
       if (Caml_obj.caml_compare(match[0], x)) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return match[1];
@@ -4797,7 +4836,7 @@ function assq(x, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4813,7 +4852,7 @@ function mem_assoc(x, _param) {
       if (Caml_obj.caml_compare(param[0][0], x)) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return /* true */1;
@@ -4835,7 +4874,7 @@ function mem_assq(x, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4893,7 +4932,7 @@ function find(p, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4919,12 +4958,12 @@ function find_all(p) {
             accu
           ];
           continue ;
-          
+
         }
         else {
           _param = l;
           continue ;
-          
+
         }
       }
       else {
@@ -4952,7 +4991,7 @@ function partition(p, l) {
           yes
         ];
         continue ;
-        
+
       }
       else {
         _param = l$1;
@@ -4961,7 +5000,7 @@ function partition(p, l) {
           no
         ];
         continue ;
-        
+
       }
     }
     else {
@@ -5061,7 +5100,7 @@ function chop(_k, _l) {
         _l = l[1];
         _k = k - 1 | 0;
         continue ;
-        
+
       }
       else {
         throw [
@@ -5237,7 +5276,7 @@ function stable_sort(cmp, l) {
               ];
               _l1 = l1[1];
               continue ;
-              
+
             }
             else {
               _accu = /* :: */[
@@ -5246,7 +5285,7 @@ function stable_sort(cmp, l) {
               ];
               _l2 = l2$1[1];
               continue ;
-              
+
             }
           }
           else {
@@ -5258,7 +5297,7 @@ function stable_sort(cmp, l) {
         }
       };
     }
-    
+
   };
   var rev_sort = function (n, l) {
     var exit = 0;
@@ -5416,7 +5455,7 @@ function stable_sort(cmp, l) {
               ];
               _l1 = l1[1];
               continue ;
-              
+
             }
             else {
               _accu = /* :: */[
@@ -5425,7 +5464,7 @@ function stable_sort(cmp, l) {
               ];
               _l2 = l2$1[1];
               continue ;
-              
+
             }
           }
           else {
@@ -5437,7 +5476,7 @@ function stable_sort(cmp, l) {
         }
       };
     }
-    
+
   };
   var len = length(l);
   if (len < 2) {
@@ -5704,7 +5743,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l1 = t1;
                 continue ;
-                
+
               }
               else {
                 _accu = /* :: */[
@@ -5713,7 +5752,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l2 = t2;
                 continue ;
-                
+
               }
             }
             else {
@@ -5724,7 +5763,7 @@ function sort_uniq(cmp, l) {
               _l2 = t2;
               _l1 = t1;
               continue ;
-              
+
             }
           }
           else {
@@ -5736,7 +5775,7 @@ function sort_uniq(cmp, l) {
         }
       };
     }
-    
+
   };
   var rev_sort = function (n, l) {
     var exit = 0;
@@ -5993,7 +6032,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l1 = t1;
                 continue ;
-                
+
               }
               else {
                 _accu = /* :: */[
@@ -6002,7 +6041,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l2 = t2;
                 continue ;
-                
+
               }
             }
             else {
@@ -6013,7 +6052,7 @@ function sort_uniq(cmp, l) {
               _l2 = t2;
               _l1 = t1;
               continue ;
-              
+
             }
           }
           else {
@@ -6025,7 +6064,7 @@ function sort_uniq(cmp, l) {
         }
       };
     }
-    
+
   };
   var len = length(l);
   if (len < 2) {
@@ -6184,9 +6223,9 @@ function string_of_bool(b) {
 
 function bool_of_string(param) {
   switch (param) {
-    case "false" : 
+    case "false" :
         return /* false */0;
-    case "true" : 
+    case "true" :
         return /* true */1;
     default:
       throw [
@@ -6217,7 +6256,7 @@ function valid_float_lexem(s) {
         else {
           _i = i + 1 | 0;
           continue ;
-          
+
         }
       }
       else if (match !== 45) {
@@ -6226,7 +6265,7 @@ function valid_float_lexem(s) {
       else {
         _i = i + 1 | 0;
         continue ;
-        
+
       }
     }
   };
@@ -6301,11 +6340,11 @@ function flush_all() {
         Caml_io.caml_ml_flush(param[0]);
       }
       catch (exn){
-        
+
       }
       _param = param[1];
       continue ;
-      
+
     }
     else {
       return /* () */0;
@@ -6363,7 +6402,7 @@ function close_out_noerr(oc) {
     Caml_io.caml_ml_flush(oc);
   }
   catch (exn){
-    
+
   }
   try {
     return function () {
@@ -6430,7 +6469,7 @@ function unsafe_really_input(_, _$1, _ofs, _len) {
         _len = len - r | 0;
         _ofs = ofs + r | 0;
         continue ;
-        
+
       }
       else {
         throw Caml_builtin_exceptions.end_of_file;
@@ -6469,7 +6508,7 @@ function input_line(chan) {
         _param = param[1];
         _pos = pos - len | 0;
         continue ;
-        
+
       }
       else {
         return buf;
@@ -6512,7 +6551,7 @@ function input_line(chan) {
             accu
           ];
           continue ;
-          
+
         }
       }
       else if (accu) {
@@ -6988,7 +7027,7 @@ function escaped(s) {
             else {
               _i = i + 1 | 0;
               continue ;
-              
+
             }
           }
           else if (switcher > 57 || switcher < 1) {
@@ -6997,7 +7036,7 @@ function escaped(s) {
           else {
             _i = i + 1 | 0;
             continue ;
-            
+
           }
         }
         else {
@@ -7433,24 +7472,28 @@ exports.fib = fib;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
-var Block = require("bs-platform/lib/js/block");
-var Vdom  = require("./vdom");
+var Tea_app = require("./tea_app");
+var Block   = require("bs-platform/lib/js/block");
+var Vdom    = require("./vdom");
 
-function update(model, param) {
-  if (typeof param === "number") {
-    switch (param) {
-      case 0 : 
-          return model + 1 | 0;
-      case 1 : 
-          return model - 1 | 0;
-      case 2 : 
-          return 0;
-      
+function update(model) {
+  console.log("Update called");
+  return function (param) {
+    if (typeof param === "number") {
+      switch (param) {
+        case 0 : 
+            return model + 1 | 0;
+        case 1 : 
+            return model - 1 | 0;
+        case 2 : 
+            return 0;
+        
+      }
     }
-  }
-  else {
-    return param[0];
-  }
+    else {
+      return param[0];
+    }
+  };
 }
 
 function view_button(title, msg) {
@@ -7458,11 +7501,11 @@ function view_button(title, msg) {
               /* Event */Block.__(3, [
                   "click",
                   function (ev) {
-                    console.log(/* array */[/* tuple */[
-                            "Event",
-                            ev,
-                            msg
-                          ]]);
+                    console.log(/* tuple */[
+                          "Event",
+                          ev,
+                          msg
+                        ]);
                     return msg;
                   }
                 ]),
@@ -7474,6 +7517,7 @@ function view_button(title, msg) {
 }
 
 function view(model) {
+  console.log("View called");
   return Vdom.node("div", /* [] */0, /* :: */[
               Vdom.node("span", /* :: */[
                     Vdom.style("text-weight", "bold"),
@@ -7498,13 +7542,24 @@ function view(model) {
             ]);
 }
 
-var main = 42;
+var partial_arg = /* record */[
+  /* model */4,
+  /* update */update,
+  /* view */view
+];
+
+function main(param) {
+  return Tea_app.beginnerProgram(partial_arg, param);
+}
+
+var m = main(document.getElementById("content"));
 
 exports.update      = update;
 exports.view_button = view_button;
 exports.view        = view;
 exports.main        = main;
-/* No side effect */
+exports.m           = m;
+/* m Not a pure module */
 
 });
 
@@ -7524,24 +7579,93 @@ exports.App = App;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
+var Js_primitive = require("bs-platform/lib/js/js_primitive");
+var Web          = require("./web");
+var Curry        = require("bs-platform/lib/js/curry");
+var Vdom         = require("./vdom");
 
-function programWithFlags(_, param) {
-  if (param) {
-    console.log(84);
+function programStateWrapper(initModel, pump) {
+  var model = [initModel];
+  var callbacks = [/* record */[/* enqueue */function () {
+        return /* () */0;
+      }]];
+  var pumper = Curry._1(pump, callbacks);
+  var handler = function (msg) {
+    var newModel = Curry._2(pumper, model[0], msg);
+    model[0] = newModel;
     return /* () */0;
+  };
+  callbacks[0] = /* record */[/* enqueue */handler];
+  return handler;
+}
+
+function programLoop(update, view, initModel, param) {
+  if (param) {
+    var parentNode = param[0];
+    return function (callbacks) {
+      var lastVdom = [Curry._1(view, initModel)];
+      while(parentNode.childNodes.length > 0) {
+        var match = parentNode.firstChild;
+        if (match !== null) {
+          parentNode.removeChild(match);
+        }
+        
+      };
+      console.log(Vdom.patchVNodesIntoElement(callbacks, parentNode, /* [] */0, /* :: */[
+                lastVdom[0],
+                /* [] */0
+              ]));
+      return function (model, msg) {
+        var match = Curry._2(update, model, msg);
+        var newModel = match[0];
+        var newVdom = Curry._1(view, newModel);
+        Vdom.patchVNodeIntoElement(callbacks, parentNode, lastVdom[0], newVdom);
+        lastVdom[0] = newVdom;
+        return newModel;
+      };
+    };
   }
   else {
-    console.log(42);
-    return /* () */0;
+    return function (_, model, msg) {
+      return Curry._2(update, model, msg)[0];
+    };
   }
 }
 
-function beginnerProgram() {
-  return 42;
+function program(param, pnode, flags) {
+  Web.polyfills(/* () */0);
+  var match = Curry._1(param[/* init */0], flags);
+  var initModel = match[0];
+  var opnode = Js_primitive.js_from_nullable_def(pnode);
+  var pump = programLoop(param[/* update */1], param[/* view */2], initModel, opnode);
+  var msgHandler = programStateWrapper(initModel, pump);
+  return Curry.__1(msgHandler);
 }
 
-exports.programWithFlags = programWithFlags;
-exports.beginnerProgram  = beginnerProgram;
+function beginnerProgram(param, pnode) {
+  var update = param[/* update */1];
+  var model = param[/* model */0];
+  return program(/* record */[
+              /* init */function () {
+                return /* tuple */[
+                        model,
+                        /* None */0
+                      ];
+              },
+              /* update */function (model, msg) {
+                return /* tuple */[
+                        Curry._2(update, model, msg),
+                        /* None */0
+                      ];
+              },
+              /* view */param[/* view */2]
+            ], pnode, /* () */0);
+}
+
+exports.programStateWrapper = programStateWrapper;
+exports.programLoop         = programLoop;
+exports.program             = program;
+exports.beginnerProgram     = beginnerProgram;
 /* No side effect */
 
 });
@@ -7550,6 +7674,7 @@ exports.beginnerProgram  = beginnerProgram;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
+var Caml_obj     = require("bs-platform/lib/js/caml_obj");
 var Web_document = require("./web_document");
 var Block        = require("bs-platform/lib/js/block");
 var Curry        = require("bs-platform/lib/js/curry");
@@ -7563,8 +7688,8 @@ function text(s) {
 
 function node(tagName, props, vdoms) {
   return /* Node */Block.__(1, [
-            /* None */0,
-            /* None */0,
+            "",
+            "",
             tagName,
             props,
             vdoms
@@ -7573,8 +7698,8 @@ function node(tagName, props, vdoms) {
 
 function keyedNode(key, tagName, props, vdoms) {
   return /* Node */Block.__(1, [
-            /* None */0,
-            /* Some */[key],
+            "",
+            key,
             tagName,
             props,
             vdoms
@@ -7583,8 +7708,8 @@ function keyedNode(key, tagName, props, vdoms) {
 
 function nsNode(namespace, tagName, props, vdoms) {
   return /* Node */Block.__(1, [
-            /* Some */[namespace],
-            /* None */0,
+            namespace,
+            "",
             tagName,
             props,
             vdoms
@@ -7593,8 +7718,8 @@ function nsNode(namespace, tagName, props, vdoms) {
 
 function nsKeyedNode(namespace, key, tagName, props, vdoms) {
   return /* Node */Block.__(1, [
-            /* Some */[namespace],
-            /* Some */[key],
+            namespace,
+            key,
             tagName,
             props,
             vdoms
@@ -7792,7 +7917,7 @@ function renderToHtmlString(param) {
   }
 }
 
-function applyProperties(elem, curProperties) {
+function applyProperties(callbacks, elem, curProperties) {
   return List.fold_left(function (elem, param) {
               if (typeof param === "number") {
                 return elem;
@@ -7805,16 +7930,10 @@ function applyProperties(elem, curProperties) {
                       return elem;
                   case 3 : 
                       var v = param[1];
-                      var typ = param[0];
-                      console.log(/* array */[
-                            "Event:",
-                            typ
-                          ]);
                       var cb = function (ev) {
-                        Curry._1(v, ev);
-                        return /* () */0;
+                        return Curry._1(callbacks[0][/* enqueue */0], Curry._1(v, ev));
                       };
-                      Web_node.addEventListener(elem, typ, cb, /* false */0);
+                      Web_node.addEventListener(elem, param[0], cb, /* false */0);
                       return elem;
                   case 4 : 
                       return List.fold_left(function (elem, param) {
@@ -7827,37 +7946,503 @@ function applyProperties(elem, curProperties) {
             }, elem, curProperties);
 }
 
-function createElementFromVNode_addProps(properties, elem) {
-  return applyProperties(elem, properties);
+function createElementFromVNode_addProps(callbacks, properties, elem) {
+  return applyProperties(callbacks, elem, properties);
 }
 
-function createElementFromVNode_addChildren(children, elem) {
+function createElementFromVNode_addChildren(callbacks, children, elem) {
   return List.fold_left(function (n, child) {
-              var child$1 = createElementFromVNode(child);
+              var child$1 = createElementFromVNode(callbacks, child);
               n.appendChild(child$1);
               return n;
             }, elem, children);
 }
 
-function createElementFromVNode(param) {
+function createElementFromVNode(callbacks, param) {
   if (typeof param === "number") {
-    return document.createComment();
+    return document.createComment("");
   }
   else if (param.tag) {
-    return createElementFromVNode_addChildren(param[4], applyProperties(Web_document.createElementNsOptional(param[0], param[2]), param[3]));
+    var children = param[4];
+    var properties = param[3];
+    var tagName = param[2];
+    var namespace = param[0];
+    console.log(/* tuple */[
+          callbacks,
+          namespace,
+          param[1],
+          tagName,
+          properties,
+          children
+        ]);
+    var child = Web_document.createElementNsOptional(namespace, tagName);
+    console.log(/* tuple */[
+          "Blooop",
+          child
+        ]);
+    return createElementFromVNode_addChildren(callbacks, children, applyProperties(callbacks, child, properties));
   }
   else {
     var text = param[0];
+    console.log(/* tuple */[
+          "Text:",
+          text
+        ]);
     return document.createTextNode(text);
   }
 }
 
-function createVNodesIntoElement(vnodes, elem) {
+function createVNodesIntoElement(callbacks, vnodes, elem) {
   return List.fold_left(function (n, vnode) {
-              var child = createElementFromVNode(vnode);
+              var child = createElementFromVNode(callbacks, vnode);
               n.appendChild(child);
               return n;
             }, elem, vnodes);
+}
+
+function createVNodeIntoElement(callbacks, vnode, elem) {
+  return createVNodesIntoElement(callbacks, /* :: */[
+              vnode,
+              /* [] */0
+            ], elem);
+}
+
+function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _newProperties) {
+  while(true) {
+    var newProperties = _newProperties;
+    var oldProperties = _oldProperties;
+    if (oldProperties) {
+      var prop = oldProperties[0];
+      var exit = 0;
+      if (newProperties) {
+        if (typeof prop === "number") {
+          if (typeof newProperties[0] === "number") {
+            _newProperties = newProperties[1];
+            _oldProperties = /* [] */0;
+            continue ;
+            
+          }
+          else {
+            exit = 1;
+          }
+        }
+        else {
+          switch (prop.tag | 0) {
+            case 0 : 
+                var match = newProperties[0];
+                if (typeof match === "number") {
+                  exit = 1;
+                }
+                else if (match.tag) {
+                  exit = 1;
+                }
+                else {
+                  var newV = match[1];
+                  var newK = match[0];
+                  var oldV = prop[1];
+                  var oldK = prop[0];
+                  if (!(oldK === newK && oldV === newV)) {
+                    console.log(/* tuple */[
+                          "Unhandled RawProp",
+                          oldK,
+                          oldV,
+                          newK,
+                          newV
+                        ]);
+                  }
+                  _newProperties = newProperties[1];
+                  _oldProperties = oldProperties[1];
+                  continue ;
+                  
+                }
+                break;
+            case 1 : 
+                var match$1 = newProperties[0];
+                if (typeof match$1 === "number") {
+                  exit = 1;
+                }
+                else if (match$1.tag === 1) {
+                  var newV$1 = match$1[2];
+                  var newK$1 = match$1[1];
+                  var newNS = match$1[0];
+                  var oldV$1 = prop[2];
+                  var oldK$1 = prop[1];
+                  var oldNS = prop[0];
+                  if (!(Caml_obj.caml_equal(oldNS, newNS) && oldK$1 === newK$1 && oldV$1 === newV$1)) {
+                    console.log(/* tuple */[
+                          "Unhandled Attribute",
+                          oldNS,
+                          oldK$1,
+                          oldV$1,
+                          newNS,
+                          newK$1,
+                          newV$1
+                        ]);
+                  }
+                  _newProperties = newProperties[1];
+                  _oldProperties = oldProperties[1];
+                  continue ;
+                  
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            case 2 : 
+                var match$2 = newProperties[0];
+                if (typeof match$2 === "number") {
+                  exit = 1;
+                }
+                else if (match$2.tag === 2) {
+                  var newV$2 = match$2[1];
+                  var newK$2 = match$2[0];
+                  var oldV$2 = prop[1];
+                  var oldK$2 = prop[0];
+                  if (!(oldK$2 === newK$2 && oldV$2 === newV$2)) {
+                    console.log(/* tuple */[
+                          "Unhandled Data",
+                          oldK$2,
+                          oldV$2,
+                          newK$2,
+                          newV$2
+                        ]);
+                  }
+                  _newProperties = newProperties[1];
+                  _oldProperties = oldProperties[1];
+                  continue ;
+                  
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            case 3 : 
+                var match$3 = newProperties[0];
+                if (typeof match$3 === "number") {
+                  exit = 1;
+                }
+                else if (match$3.tag === 3) {
+                  var newCbev = match$3[1];
+                  var newTyp = match$3[0];
+                  var oldCbev = prop[1];
+                  var oldTyp = prop[0];
+                  if (!(oldTyp === newTyp && Caml_obj.caml_equal(oldCbev, newCbev))) {
+                    console.log(/* tuple */[
+                          "Unhandled Event",
+                          oldTyp,
+                          oldCbev,
+                          newTyp,
+                          newCbev
+                        ]);
+                  }
+                  _newProperties = newProperties[1];
+                  _oldProperties = oldProperties[1];
+                  continue ;
+                  
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            case 4 : 
+                var match$4 = newProperties[0];
+                if (typeof match$4 === "number") {
+                  exit = 1;
+                }
+                else if (match$4.tag === 4) {
+                  var newS = match$4[0];
+                  var oldS = prop[0];
+                  if (!Caml_obj.caml_equal(oldS, newS)) {
+                    console.log(/* tuple */[
+                          "Unhandled Style",
+                          oldS,
+                          newS
+                        ]);
+                  }
+                  _newProperties = newProperties[1];
+                  _oldProperties = oldProperties[1];
+                  continue ;
+                  
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            
+          }
+        }
+      }
+      else {
+        console.log(/* tuple */[
+              "Unhandled Removal",
+              prop
+            ]);
+        _newProperties = /* [] */0;
+        _oldProperties = oldProperties[1];
+        continue ;
+        
+      }
+      if (exit === 1) {
+        console.log(/* tuple */[
+              "Unhandled property change",
+              prop,
+              newProperties[0]
+            ]);
+        _newProperties = newProperties[1];
+        _oldProperties = oldProperties[1];
+        continue ;
+        
+      }
+      
+    }
+    else if (newProperties) {
+      var match$5 = newProperties[0];
+      if (typeof match$5 === "number") {
+        _newProperties = newProperties[1];
+        _oldProperties = /* [] */0;
+        continue ;
+        
+      }
+      else {
+        switch (match$5.tag | 0) {
+          case 0 : 
+              console.log(/* tuple */[
+                    "Unhandled RawProp",
+                    match$5[0],
+                    match$5[1]
+                  ]);
+              _newProperties = newProperties[1];
+              _oldProperties = /* [] */0;
+              continue ;
+              case 1 : 
+              console.log(/* tuple */[
+                    "Unhandled Attribute",
+                    match$5[0],
+                    match$5[1],
+                    match$5[2]
+                  ]);
+              _newProperties = newProperties[1];
+              _oldProperties = /* [] */0;
+              continue ;
+              case 2 : 
+              console.log(/* tuple */[
+                    "Unhandled Data",
+                    match$5[0],
+                    match$5[1]
+                  ]);
+              _newProperties = newProperties[1];
+              _oldProperties = /* [] */0;
+              continue ;
+              case 3 : 
+              var cbev = match$5[1];
+              var cb = (function(cbev){
+              return function (ev) {
+                return Curry._1(callbacks[0][/* enqueue */0], Curry._1(cbev, ev));
+              }
+              }(cbev));
+              return Web_node.addEventListener(elem, match$5[0], cb, /* false */0);
+          case 4 : 
+              List.fold_left(function (elem, param) {
+                    Web_node.setStyle(elem, param[0], param[1]);
+                    return elem;
+                  }, elem, match$5[0]);
+              _newProperties = newProperties[1];
+              _oldProperties = /* [] */0;
+              continue ;
+              
+        }
+      }
+    }
+    else {
+      return /* () */0;
+    }
+  };
+}
+
+function patchVNodesOnElems_Properties(callbacks, elem, oldProperties, newProperties) {
+  if (Caml_obj.caml_equal(oldProperties, newProperties)) {
+    return /* () */0;
+  }
+  else {
+    return patchVNodesOnElems_PropertiesApply(callbacks, elem, oldProperties, newProperties);
+  }
+}
+
+function patchVNodesOnElems_createElement(callbacks, namespace, tagName, properties) {
+  var child = Web_document.createElementNsOptional(namespace, tagName);
+  patchVNodesOnElems_Properties(callbacks, child, /* [] */0, properties);
+  return child;
+}
+
+function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes) {
+  while(true) {
+    var newVNodes = _newVNodes;
+    var oldVNodes = _oldVNodes;
+    var idx = _idx;
+    console.log(/* tuple */[
+          "test",
+          callbacks,
+          elem,
+          elems,
+          idx,
+          oldVNodes,
+          newVNodes
+        ]);
+    if (oldVNodes) {
+      var oldVnode = oldVNodes[0];
+      if (newVNodes) {
+        if (typeof oldVnode === "number") {
+          if (typeof newVNodes[0] === "number") {
+            _newVNodes = newVNodes[1];
+            _oldVNodes = oldVNodes[1];
+            _idx = idx + 1 | 0;
+            continue ;
+            
+          }
+          else {
+            console.log("TODO:  This is incomplete, ran out of time today...");
+            return /* () */0;
+          }
+        }
+        else if (oldVnode.tag) {
+          var match = newVNodes[0];
+          var oldRest = oldVNodes[1];
+          if (typeof match === "number") {
+            console.log("TODO:  This is incomplete, ran out of time today...");
+            return /* () */0;
+          }
+          else if (match.tag) {
+            var newRest = newVNodes[1];
+            var newChildren = match[4];
+            var newProperties = match[3];
+            var newTagName = match[2];
+            if (oldVnode[0] !== match[0] || oldVnode[1] !== match[1] || oldVnode[2] !== newTagName) {
+              _newVNodes = newRest;
+              _oldVNodes = oldRest;
+              _idx = idx + 1 | 0;
+              continue ;
+              
+            }
+            else {
+              console.log(/* tuple */[
+                    elems[idx],
+                    newTagName,
+                    elem,
+                    idx,
+                    elems,
+                    newProperties,
+                    newChildren
+                  ]);
+              var child = elems[idx];
+              var childChildren = child.childNodes;
+              patchVNodesOnElems_Properties(callbacks, child, oldVnode[3], newProperties);
+              patchVNodesOnElems(callbacks, child, childChildren, 0, oldVnode[4], newChildren);
+              _newVNodes = newRest;
+              _oldVNodes = oldRest;
+              _idx = idx + 1 | 0;
+              continue ;
+              
+            }
+          }
+          else {
+            console.log("TODO:  This is incomplete, ran out of time today...");
+            return /* () */0;
+          }
+        }
+        else {
+          var match$1 = newVNodes[0];
+          var oldRest$1 = oldVNodes[1];
+          if (typeof match$1 === "number") {
+            console.log("TODO:  This is incomplete, ran out of time today...");
+            return /* () */0;
+          }
+          else if (match$1.tag) {
+            console.log("TODO:  This is incomplete, ran out of time today...");
+            return /* () */0;
+          }
+          else {
+            var newRest$1 = newVNodes[1];
+            var newText = match$1[0];
+            if (oldVnode[0] === newText) {
+              _newVNodes = newRest$1;
+              _oldVNodes = oldRest$1;
+              _idx = idx + 1 | 0;
+              continue ;
+              
+            }
+            else {
+              var child$1 = elems[idx];
+              child$1.nodeValue = newText;
+              _newVNodes = newRest$1;
+              _oldVNodes = oldRest$1;
+              _idx = idx + 1 | 0;
+              continue ;
+              
+            }
+          }
+        }
+      }
+      else {
+        var child$2 = elems[idx];
+        elem.removeChild(child$2);
+        _newVNodes = /* [] */0;
+        _oldVNodes = oldVNodes[1];
+        continue ;
+        
+      }
+    }
+    else if (newVNodes) {
+      var match$2 = newVNodes[0];
+      if (typeof match$2 === "number") {
+        var child$3 = document.createComment("");
+        elem.appendChild(child$3);
+        _newVNodes = newVNodes[1];
+        _oldVNodes = /* [] */0;
+        _idx = idx + 1 | 0;
+        continue ;
+        
+      }
+      else if (match$2.tag) {
+        var child$4 = patchVNodesOnElems_createElement(callbacks, match$2[0], match$2[2], match$2[3]);
+        var childChildren$1 = child$4.childNodes;
+        patchVNodesOnElems(callbacks, child$4, childChildren$1, 0, /* [] */0, match$2[4]);
+        elem.appendChild(child$4);
+        _newVNodes = newVNodes[1];
+        _oldVNodes = /* [] */0;
+        _idx = idx + 1 | 0;
+        continue ;
+        
+      }
+      else {
+        var child$5 = document.createTextNode(match$2[0]);
+        elem.appendChild(child$5);
+        _newVNodes = newVNodes[1];
+        _oldVNodes = /* [] */0;
+        _idx = idx + 1 | 0;
+        continue ;
+        
+      }
+    }
+    else {
+      return /* () */0;
+    }
+  };
+}
+
+function patchVNodesIntoElement(callbacks, elem, oldVNodes, newVNodes) {
+  console.log("Boop");
+  var elems = elem.childNodes;
+  return patchVNodesOnElems(callbacks, elem, elems, 0, oldVNodes, newVNodes);
+}
+
+function patchVNodeIntoElement(callbacks, elem, oldVNode, newVNode) {
+  return patchVNodesIntoElement(callbacks, elem, /* :: */[
+              oldVNode,
+              /* [] */0
+            ], /* :: */[
+              newVNode,
+              /* [] */0
+            ]);
 }
 
 var noNode = /* NoVNode */0;
@@ -7884,6 +8469,13 @@ exports.createElementFromVNode_addProps    = createElementFromVNode_addProps;
 exports.createElementFromVNode_addChildren = createElementFromVNode_addChildren;
 exports.createElementFromVNode             = createElementFromVNode;
 exports.createVNodesIntoElement            = createVNodesIntoElement;
+exports.createVNodeIntoElement             = createVNodeIntoElement;
+exports.patchVNodesOnElems_PropertiesApply = patchVNodesOnElems_PropertiesApply;
+exports.patchVNodesOnElems_Properties      = patchVNodesOnElems_Properties;
+exports.patchVNodesOnElems_createElement   = patchVNodesOnElems_createElement;
+exports.patchVNodesOnElems                 = patchVNodesOnElems;
+exports.patchVNodesIntoElement             = patchVNodesIntoElement;
+exports.patchVNodeIntoElement              = patchVNodeIntoElement;
 /* No side effect */
 
 });
@@ -7893,6 +8485,49 @@ exports.createVNodesIntoElement            = createVNodesIntoElement;
 'use strict';
 
 
+function polyfills() {
+  ((
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
+  ));
+  ((
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
+  ));
+  return /* () */0;
+}
+
 var Event = 0;
 
 var Node = 0;
@@ -7901,10 +8536,11 @@ var Document = 0;
 
 var Window = 0;
 
-exports.Event    = Event;
-exports.Node     = Node;
-exports.Document = Document;
-exports.Window   = Window;
+exports.Event     = Event;
+exports.Node      = Node;
+exports.Document  = Document;
+exports.Window    = Window;
+exports.polyfills = polyfills;
 /* No side effect */
 
 });
@@ -7926,34 +8562,34 @@ function createElementNS(namespace, key) {
   return document.createElementNS(namespace, key);
 }
 
-function getElementById(id) {
-  return document.getElementById(id);
-}
-
-function createElementNsOptional(namespace, tagName) {
-  if (namespace) {
-    return document.createElementNS(namespace[0], tagName);
-  }
-  else {
-    return document.createElement(tagName);
-  }
+function createComment(text) {
+  return document.createComment(text);
 }
 
 function createTextNode(text) {
   return document.createTextNode(text);
 }
 
-function createComment() {
-  return document.createComment();
+function getElementById(id) {
+  return document.getElementById(id);
+}
+
+function createElementNsOptional(namespace, tagName) {
+  if (namespace === "") {
+    return document.createElement(tagName);
+  }
+  else {
+    return document.createElementNS(namespace, tagName);
+  }
 }
 
 exports.body                    = body;
 exports.createElement           = createElement;
 exports.createElementNS         = createElementNS;
+exports.createComment           = createComment;
+exports.createTextNode          = createTextNode;
 exports.getElementById          = getElementById;
 exports.createElementNsOptional = createElementNsOptional;
-exports.createTextNode          = createTextNode;
-exports.createComment           = createComment;
 /* No side effect */
 
 });
@@ -7973,10 +8609,6 @@ exports.createComment           = createComment;
 'use strict';
 
 
-function appendChild(n, child) {
-  return n.appendChild(child);
-}
-
 function style(n) {
   return n.style;
 }
@@ -7987,6 +8619,30 @@ function getStyle(n, key) {
 
 function setStyle(n, key, value) {
   return n.style[key] = value;
+}
+
+function childNodes(n) {
+  return n.childNodes;
+}
+
+function firstChild(n) {
+  return n.firstChild;
+}
+
+function appendChild(n, child) {
+  return n.appendChild(child);
+}
+
+function removeChild(n, child) {
+  return n.removeChild(child);
+}
+
+function insertBefore(n, child, refNode) {
+  return n.insertBefore(child, refNode);
+}
+
+function remove(n, _) {
+  return n.remove;
 }
 
 function setAttributeNS(n, namespace, key, value) {
@@ -8013,16 +8669,47 @@ function removeEventListener(n, typ, listener, options) {
   return n.removeEventListener(typ, listener, options);
 }
 
-exports.appendChild         = appendChild;
+function set_nodeValue(n, text) {
+  return n.nodeValue = text;
+}
+
+function get_nodeValue(n) {
+  return n.nodeValue;
+}
+
+function remove_polyfill() {
+  return (
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
+  );
+}
+
 exports.style               = style;
 exports.getStyle            = getStyle;
 exports.setStyle            = setStyle;
+exports.childNodes          = childNodes;
+exports.firstChild          = firstChild;
+exports.appendChild         = appendChild;
+exports.removeChild         = removeChild;
+exports.insertBefore        = insertBefore;
+exports.remove              = remove;
 exports.setAttributeNS      = setAttributeNS;
 exports.setAttribute        = setAttribute;
 exports.removeAttributeNS   = removeAttributeNS;
 exports.removeAttribute     = removeAttribute;
 exports.addEventListener    = addEventListener;
 exports.removeEventListener = removeEventListener;
+exports.set_nodeValue       = set_nodeValue;
+exports.get_nodeValue       = get_nodeValue;
+exports.remove_polyfill     = remove_polyfill;
 /* No side effect */
 
 });
@@ -8037,32 +8724,32 @@ function requestAnimationFrame(callback) {
 }
 
 function requestAnimationFrame_polyfill() {
-  return (
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }());
+  return (
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   );
 }
 
@@ -8072,7 +8759,7 @@ exports.requestAnimationFrame_polyfill = requestAnimationFrame_polyfill;
 
 });
 
-;require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+;require.alias("process/browser.js", "process");require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 
