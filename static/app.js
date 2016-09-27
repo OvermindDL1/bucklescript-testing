@@ -7616,7 +7616,29 @@ function programLoop(update, view, initModel, param) {
   if (param) {
     var parentNode = param[0];
     return function (callbacks) {
-      var lastVdom = [Curry._1(view, initModel)];
+      var priorRenderedVdom = [/* :: */[
+          Curry._1(view, initModel),
+          /* [] */0
+        ]];
+      var lastVdom = [priorRenderedVdom[0]];
+      var nextFrameID = [/* None */0];
+      var doRender = function () {
+        Vdom.patchVNodesIntoElement(callbacks, parentNode, priorRenderedVdom[0], lastVdom[0]);
+        priorRenderedVdom[0] = lastVdom[0];
+        nextFrameID[0] = /* None */0;
+        return /* () */0;
+      };
+      var scheduleRender = function () {
+        var match = nextFrameID[0];
+        if (match) {
+          return /* () */0;
+        }
+        else {
+          var id = window.requestAnimationFrame(doRender);
+          nextFrameID[0] = /* Some */[id];
+          return /* () */0;
+        }
+      };
       while(parentNode.childNodes.length > 0) {
         var match = parentNode.firstChild;
         if (match !== null) {
@@ -7624,16 +7646,16 @@ function programLoop(update, view, initModel, param) {
         }
         
       };
-      console.log(Vdom.patchVNodesIntoElement(callbacks, parentNode, /* [] */0, /* :: */[
-                lastVdom[0],
-                /* [] */0
-              ]));
+      console.log(Vdom.patchVNodesIntoElement(callbacks, parentNode, /* [] */0, lastVdom[0]));
       return function (model, msg) {
         var match = Curry._2(update, model, msg);
         var newModel = match[0];
         var newVdom = Curry._1(view, newModel);
-        Vdom.patchVNodeIntoElement(callbacks, parentNode, lastVdom[0], newVdom);
-        lastVdom[0] = newVdom;
+        lastVdom[0] = /* :: */[
+          newVdom,
+          /* [] */0
+        ];
+        scheduleRender(/* () */0);
         return newModel;
       };
     };

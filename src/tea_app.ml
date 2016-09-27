@@ -62,7 +62,19 @@ let programLoop update view initModel = function
     let newModel, _newCmd = update model msg in (* TODO:  Process commands to callbacks *)
     newModel
   | Some parentNode -> fun callbacks ->
-    let lastVdom = ref (view initModel) in
+    let priorRenderedVdom = ref [view initModel] in
+    let lastVdom = ref (!priorRenderedVdom) in
+    let nextFrameID = ref None in
+    let doRender _delta =
+      let () = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom !lastVdom in
+      (priorRenderedVdom := (!lastVdom));
+      (nextFrameID := None) in
+    let scheduleRender () = match !nextFrameID with
+      | Some _ -> ()
+      | None ->
+        let id = Web.Window.requestAnimationFrame doRender in
+        (nextFrameID := Some id);
+        () in
     (* let () = Js.log (Vdom.createVNodeIntoElement callbacks !lastVdom parentNode) in *)
     (* We own the passed in node, clear it out TODO:  Clear it out properly *)
     (* let () = Js.log ("Blah", Web.Node.firstChild parentNode, Js.Null.test (Web.Node.firstChild parentNode), false, true) in *)
@@ -71,15 +83,16 @@ let programLoop update view initModel = function
         | None -> ()
         | Some firstChild -> let _removedChild = Web.Node.removeChild parentNode firstChild in ()
       done in
-    let () = Js.log (Vdom.patchVNodesIntoElement callbacks parentNode [] [!lastVdom]) in
+    let () = Js.log (Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom)) in
     let handler model msg =
       let newModel, _newCmd = update model msg in (* TODO:  Process commands to callbacks *)
       let newVdom = view newModel in (* Process VDom diffs here with callbacks *)
-      let () = Vdom.patchVNodeIntoElement callbacks parentNode !lastVdom newVdom in
+      (* let () = Vdom.patchVNodeIntoElement callbacks parentNode !lastVdom newVdom in *)
       (* let () = Js.log lastVdom in *)
       (* let () = Js.log newVdom in *)
       (* let () = Js.log (Vdom.createVNodeIntoElement callbacks newVdom parentNode) in *)
-      (lastVdom := newVdom);
+      (lastVdom := [newVdom]);
+      scheduleRender ();
       newModel in
     handler
 
