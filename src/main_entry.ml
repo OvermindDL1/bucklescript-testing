@@ -31,10 +31,14 @@ let view model =
     [ node "span"
         [ style "text-weight" "bold" ]
         [ text (string_of_int model) ]
+    ; node "br" [] []
     ; view_button "Increment" Increment
+    ; node "br" [] []
     ; view_button "Decrement" Decrement
-    ; if model <> 0 then view_button "Reset" Reset else noNode
+    ; node "br" [] []
     ; view_button "Set to 42" (Set 42)
+    ; node "br" [] []
+    ; if model <> 0 then view_button "Reset" Reset else noNode
     ]
 
 
