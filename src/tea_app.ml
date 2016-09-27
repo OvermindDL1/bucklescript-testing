@@ -86,6 +86,7 @@ let programLoop update view initModel = function
     let () = Js.log (Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom)) in
     let handler model msg =
       let newModel, _newCmd = update model msg in (* TODO:  Process commands to callbacks *)
+      (* TODO:  Figure out if it is better to get view on update like here, or do it in doRender... *)
       let newVdom = view newModel in (* Process VDom diffs here with callbacks *)
       (* let () = Vdom.patchVNodeIntoElement callbacks parentNode !lastVdom newVdom in *)
       (* let () = Js.log lastVdom in *)

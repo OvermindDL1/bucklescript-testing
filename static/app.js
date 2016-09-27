@@ -117,7 +117,6 @@
 
 (function() {
 var global = window;
-var process;
 var __makeRelativeRequire = function(require, mappings, pref) {
   var none = {};
   var tryReq = function(name, pref) {
@@ -422,43 +421,43 @@ function escaped(s) {
       }
       else {
         switch (c) {
-          case 8 : 
+          case 8 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "b" */98;
               break;
-          case 9 : 
+          case 9 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "t" */116;
               break;
-          case 10 : 
+          case 10 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "n" */110;
               break;
-          case 0 : 
-          case 1 : 
-          case 2 : 
-          case 3 : 
-          case 4 : 
-          case 5 : 
-          case 6 : 
-          case 7 : 
-          case 11 : 
-          case 12 : 
+          case 0 :
+          case 1 :
+          case 2 :
+          case 3 :
+          case 4 :
+          case 5 :
+          case 6 :
+          case 7 :
+          case 11 :
+          case 12 :
               exit = 1;
               break;
-          case 13 : 
+          case 13 :
               s$prime[n] = /* "\\" */92;
               n = n + 1 | 0;
               s$prime[n] = /* "r" */114;
               break;
-          
+
         }
       }
       switch (exit) {
-        case 1 : 
+        case 1 :
             s$prime[n] = /* "\\" */92;
             n = n + 1 | 0;
             s$prime[n] = 48 + (c / 100 | 0) | 0;
@@ -467,12 +466,12 @@ function escaped(s) {
             n = n + 1 | 0;
             s$prime[n] = 48 + c % 10 | 0;
             break;
-        case 2 : 
+        case 2 :
             s$prime[n] = /* "\\" */92;
             n = n + 1 | 0;
             s$prime[n] = c;
             break;
-        
+
       }
       n = n + 1 | 0;
     }
@@ -547,7 +546,7 @@ function index_rec(s, lim, _i, c) {
     else {
       _i = i + 1 | 0;
       continue ;
-      
+
     }
   };
 }
@@ -581,7 +580,7 @@ function rindex_rec(s, _i, c) {
     else {
       _i = i - 1 | 0;
       continue ;
-      
+
     }
   };
 }
@@ -958,15 +957,15 @@ function parse_digit(c) {
 
 function int_of_string_base(param) {
   switch (param) {
-    case 0 : 
+    case 0 :
         return 8;
-    case 1 : 
+    case 1 :
         return 16;
-    case 2 : 
+    case 2 :
         return 10;
-    case 3 : 
+    case 3 :
         return 2;
-    
+
   }
 }
 
@@ -988,7 +987,7 @@ function parse_sign_and_base(s) {
             base = /* Hex */1;
             i = i + 2 | 0;
           }
-          
+
         }
         else {
           base = /* Oct */0;
@@ -1006,7 +1005,7 @@ function parse_sign_and_base(s) {
           base = /* Hex */1;
           i = i + 2 | 0;
         }
-        
+
       }
       else {
         base = /* Oct */0;
@@ -1051,7 +1050,7 @@ function caml_int_of_string(s) {
         if (a === /* "_" */95) {
           _k = k + 1 | 0;
           continue ;
-          
+
         }
         else {
           var v = parse_digit(a);
@@ -1073,7 +1072,7 @@ function caml_int_of_string(s) {
               _k = k + 1 | 0;
               _acc = acc$1;
               continue ;
-              
+
             }
           }
         }
@@ -1099,31 +1098,31 @@ function caml_int64_of_string(s) {
   var sign = Caml_int64.of_int32(match[1]);
   var threshold;
   switch (hbase) {
-    case 0 : 
+    case 0 :
         threshold = /* int64 */[
           /* hi */536870911,
           /* lo */4294967295
         ];
         break;
-    case 1 : 
+    case 1 :
         threshold = /* int64 */[
           /* hi */268435455,
           /* lo */4294967295
         ];
         break;
-    case 2 : 
+    case 2 :
         threshold = /* int64 */[
           /* hi */429496729,
           /* lo */2576980377
         ];
         break;
-    case 3 : 
+    case 3 :
         threshold = /* int64 */[
           /* hi */2147483647,
           /* lo */4294967295
         ];
         break;
-    
+
   }
   var len = s.length;
   var c = i < len ? s.charCodeAt(i) : /* "\000" */0;
@@ -1149,7 +1148,7 @@ function caml_int64_of_string(s) {
         if (a === /* "_" */95) {
           _k = k + 1 | 0;
           continue ;
-          
+
         }
         else {
           var v = Caml_int64.of_int32(parse_digit(a));
@@ -1174,7 +1173,7 @@ function caml_int64_of_string(s) {
               _k = k + 1 | 0;
               _acc = acc$1;
               continue ;
-              
+
             }
           }
         }
@@ -1202,13 +1201,13 @@ function caml_int64_of_string(s) {
 
 function int_of_base(param) {
   switch (param) {
-    case 0 : 
+    case 0 :
         return 8;
-    case 1 : 
+    case 1 :
         return 16;
-    case 2 : 
+    case 2 :
         return 10;
-    
+
   }
 }
 
@@ -1258,59 +1257,59 @@ function parse_format(fmt) {
           }
           else {
             switch (c - 88 | 0) {
-              case 0 : 
+              case 0 :
                   f[/* base */4] = /* Hex */1;
                   f[/* uppercase */7] = /* true */1;
                   _i = i + 1 | 0;
                   continue ;
-                  case 13 : 
-              case 14 : 
-              case 15 : 
+                  case 13 :
+              case 14 :
+              case 15 :
                   exit = 5;
                   break;
-              case 12 : 
-              case 17 : 
+              case 12 :
+              case 17 :
                   exit = 4;
                   break;
-              case 23 : 
+              case 23 :
                   f[/* base */4] = /* Oct */0;
                   _i = i + 1 | 0;
                   continue ;
-                  case 29 : 
+                  case 29 :
                   f[/* base */4] = /* Dec */2;
                   _i = i + 1 | 0;
                   continue ;
-                  case 1 : 
-              case 2 : 
-              case 3 : 
-              case 4 : 
-              case 5 : 
-              case 6 : 
-              case 7 : 
-              case 8 : 
-              case 9 : 
-              case 10 : 
-              case 11 : 
-              case 16 : 
-              case 18 : 
-              case 19 : 
-              case 20 : 
-              case 21 : 
-              case 22 : 
-              case 24 : 
-              case 25 : 
-              case 26 : 
-              case 27 : 
-              case 28 : 
-              case 30 : 
-              case 31 : 
+                  case 1 :
+              case 2 :
+              case 3 :
+              case 4 :
+              case 5 :
+              case 6 :
+              case 7 :
+              case 8 :
+              case 9 :
+              case 10 :
+              case 11 :
+              case 16 :
+              case 18 :
+              case 19 :
+              case 20 :
+              case 21 :
+              case 22 :
+              case 24 :
+              case 25 :
+              case 26 :
+              case 27 :
+              case 28 :
+              case 30 :
+              case 31 :
                   exit = 1;
                   break;
-              case 32 : 
+              case 32 :
                   f[/* base */4] = /* Hex */1;
                   _i = i + 1 | 0;
                   continue ;
-                  
+
             }
           }
         }
@@ -1323,7 +1322,7 @@ function parse_format(fmt) {
           f[/* conv */10] = String.fromCharCode(lowercase(c));
           _i = i + 1 | 0;
           continue ;
-          
+
         }
       }
       else {
@@ -1333,19 +1332,19 @@ function parse_format(fmt) {
         }
         else {
           switch (switcher) {
-            case 3 : 
+            case 3 :
                 f[/* alternate */3] = /* true */1;
                 _i = i + 1 | 0;
                 continue ;
-                case 0 : 
-            case 11 : 
+                case 0 :
+            case 11 :
                 exit = 2;
                 break;
-            case 13 : 
+            case 13 :
                 f[/* justify */0] = "-";
                 _i = i + 1 | 0;
                 continue ;
-                case 14 : 
+                case 14 :
                 f[/* prec */9] = 0;
                 var j = i + 1 | 0;
                 while((function(j){
@@ -1359,47 +1358,47 @@ function parse_format(fmt) {
                 };
                 _i = j;
                 continue ;
-                case 1 : 
-            case 2 : 
-            case 4 : 
-            case 5 : 
-            case 6 : 
-            case 7 : 
-            case 8 : 
-            case 9 : 
-            case 10 : 
-            case 12 : 
-            case 15 : 
+                case 1 :
+            case 2 :
+            case 4 :
+            case 5 :
+            case 6 :
+            case 7 :
+            case 8 :
+            case 9 :
+            case 10 :
+            case 12 :
+            case 15 :
                 exit = 1;
                 break;
-            case 16 : 
+            case 16 :
                 f[/* filter */2] = "0";
                 _i = i + 1 | 0;
                 continue ;
-                case 17 : 
-            case 18 : 
-            case 19 : 
-            case 20 : 
-            case 21 : 
-            case 22 : 
-            case 23 : 
-            case 24 : 
-            case 25 : 
+                case 17 :
+            case 18 :
+            case 19 :
+            case 20 :
+            case 21 :
+            case 22 :
+            case 23 :
+            case 24 :
+            case 25 :
                 exit = 3;
                 break;
-            
+
           }
         }
       }
       switch (exit) {
-        case 1 : 
+        case 1 :
             _i = i + 1 | 0;
             continue ;
-            case 2 : 
+            case 2 :
             f[/* signstyle */1] = String.fromCharCode(c);
             _i = i + 1 | 0;
             continue ;
-            case 3 : 
+            case 3 :
             f[/* width */6] = 0;
             var j$1 = i;
             while((function(j$1){
@@ -1413,17 +1412,17 @@ function parse_format(fmt) {
             };
             _i = j$1;
             continue ;
-            case 4 : 
+            case 4 :
             f[/* signedconv */5] = /* true */1;
             f[/* base */4] = /* Dec */2;
             _i = i + 1 | 0;
             continue ;
-            case 5 : 
+            case 5 :
             f[/* signedconv */5] = /* true */1;
             f[/* conv */10] = String.fromCharCode(c);
             _i = i + 1 | 0;
             continue ;
-            
+
       }
     }
   };
@@ -1448,7 +1447,7 @@ function finish_formatting(param, rawbuffer) {
       if (base === /* Hex */1) {
         len = len + 2 | 0;
       }
-      
+
     }
     else {
       len = len + 1 | 0;
@@ -1467,7 +1466,7 @@ function finish_formatting(param, rawbuffer) {
     else if (signstyle !== "-") {
       buffer = buffer + signstyle;
     }
-    
+
   }
   if (alternate && base === /* Oct */0) {
     buffer = buffer + "0";
@@ -1507,7 +1506,7 @@ function caml_format_int(fmt, i) {
       if (n > 0) {
         s = Caml_utils.repeat(n, "0") + s;
       }
-      
+
     }
     return finish_formatting(f$1, s);
   }
@@ -1522,7 +1521,7 @@ function caml_int64_format(fmt, x) {
   var s = "";
   var match = f[/* base */4];
   switch (match) {
-    case 0 : 
+    case 0 :
         var wbase = /* int64 */[
           /* hi */0,
           /* lo */8
@@ -1566,10 +1565,10 @@ function caml_int64_format(fmt, x) {
           };
         }
         break;
-    case 1 : 
+    case 1 :
         s = Caml_int64.to_hex(x$1) + s;
         break;
-    case 2 : 
+    case 2 :
         var wbase$1 = /* int64 */[
           /* hi */0,
           /* lo */10
@@ -1617,7 +1616,7 @@ function caml_int64_format(fmt, x) {
           };
         }
         break;
-    
+
   }
   if (f[/* prec */9] >= 0) {
     f[/* filter */2] = " ";
@@ -1625,7 +1624,7 @@ function caml_int64_format(fmt, x) {
     if (n > 0) {
       s = Caml_utils.repeat(n, "0") + s;
     }
-    
+
   }
   return finish_formatting(f, s);
 }
@@ -1642,17 +1641,17 @@ function caml_format_float(fmt, x) {
   else if (isFinite(x$1)) {
     var match = f[/* conv */10];
     switch (match) {
-      case "e" : 
+      case "e" :
           s = x$1.toExponential(prec);
           var i = s.length;
           if (s[i - 3 | 0] === "e") {
             s = s.slice(0, i - 1 | 0) + ("0" + s.slice(i - 1 | 0));
           }
           break;
-      case "f" : 
+      case "f" :
           s = x$1.toFixed(prec);
           break;
-      case "g" : 
+      case "g" :
           var prec$1 = prec !== 0 ? prec : 1;
           s = x$1.toExponential(prec$1 - 1 | 0);
           var j = s.indexOf("e");
@@ -1670,7 +1669,7 @@ function caml_format_float(fmt, x) {
             if (s[i$2 - 3 | 0] === "e") {
               s = s.slice(0, i$2 - 1 | 0) + ("0" + s.slice(i$2 - 1 | 0));
             }
-            
+
           }
           else {
             var p = prec$1;
@@ -1696,11 +1695,11 @@ function caml_format_float(fmt, x) {
               }
               s = s.slice(0, k + 1 | 0);
             }
-            
+
           }
           break;
       default:
-        
+
     }
   }
   else {
@@ -1797,7 +1796,7 @@ function caml_int32_bswap(x) {
 }
 
 var imul = ( Math.imul || function (x,y) {
-  y |= 0; return ((((x >> 16) * y) << 16) + (x & 0xffff) * y)|0; 
+  y |= 0; return ((((x >> 16) * y) << 16) + (x & 0xffff) * y)|0;
 }
 );
 
@@ -2046,7 +2045,7 @@ function mul(_this, _other) {
             _other = neg(other);
             _this = neg($$this);
             continue ;
-            
+
           }
           else {
             return neg(mul(neg($$this), other));
@@ -2087,7 +2086,7 @@ function mul(_this, _other) {
                 ];
         }
       }
-      
+
     }
     if (exit === 1) {
       if ((lo & 1) === 0) {
@@ -2097,7 +2096,7 @@ function mul(_this, _other) {
         return min_int;
       }
     }
-    
+
   };
 }
 
@@ -2240,7 +2239,7 @@ function div(_self, _other) {
           var rem = add(self, neg(y));
           return add(approx, div(rem, other));
         }
-        
+
       }
     }
     if (exit === 1) {
@@ -2261,7 +2260,7 @@ function div(_self, _other) {
             _other = neg(other);
             _self = neg(self);
             continue ;
-            
+
           }
           else {
             return neg(div(neg(self), other));
@@ -2293,9 +2292,9 @@ function div(_self, _other) {
           return res;
         }
       }
-      
+
     }
-    
+
   };
 }
 
@@ -2370,7 +2369,7 @@ function to_hex(x) {
       return aux(x[/* hi */0]) + "00000000";
     }
   }
-  
+
 }
 
 function discard_sign(x) {
@@ -2695,12 +2694,12 @@ function caml_compare(_a, _b) {
       if (tag_a === 250) {
         _a = a[0];
         continue ;
-        
+
       }
       else if (tag_b === 250) {
         _b = b[0];
         continue ;
-        
+
       }
       else if (tag_a === 248) {
         return caml_int_compare(a[1], b[1]);
@@ -2740,7 +2739,7 @@ function caml_compare(_a, _b) {
               else {
                 _i = i + 1 | 0;
                 continue ;
-                
+
               }
             }
           };
@@ -2763,7 +2762,7 @@ function caml_compare(_a, _b) {
               else {
                 _i$1 = i$1 + 1 | 0;
                 continue ;
-                
+
               }
             }
           };
@@ -2786,7 +2785,7 @@ function caml_compare(_a, _b) {
               else {
                 _i$2 = i$2 + 1 | 0;
                 continue ;
-                
+
               }
             }
           };
@@ -2809,12 +2808,12 @@ function caml_equal(_a, _b) {
       if (tag_a === 250) {
         _a = a[0];
         continue ;
-        
+
       }
       else if (tag_b === 250) {
         _b = b[0];
         continue ;
-        
+
       }
       else if (tag_a === 248) {
         return +(a[1] === b[1]);
@@ -2844,7 +2843,7 @@ function caml_equal(_a, _b) {
             else if (caml_equal(a$1[i], b$1[i])) {
               _i = i + 1 | 0;
               continue ;
-              
+
             }
             else {
               return /* false */0;
@@ -2938,7 +2937,7 @@ function caml_get_public_method(obj, tag, cacheid) {
         else {
           _i = i - 2 | 0;
           continue ;
-          
+
         }
       };
     };
@@ -3225,45 +3224,45 @@ function erase_rel(param) {
   }
   else {
     switch (param.tag | 0) {
-      case 0 : 
+      case 0 :
           return /* Char_ty */Block.__(0, [erase_rel(param[0])]);
-      case 1 : 
+      case 1 :
           return /* String_ty */Block.__(1, [erase_rel(param[0])]);
-      case 2 : 
+      case 2 :
           return /* Int_ty */Block.__(2, [erase_rel(param[0])]);
-      case 3 : 
+      case 3 :
           return /* Int32_ty */Block.__(3, [erase_rel(param[0])]);
-      case 4 : 
+      case 4 :
           return /* Nativeint_ty */Block.__(4, [erase_rel(param[0])]);
-      case 5 : 
+      case 5 :
           return /* Int64_ty */Block.__(5, [erase_rel(param[0])]);
-      case 6 : 
+      case 6 :
           return /* Float_ty */Block.__(6, [erase_rel(param[0])]);
-      case 7 : 
+      case 7 :
           return /* Bool_ty */Block.__(7, [erase_rel(param[0])]);
-      case 8 : 
+      case 8 :
           return /* Format_arg_ty */Block.__(8, [
                     param[0],
                     erase_rel(param[1])
                   ]);
-      case 9 : 
+      case 9 :
           var ty1 = param[0];
           return /* Format_subst_ty */Block.__(9, [
                     ty1,
                     ty1,
                     erase_rel(param[2])
                   ]);
-      case 10 : 
+      case 10 :
           return /* Alpha_ty */Block.__(10, [erase_rel(param[0])]);
-      case 11 : 
+      case 11 :
           return /* Theta_ty */Block.__(11, [erase_rel(param[0])]);
-      case 12 : 
+      case 12 :
           return /* Any_ty */Block.__(12, [erase_rel(param[0])]);
-      case 13 : 
+      case 13 :
           return /* Reader_ty */Block.__(13, [erase_rel(param[0])]);
-      case 14 : 
+      case 14 :
           return /* Ignored_reader_ty */Block.__(14, [erase_rel(param[0])]);
-      
+
     }
   }
 }
@@ -3274,44 +3273,44 @@ function concat_fmtty(fmtty1, fmtty2) {
   }
   else {
     switch (fmtty1.tag | 0) {
-      case 0 : 
+      case 0 :
           return /* Char_ty */Block.__(0, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 1 : 
+      case 1 :
           return /* String_ty */Block.__(1, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 2 : 
+      case 2 :
           return /* Int_ty */Block.__(2, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 3 : 
+      case 3 :
           return /* Int32_ty */Block.__(3, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 4 : 
+      case 4 :
           return /* Nativeint_ty */Block.__(4, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 5 : 
+      case 5 :
           return /* Int64_ty */Block.__(5, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 6 : 
+      case 6 :
           return /* Float_ty */Block.__(6, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 7 : 
+      case 7 :
           return /* Bool_ty */Block.__(7, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 8 : 
+      case 8 :
           return /* Format_arg_ty */Block.__(8, [
                     fmtty1[0],
                     concat_fmtty(fmtty1[1], fmtty2)
                   ]);
-      case 9 : 
+      case 9 :
           return /* Format_subst_ty */Block.__(9, [
                     fmtty1[0],
                     fmtty1[1],
                     concat_fmtty(fmtty1[2], fmtty2)
                   ]);
-      case 10 : 
+      case 10 :
           return /* Alpha_ty */Block.__(10, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 11 : 
+      case 11 :
           return /* Theta_ty */Block.__(11, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 12 : 
+      case 12 :
           return /* Any_ty */Block.__(12, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 13 : 
+      case 13 :
           return /* Reader_ty */Block.__(13, [concat_fmtty(fmtty1[0], fmtty2)]);
-      case 14 : 
+      case 14 :
           return /* Ignored_reader_ty */Block.__(14, [concat_fmtty(fmtty1[0], fmtty2)]);
-      
+
     }
   }
 }
@@ -3322,122 +3321,122 @@ function concat_fmt(fmt1, fmt2) {
   }
   else {
     switch (fmt1.tag | 0) {
-      case 0 : 
+      case 0 :
           return /* Char */Block.__(0, [concat_fmt(fmt1[0], fmt2)]);
-      case 1 : 
+      case 1 :
           return /* Caml_char */Block.__(1, [concat_fmt(fmt1[0], fmt2)]);
-      case 2 : 
+      case 2 :
           return /* String */Block.__(2, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 3 : 
+      case 3 :
           return /* Caml_string */Block.__(3, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 4 : 
+      case 4 :
           return /* Int */Block.__(4, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 5 : 
+      case 5 :
           return /* Int32 */Block.__(5, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 6 : 
+      case 6 :
           return /* Nativeint */Block.__(6, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 7 : 
+      case 7 :
           return /* Int64 */Block.__(7, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 8 : 
+      case 8 :
           return /* Float */Block.__(8, [
                     fmt1[0],
                     fmt1[1],
                     fmt1[2],
                     concat_fmt(fmt1[3], fmt2)
                   ]);
-      case 9 : 
+      case 9 :
           return /* Bool */Block.__(9, [concat_fmt(fmt1[0], fmt2)]);
-      case 10 : 
+      case 10 :
           return /* Flush */Block.__(10, [concat_fmt(fmt1[0], fmt2)]);
-      case 11 : 
+      case 11 :
           return /* String_literal */Block.__(11, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 12 : 
+      case 12 :
           return /* Char_literal */Block.__(12, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 13 : 
+      case 13 :
           return /* Format_arg */Block.__(13, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      case 14 : 
+      case 14 :
           return /* Format_subst */Block.__(14, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      case 15 : 
+      case 15 :
           return /* Alpha */Block.__(15, [concat_fmt(fmt1[0], fmt2)]);
-      case 16 : 
+      case 16 :
           return /* Theta */Block.__(16, [concat_fmt(fmt1[0], fmt2)]);
-      case 17 : 
+      case 17 :
           return /* Formatting_lit */Block.__(17, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 18 : 
+      case 18 :
           return /* Formatting_gen */Block.__(18, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 19 : 
+      case 19 :
           return /* Reader */Block.__(19, [concat_fmt(fmt1[0], fmt2)]);
-      case 20 : 
+      case 20 :
           return /* Scan_char_set */Block.__(20, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      case 21 : 
+      case 21 :
           return /* Scan_get_counter */Block.__(21, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 22 : 
+      case 22 :
           return /* Scan_next_char */Block.__(22, [concat_fmt(fmt1[0], fmt2)]);
-      case 23 : 
+      case 23 :
           return /* Ignored_param */Block.__(23, [
                     fmt1[0],
                     concat_fmt(fmt1[1], fmt2)
                   ]);
-      case 24 : 
+      case 24 :
           return /* Custom */Block.__(24, [
                     fmt1[0],
                     fmt1[1],
                     concat_fmt(fmt1[2], fmt2)
                   ]);
-      
+
     }
   }
 }
@@ -3492,42 +3491,42 @@ function escaped(c) {
   }
   else {
     switch (c) {
-      case 8 : 
+      case 8 :
           return "\\b";
-      case 9 : 
+      case 9 :
           return "\\t";
-      case 10 : 
+      case 10 :
           return "\\n";
-      case 0 : 
-      case 1 : 
-      case 2 : 
-      case 3 : 
-      case 4 : 
-      case 5 : 
-      case 6 : 
-      case 7 : 
-      case 11 : 
-      case 12 : 
+      case 0 :
+      case 1 :
+      case 2 :
+      case 3 :
+      case 4 :
+      case 5 :
+      case 6 :
+      case 7 :
+      case 11 :
+      case 12 :
           exit = 1;
           break;
-      case 13 : 
+      case 13 :
           return "\\r";
-      
+
     }
   }
   switch (exit) {
-    case 1 : 
+    case 1 :
         var s = new Array(4);
         s[0] = /* "\\" */92;
         s[1] = 48 + (c / 100 | 0) | 0;
         s[2] = 48 + (c / 10 | 0) % 10 | 0;
         s[3] = 48 + c % 10 | 0;
         return Caml_string.bytes_to_string(s);
-    case 2 : 
+    case 2 :
         var s$1 = new Array(1);
         s$1[0] = c;
         return Caml_string.bytes_to_string(s$1);
-    
+
   }
 }
 
@@ -3583,7 +3582,7 @@ function app(_f, _args) {
         _args = Caml_array.caml_array_sub(args, arity$1, -d);
         _f = f.apply(null, Caml_array.caml_array_sub(args, 0, arity$1));
         continue ;
-        
+
       }
       else {
         return (function(f,args){
@@ -3610,34 +3609,34 @@ function curry_1(o, a0, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return o(a0);
-      case 2 : 
+      case 2 :
           return function (param) {
             return o(a0, param);
           };
-      case 3 : 
+      case 3 :
           return function (param, param$1) {
             return o(a0, param, param$1);
           };
-      case 4 : 
+      case 4 :
           return function (param, param$1, param$2) {
             return o(a0, param, param$1, param$2);
           };
-      case 5 : 
+      case 5 :
           return function (param, param$1, param$2, param$3) {
             return o(a0, param, param$1, param$2, param$3);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1, param$2, param$3, param$4) {
             return o(a0, param, param$1, param$2, param$3, param$4);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2, param$3, param$4, param$5) {
             return o(a0, param, param$1, param$2, param$3, param$4, param$5);
           };
-      
+
     }
   }
 }
@@ -3677,32 +3676,32 @@ function curry_2(o, a0, a1, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[a1]);
-      case 2 : 
+      case 2 :
           return o(a0, a1);
-      case 3 : 
+      case 3 :
           return function (param) {
             return o(a0, a1, param);
           };
-      case 4 : 
+      case 4 :
           return function (param, param$1) {
             return o(a0, a1, param, param$1);
           };
-      case 5 : 
+      case 5 :
           return function (param, param$1, param$2) {
             return o(a0, a1, param, param$1, param$2);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1, param$2, param$3) {
             return o(a0, a1, param, param$1, param$2, param$3);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2, param$3, param$4) {
             return o(a0, a1, param, param$1, param$2, param$3, param$4);
           };
-      
+
     }
   }
 }
@@ -3743,33 +3742,33 @@ function curry_3(o, a0, a1, a2, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[a2]);
-      case 3 : 
+      case 3 :
           return o(a0, a1, a2);
-      case 4 : 
+      case 4 :
           return function (param) {
             return o(a0, a1, a2, param);
           };
-      case 5 : 
+      case 5 :
           return function (param, param$1) {
             return o(a0, a1, a2, param, param$1);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1, param$2) {
             return o(a0, a1, a2, param, param$1, param$2);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2, param$3) {
             return o(a0, a1, a2, param, param$1, param$2, param$3);
           };
-      
+
     }
   }
 }
@@ -3811,35 +3810,35 @@ function curry_4(o, a0, a1, a2, a3, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
                       a3
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[a3]);
-      case 4 : 
+      case 4 :
           return o(a0, a1, a2, a3);
-      case 5 : 
+      case 5 :
           return function (param) {
             return o(a0, a1, a2, a3, param);
           };
-      case 6 : 
+      case 6 :
           return function (param, param$1) {
             return o(a0, a1, a2, a3, param, param$1);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1, param$2) {
             return o(a0, a1, a2, a3, param, param$1, param$2);
           };
-      
+
     }
   }
 }
@@ -3882,38 +3881,38 @@ function curry_5(o, a0, a1, a2, a3, a4, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
                       a3,
                       a4
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
                       a4
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[a4]);
-      case 5 : 
+      case 5 :
           return o(a0, a1, a2, a3, a4);
-      case 6 : 
+      case 6 :
           return function (param) {
             return o(a0, a1, a2, a3, a4, param);
           };
-      case 7 : 
+      case 7 :
           return function (param, param$1) {
             return o(a0, a1, a2, a3, a4, param, param$1);
           };
-      
+
     }
   }
 }
@@ -3957,8 +3956,8 @@ function curry_6(o, a0, a1, a2, a3, a4, a5, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
@@ -3966,33 +3965,33 @@ function curry_6(o, a0, a1, a2, a3, a4, a5, arity) {
                       a4,
                       a5
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
                       a4,
                       a5
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4,
                       a5
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[
                       a4,
                       a5
                     ]);
-      case 5 : 
+      case 5 :
           return app(o(a0, a1, a2, a3, a4), /* array */[a5]);
-      case 6 : 
+      case 6 :
           return o(a0, a1, a2, a3, a4, a5);
-      case 7 : 
+      case 7 :
           return function (param) {
             return o(a0, a1, a2, a3, a4, a5, param);
           };
-      
+
     }
   }
 }
@@ -4037,8 +4036,8 @@ function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
@@ -4047,7 +4046,7 @@ function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
                       a5,
                       a6
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
@@ -4055,29 +4054,29 @@ function curry_7(o, a0, a1, a2, a3, a4, a5, a6, arity) {
                       a5,
                       a6
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4,
                       a5,
                       a6
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[
                       a4,
                       a5,
                       a6
                     ]);
-      case 5 : 
+      case 5 :
           return app(o(a0, a1, a2, a3, a4), /* array */[
                       a5,
                       a6
                     ]);
-      case 6 : 
+      case 6 :
           return app(o(a0, a1, a2, a3, a4, a5), /* array */[a6]);
-      case 7 : 
+      case 7 :
           return o(a0, a1, a2, a3, a4, a5, a6);
-      
+
     }
   }
 }
@@ -4123,8 +4122,8 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
   }
   else {
     switch (arity) {
-      case 0 : 
-      case 1 : 
+      case 0 :
+      case 1 :
           return app(o(a0), /* array */[
                       a1,
                       a2,
@@ -4134,7 +4133,7 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
                       a6,
                       a7
                     ]);
-      case 2 : 
+      case 2 :
           return app(o(a0, a1), /* array */[
                       a2,
                       a3,
@@ -4143,7 +4142,7 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
                       a6,
                       a7
                     ]);
-      case 3 : 
+      case 3 :
           return app(o(a0, a1, a2), /* array */[
                       a3,
                       a4,
@@ -4151,27 +4150,27 @@ function curry_8(o, a0, a1, a2, a3, a4, a5, a6, a7, arity) {
                       a6,
                       a7
                     ]);
-      case 4 : 
+      case 4 :
           return app(o(a0, a1, a2, a3), /* array */[
                       a4,
                       a5,
                       a6,
                       a7
                     ]);
-      case 5 : 
+      case 5 :
           return app(o(a0, a1, a2, a3, a4), /* array */[
                       a5,
                       a6,
                       a7
                     ]);
-      case 6 : 
+      case 6 :
           return app(o(a0, a1, a2, a3, a4, a5), /* array */[
                       a6,
                       a7
                     ]);
-      case 7 : 
+      case 7 :
           return app(o(a0, a1, a2, a3, a4, a5, a6), /* array */[a7]);
-      
+
     }
   }
 }
@@ -4300,7 +4299,7 @@ function length(l) {
       _param = param[1];
       _len = len + 1 | 0;
       continue ;
-      
+
     }
     else {
       return len;
@@ -4350,7 +4349,7 @@ function nth(l, n) {
           _n = n$1 - 1 | 0;
           _l = l$1[1];
           continue ;
-          
+
         }
         else {
           return l$1[0];
@@ -4377,7 +4376,7 @@ function rev_append(_l1, _l2) {
       ];
       _l1 = l1[1];
       continue ;
-      
+
     }
     else {
       return l2;
@@ -4441,7 +4440,7 @@ function rev_map(f, l) {
         accu
       ];
       continue ;
-      
+
     }
     else {
       return accu;
@@ -4456,7 +4455,7 @@ function iter(f, _param) {
       Curry._1(f, param[0]);
       _param = param[1];
       continue ;
-      
+
     }
     else {
       return /* () */0;
@@ -4476,7 +4475,7 @@ function iteri(f, l) {
       _param = param[1];
       _i = i + 1 | 0;
       continue ;
-      
+
     }
     else {
       return /* () */0;
@@ -4492,7 +4491,7 @@ function fold_left(f, _accu, _l) {
       _l = l[1];
       _accu = Curry._2(f, accu, l[0]);
       continue ;
-      
+
     }
     else {
       return accu;
@@ -4553,7 +4552,7 @@ function rev_map2(f, l1, l2) {
           accu
         ];
         continue ;
-        
+
       }
       else {
         throw [
@@ -4584,7 +4583,7 @@ function iter2(f, _l1, _l2) {
         _l2 = l2[1];
         _l1 = l1[1];
         continue ;
-        
+
       }
       else {
         throw [
@@ -4616,7 +4615,7 @@ function fold_left2(f, _accu, _l1, _l2) {
         _l1 = l1[1];
         _accu = Curry._3(f, accu, l1[0], l2[0]);
         continue ;
-        
+
       }
       else {
         throw [
@@ -4667,7 +4666,7 @@ function for_all(p, _param) {
       if (Curry._1(p, param[0])) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return /* false */0;
@@ -4689,7 +4688,7 @@ function exists(p, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4708,7 +4707,7 @@ function for_all2(p, _l1, _l2) {
           _l2 = l2[1];
           _l1 = l1[1];
           continue ;
-          
+
         }
         else {
           return /* false */0;
@@ -4746,7 +4745,7 @@ function exists2(p, _l1, _l2) {
           _l2 = l2[1];
           _l1 = l1[1];
           continue ;
-          
+
         }
       }
       else {
@@ -4775,7 +4774,7 @@ function mem(x, _param) {
       if (Caml_obj.caml_compare(param[0], x)) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return /* true */1;
@@ -4797,7 +4796,7 @@ function memq(x, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4814,7 +4813,7 @@ function assoc(x, _param) {
       if (Caml_obj.caml_compare(match[0], x)) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return match[1];
@@ -4837,7 +4836,7 @@ function assq(x, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4853,7 +4852,7 @@ function mem_assoc(x, _param) {
       if (Caml_obj.caml_compare(param[0][0], x)) {
         _param = param[1];
         continue ;
-        
+
       }
       else {
         return /* true */1;
@@ -4875,7 +4874,7 @@ function mem_assq(x, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4933,7 +4932,7 @@ function find(p, _param) {
       else {
         _param = param[1];
         continue ;
-        
+
       }
     }
     else {
@@ -4959,12 +4958,12 @@ function find_all(p) {
             accu
           ];
           continue ;
-          
+
         }
         else {
           _param = l;
           continue ;
-          
+
         }
       }
       else {
@@ -4992,7 +4991,7 @@ function partition(p, l) {
           yes
         ];
         continue ;
-        
+
       }
       else {
         _param = l$1;
@@ -5001,7 +5000,7 @@ function partition(p, l) {
           no
         ];
         continue ;
-        
+
       }
     }
     else {
@@ -5101,7 +5100,7 @@ function chop(_k, _l) {
         _l = l[1];
         _k = k - 1 | 0;
         continue ;
-        
+
       }
       else {
         throw [
@@ -5277,7 +5276,7 @@ function stable_sort(cmp, l) {
               ];
               _l1 = l1[1];
               continue ;
-              
+
             }
             else {
               _accu = /* :: */[
@@ -5286,7 +5285,7 @@ function stable_sort(cmp, l) {
               ];
               _l2 = l2$1[1];
               continue ;
-              
+
             }
           }
           else {
@@ -5298,7 +5297,7 @@ function stable_sort(cmp, l) {
         }
       };
     }
-    
+
   };
   var rev_sort = function (n, l) {
     var exit = 0;
@@ -5456,7 +5455,7 @@ function stable_sort(cmp, l) {
               ];
               _l1 = l1[1];
               continue ;
-              
+
             }
             else {
               _accu = /* :: */[
@@ -5465,7 +5464,7 @@ function stable_sort(cmp, l) {
               ];
               _l2 = l2$1[1];
               continue ;
-              
+
             }
           }
           else {
@@ -5477,7 +5476,7 @@ function stable_sort(cmp, l) {
         }
       };
     }
-    
+
   };
   var len = length(l);
   if (len < 2) {
@@ -5744,7 +5743,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l1 = t1;
                 continue ;
-                
+
               }
               else {
                 _accu = /* :: */[
@@ -5753,7 +5752,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l2 = t2;
                 continue ;
-                
+
               }
             }
             else {
@@ -5764,7 +5763,7 @@ function sort_uniq(cmp, l) {
               _l2 = t2;
               _l1 = t1;
               continue ;
-              
+
             }
           }
           else {
@@ -5776,7 +5775,7 @@ function sort_uniq(cmp, l) {
         }
       };
     }
-    
+
   };
   var rev_sort = function (n, l) {
     var exit = 0;
@@ -6033,7 +6032,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l1 = t1;
                 continue ;
-                
+
               }
               else {
                 _accu = /* :: */[
@@ -6042,7 +6041,7 @@ function sort_uniq(cmp, l) {
                 ];
                 _l2 = t2;
                 continue ;
-                
+
               }
             }
             else {
@@ -6053,7 +6052,7 @@ function sort_uniq(cmp, l) {
               _l2 = t2;
               _l1 = t1;
               continue ;
-              
+
             }
           }
           else {
@@ -6065,7 +6064,7 @@ function sort_uniq(cmp, l) {
         }
       };
     }
-    
+
   };
   var len = length(l);
   if (len < 2) {
@@ -6224,9 +6223,9 @@ function string_of_bool(b) {
 
 function bool_of_string(param) {
   switch (param) {
-    case "false" : 
+    case "false" :
         return /* false */0;
-    case "true" : 
+    case "true" :
         return /* true */1;
     default:
       throw [
@@ -6257,7 +6256,7 @@ function valid_float_lexem(s) {
         else {
           _i = i + 1 | 0;
           continue ;
-          
+
         }
       }
       else if (match !== 45) {
@@ -6266,7 +6265,7 @@ function valid_float_lexem(s) {
       else {
         _i = i + 1 | 0;
         continue ;
-        
+
       }
     }
   };
@@ -6341,11 +6340,11 @@ function flush_all() {
         Caml_io.caml_ml_flush(param[0]);
       }
       catch (exn){
-        
+
       }
       _param = param[1];
       continue ;
-      
+
     }
     else {
       return /* () */0;
@@ -6403,7 +6402,7 @@ function close_out_noerr(oc) {
     Caml_io.caml_ml_flush(oc);
   }
   catch (exn){
-    
+
   }
   try {
     return function () {
@@ -6470,7 +6469,7 @@ function unsafe_really_input(_, _$1, _ofs, _len) {
         _len = len - r | 0;
         _ofs = ofs + r | 0;
         continue ;
-        
+
       }
       else {
         throw Caml_builtin_exceptions.end_of_file;
@@ -6509,7 +6508,7 @@ function input_line(chan) {
         _param = param[1];
         _pos = pos - len | 0;
         continue ;
-        
+
       }
       else {
         return buf;
@@ -6552,7 +6551,7 @@ function input_line(chan) {
             accu
           ];
           continue ;
-          
+
         }
       }
       else if (accu) {
@@ -7028,7 +7027,7 @@ function escaped(s) {
             else {
               _i = i + 1 | 0;
               continue ;
-              
+
             }
           }
           else if (switcher > 57 || switcher < 1) {
@@ -7037,7 +7036,7 @@ function escaped(s) {
           else {
             _i = i + 1 | 0;
             continue ;
-            
+
           }
         }
         else {
@@ -7389,6 +7388,7 @@ function view_button(title, msg) {
   return Vdom.node("button", /* :: */[
               /* Event */Block.__(3, [
                   "click",
+                  "",
                   function (ev) {
                     console.log(/* array */[/* tuple */[
                             "Event",
@@ -7497,19 +7497,31 @@ function update(model) {
   };
 }
 
-function view_button(title, msg) {
+function view_button(title, key, msg) {
   return Vdom.node("button", /* :: */[
-              /* Event */Block.__(3, [
-                  "click",
-                  function (ev) {
-                    console.log(/* tuple */[
-                          "Event",
-                          ev,
-                          msg
-                        ]);
-                    return msg;
-                  }
-                ]),
+              key ? /* Event */Block.__(3, [
+                    "click",
+                    key[0],
+                    function (ev) {
+                      console.log(/* tuple */[
+                            "EventKeyed",
+                            ev,
+                            msg
+                          ]);
+                      return msg;
+                    }
+                  ]) : /* Event */Block.__(3, [
+                    "click",
+                    "",
+                    function (ev) {
+                      console.log(/* tuple */[
+                            "Event",
+                            ev,
+                            msg
+                          ]);
+                      return msg;
+                    }
+                  ]),
               /* [] */0
             ], /* :: */[
               /* Text */Block.__(0, [title]),
@@ -7530,19 +7542,19 @@ function view(model) {
               /* :: */[
                 Vdom.node("br", /* [] */0, /* [] */0),
                 /* :: */[
-                  view_button("Increment", /* Increment */0),
+                  view_button("Increment", /* None */0, /* Increment */0),
                   /* :: */[
                     Vdom.node("br", /* [] */0, /* [] */0),
                     /* :: */[
-                      view_button("Decrement", /* Decrement */1),
+                      view_button("Decrement", /* None */0, /* Decrement */1),
                       /* :: */[
                         Vdom.node("br", /* [] */0, /* [] */0),
                         /* :: */[
-                          view_button("Set to 42", /* Set */[42]),
+                          view_button("Set to 42", /* None */0, /* Set */[42]),
                           /* :: */[
                             Vdom.node("br", /* [] */0, /* [] */0),
                             /* :: */[
-                              model !== 0 ? view_button("Reset", /* Reset */2) : /* NoVNode */0,
+                              model !== 0 ? view_button("Reset", /* None */0, /* Reset */2) : /* NoVNode */0,
                               /* [] */0
                             ]
                           ]
@@ -7709,13 +7721,14 @@ exports.beginnerProgram     = beginnerProgram;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
-var Caml_obj     = require("bs-platform/lib/js/caml_obj");
-var Web_document = require("./web_document");
-var Block        = require("bs-platform/lib/js/block");
-var Curry        = require("bs-platform/lib/js/curry");
-var Web_node     = require("./web_node");
-var $$String     = require("bs-platform/lib/js/string");
-var List         = require("bs-platform/lib/js/list");
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Caml_obj                = require("bs-platform/lib/js/caml_obj");
+var Web_document            = require("./web_document");
+var Block                   = require("bs-platform/lib/js/block");
+var Curry                   = require("bs-platform/lib/js/curry");
+var Web_node                = require("./web_node");
+var $$String                = require("bs-platform/lib/js/string");
+var List                    = require("bs-platform/lib/js/list");
 
 function text(s) {
   return /* Text */Block.__(0, [s]);
@@ -7771,6 +7784,15 @@ function prop(key, value) {
 function on(name, cb) {
   return /* Event */Block.__(3, [
             name,
+            "",
+            cb
+          ]);
+}
+
+function onKey(name, key, cb) {
+  return /* Event */Block.__(3, [
+            name,
+            key,
             cb
           ]);
 }
@@ -7889,7 +7911,7 @@ function renderToHtmlString(param) {
                                                     /* :: */[
                                                       '="js:',
                                                       /* :: */[
-                                                        typeof param[1],
+                                                        typeof param[2],
                                                         /* :: */[
                                                           '"',
                                                           /* [] */0
@@ -7964,7 +7986,7 @@ function applyProperties(callbacks, elem, curProperties) {
                   case 2 : 
                       return elem;
                   case 3 : 
-                      var v = param[1];
+                      var v = param[2];
                       var cb = function (ev) {
                         return Curry._1(callbacks[0][/* enqueue */0], Curry._1(v, ev));
                       };
@@ -8042,18 +8064,204 @@ function createVNodeIntoElement(callbacks, vnode, elem) {
             ], elem);
 }
 
-function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _newProperties) {
+function _handlerName(idx) {
+  return "_handler_" + idx;
+}
+
+function patchVNodesOnElems_PropertiesApply_Add(callbacks, elem, idx, param) {
+  if (typeof param === "number") {
+    return /* () */0;
+  }
+  else {
+    switch (param.tag | 0) {
+      case 0 : 
+          console.log(/* tuple */[
+                "TODO:  Add RawProp Unhandled",
+                param[0],
+                param[1]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Add RawProp Unhandled"
+              ];
+      case 1 : 
+          console.log(/* tuple */[
+                "TODO:  Add Attribute Unhandled",
+                param[0],
+                param[1],
+                param[2]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Add Attribute Unhandled"
+              ];
+      case 2 : 
+          console.log(/* tuple */[
+                "TODO:  Add Data Unhandled",
+                param[0],
+                param[1]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Add Data Unhandled"
+              ];
+      case 3 : 
+          var f = param[2];
+          var t = param[0];
+          console.log(/* tuple */[
+                "Adding event",
+                elem,
+                t,
+                param[1],
+                f
+              ]);
+          var cb = function (ev) {
+            return Curry._1(callbacks[0][/* enqueue */0], Curry._1(f, ev));
+          };
+          elem["_handler_" + idx] = cb;
+          return Web_node.addEventListener(elem, t, cb, /* false */0);
+      case 4 : 
+          return List.fold_left(function (_, param) {
+                      return Web_node.setStyle(elem, param[0], param[1]);
+                    }, /* () */0, param[0]);
+      
+    }
+  }
+}
+
+function patchVNodesOnElems_PropertiesApply_Remove(_, elem, idx, param) {
+  if (typeof param === "number") {
+    return /* () */0;
+  }
+  else {
+    switch (param.tag | 0) {
+      case 0 : 
+          console.log(/* tuple */[
+                "TODO:  Remove RawProp Unhandled",
+                param[0],
+                param[1]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Remove RawProp Unhandled"
+              ];
+      case 1 : 
+          console.log(/* tuple */[
+                "TODO:  Remove Attribute Unhandled",
+                param[0],
+                param[1],
+                param[2]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Remove Attribute Unhandled"
+              ];
+      case 2 : 
+          console.log(/* tuple */[
+                "TODO:  Remove Data Unhandled",
+                param[0],
+                param[1]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Remove Data Unhandled"
+              ];
+      case 3 : 
+          var t = param[0];
+          console.log(/* tuple */[
+                "Removing Event",
+                t,
+                param[2]
+              ]);
+          var match = elem["_handler_" + idx];
+          if (match !== undefined) {
+            Web_node.removeEventListener(elem, t, match, /* false */0);
+          }
+          else {
+            throw [
+                  Caml_builtin_exceptions.failure,
+                  "Something else has messed with the DOM, inconsistent state!"
+                ];
+          }
+          return /* () */0;
+      case 4 : 
+          console.log(/* tuple */[
+                "TODO:  Remove Style Unhandled",
+                param[0]
+              ]);
+          throw [
+                Caml_builtin_exceptions.failure,
+                "TODO:  Remove Style Unhandled"
+              ];
+      
+    }
+  }
+}
+
+function patchVNodesOnElems_PropertiesApply_RemoveAdd(callbacks, elem, idx, oldProp, newProp) {
+  patchVNodesOnElems_PropertiesApply_Remove(callbacks, elem, idx, oldProp);
+  patchVNodesOnElems_PropertiesApply_Add(callbacks, elem, idx, newProp);
+  return /* () */0;
+}
+
+function patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, _newProp) {
+  if (typeof _newProp === "number") {
+    throw [
+          Caml_builtin_exceptions.failure,
+          "This should never be called as all entries through NoProp are gated."
+        ];
+  }
+  else {
+    switch (_newProp.tag | 0) {
+      case 0 : 
+          console.log(/* tuple */[
+                "TODO:  Mutate RawProp Unhandled",
+                _newProp[0],
+                _newProp[1]
+              ]);
+          return /* () */0;
+      case 1 : 
+          console.log(/* tuple */[
+                "TODO:  Mutate Attribute Unhandled",
+                _newProp[0],
+                _newProp[1],
+                _newProp[2]
+              ]);
+          return /* () */0;
+      case 2 : 
+          console.log(/* tuple */[
+                "TODO:  Mutate Data Unhandled",
+                _newProp[0],
+                _newProp[1]
+              ]);
+          return /* () */0;
+      case 3 : 
+          return patchVNodesOnElems_PropertiesApply_RemoveAdd(callbacks, elem, idx, oldProp, _newProp);
+      case 4 : 
+          console.log(/* tuple */[
+                "TODO:  Mutate Style Unhandled",
+                _newProp[0]
+              ]);
+          return /* () */0;
+      
+    }
+  }
+}
+
+function patchVNodesOnElems_PropertiesApply(callbacks, elem, _idx, _oldProperties, _newProperties) {
   while(true) {
     var newProperties = _newProperties;
     var oldProperties = _oldProperties;
+    var idx = _idx;
     if (oldProperties) {
-      var prop = oldProperties[0];
+      var oldProp = oldProperties[0];
       var exit = 0;
       if (newProperties) {
-        if (typeof prop === "number") {
+        if (typeof oldProp === "number") {
           if (typeof newProperties[0] === "number") {
             _newProperties = newProperties[1];
             _oldProperties = /* [] */0;
+            _idx = idx + 1 | 0;
             continue ;
             
           }
@@ -8062,60 +8270,38 @@ function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _ne
           }
         }
         else {
-          switch (prop.tag | 0) {
+          switch (oldProp.tag | 0) {
             case 0 : 
-                var match = newProperties[0];
-                if (typeof match === "number") {
+                var newProp = newProperties[0];
+                if (typeof newProp === "number") {
                   exit = 1;
                 }
-                else if (match.tag) {
+                else if (newProp.tag) {
                   exit = 1;
                 }
                 else {
-                  var newV = match[1];
-                  var newK = match[0];
-                  var oldV = prop[1];
-                  var oldK = prop[0];
-                  if (!(oldK === newK && oldV === newV)) {
-                    console.log(/* tuple */[
-                          "Unhandled RawProp",
-                          oldK,
-                          oldV,
-                          newK,
-                          newV
-                        ]);
+                  if (!(oldProp[0] === newProp[0] && oldProp[1] === newProp[1])) {
+                    patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, newProp);
                   }
                   _newProperties = newProperties[1];
                   _oldProperties = oldProperties[1];
+                  _idx = idx + 1 | 0;
                   continue ;
                   
                 }
                 break;
             case 1 : 
-                var match$1 = newProperties[0];
-                if (typeof match$1 === "number") {
+                var newProp$1 = newProperties[0];
+                if (typeof newProp$1 === "number") {
                   exit = 1;
                 }
-                else if (match$1.tag === 1) {
-                  var newV$1 = match$1[2];
-                  var newK$1 = match$1[1];
-                  var newNS = match$1[0];
-                  var oldV$1 = prop[2];
-                  var oldK$1 = prop[1];
-                  var oldNS = prop[0];
-                  if (!(Caml_obj.caml_equal(oldNS, newNS) && oldK$1 === newK$1 && oldV$1 === newV$1)) {
-                    console.log(/* tuple */[
-                          "Unhandled Attribute",
-                          oldNS,
-                          oldK$1,
-                          oldV$1,
-                          newNS,
-                          newK$1,
-                          newV$1
-                        ]);
+                else if (newProp$1.tag === 1) {
+                  if (!(Caml_obj.caml_equal(oldProp[0], newProp$1[0]) && oldProp[1] === newProp$1[1] && oldProp[2] === newProp$1[2])) {
+                    patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, newProp$1);
                   }
                   _newProperties = newProperties[1];
                   _oldProperties = oldProperties[1];
+                  _idx = idx + 1 | 0;
                   continue ;
                   
                 }
@@ -8124,26 +8310,17 @@ function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _ne
                 }
                 break;
             case 2 : 
-                var match$2 = newProperties[0];
-                if (typeof match$2 === "number") {
+                var newProp$2 = newProperties[0];
+                if (typeof newProp$2 === "number") {
                   exit = 1;
                 }
-                else if (match$2.tag === 2) {
-                  var newV$2 = match$2[1];
-                  var newK$2 = match$2[0];
-                  var oldV$2 = prop[1];
-                  var oldK$2 = prop[0];
-                  if (!(oldK$2 === newK$2 && oldV$2 === newV$2)) {
-                    console.log(/* tuple */[
-                          "Unhandled Data",
-                          oldK$2,
-                          oldV$2,
-                          newK$2,
-                          newV$2
-                        ]);
+                else if (newProp$2.tag === 2) {
+                  if (!(oldProp[0] === newProp$2[0] && oldProp[1] === newProp$2[1])) {
+                    patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, newProp$2);
                   }
                   _newProperties = newProperties[1];
                   _oldProperties = oldProperties[1];
+                  _idx = idx + 1 | 0;
                   continue ;
                   
                 }
@@ -8152,26 +8329,17 @@ function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _ne
                 }
                 break;
             case 3 : 
-                var match$3 = newProperties[0];
-                if (typeof match$3 === "number") {
+                var newProp$3 = newProperties[0];
+                if (typeof newProp$3 === "number") {
                   exit = 1;
                 }
-                else if (match$3.tag === 3) {
-                  var newCbev = match$3[1];
-                  var newTyp = match$3[0];
-                  var oldCbev = prop[1];
-                  var oldTyp = prop[0];
-                  if (!(oldTyp === newTyp && Caml_obj.caml_equal(oldCbev, newCbev))) {
-                    console.log(/* tuple */[
-                          "Unhandled Event",
-                          oldTyp,
-                          oldCbev,
-                          newTyp,
-                          newCbev
-                        ]);
+                else if (newProp$3.tag === 3) {
+                  if (!(oldProp[0] === newProp$3[0] && oldProp[1] === newProp$3[1])) {
+                    patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, newProp$3);
                   }
                   _newProperties = newProperties[1];
                   _oldProperties = oldProperties[1];
+                  _idx = idx + 1 | 0;
                   continue ;
                   
                 }
@@ -8180,22 +8348,17 @@ function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _ne
                 }
                 break;
             case 4 : 
-                var match$4 = newProperties[0];
-                if (typeof match$4 === "number") {
+                var newProp$4 = newProperties[0];
+                if (typeof newProp$4 === "number") {
                   exit = 1;
                 }
-                else if (match$4.tag === 4) {
-                  var newS = match$4[0];
-                  var oldS = prop[0];
-                  if (!Caml_obj.caml_equal(oldS, newS)) {
-                    console.log(/* tuple */[
-                          "Unhandled Style",
-                          oldS,
-                          newS
-                        ]);
+                else if (newProp$4.tag === 4) {
+                  if (!Caml_obj.caml_equal(oldProp[0], newProp$4[0])) {
+                    patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, newProp$4);
                   }
                   _newProperties = newProperties[1];
                   _oldProperties = oldProperties[1];
+                  _idx = idx + 1 | 0;
                   continue ;
                   
                 }
@@ -8208,85 +8371,30 @@ function patchVNodesOnElems_PropertiesApply(callbacks, elem, _oldProperties, _ne
         }
       }
       else {
-        console.log(/* tuple */[
-              "Unhandled Removal",
-              prop
-            ]);
-        _newProperties = /* [] */0;
-        _oldProperties = oldProperties[1];
+        patchVNodesOnElems_PropertiesApply_Remove(callbacks, elem, idx, oldProp);
+        _newProperties = oldProperties[1];
+        _oldProperties = /* [] */0;
+        _idx = idx + 1 | 0;
         continue ;
         
       }
       if (exit === 1) {
-        console.log(/* tuple */[
-              "Unhandled property change",
-              prop,
-              newProperties[0]
-            ]);
+        patchVNodesOnElems_PropertiesApply_RemoveAdd(callbacks, elem, idx, oldProp, newProperties[0]);
         _newProperties = newProperties[1];
         _oldProperties = oldProperties[1];
+        _idx = idx + 1 | 0;
         continue ;
         
       }
       
     }
     else if (newProperties) {
-      var match$5 = newProperties[0];
-      if (typeof match$5 === "number") {
-        _newProperties = newProperties[1];
-        _oldProperties = /* [] */0;
-        continue ;
-        
-      }
-      else {
-        switch (match$5.tag | 0) {
-          case 0 : 
-              console.log(/* tuple */[
-                    "Unhandled RawProp",
-                    match$5[0],
-                    match$5[1]
-                  ]);
-              _newProperties = newProperties[1];
-              _oldProperties = /* [] */0;
-              continue ;
-              case 1 : 
-              console.log(/* tuple */[
-                    "Unhandled Attribute",
-                    match$5[0],
-                    match$5[1],
-                    match$5[2]
-                  ]);
-              _newProperties = newProperties[1];
-              _oldProperties = /* [] */0;
-              continue ;
-              case 2 : 
-              console.log(/* tuple */[
-                    "Unhandled Data",
-                    match$5[0],
-                    match$5[1]
-                  ]);
-              _newProperties = newProperties[1];
-              _oldProperties = /* [] */0;
-              continue ;
-              case 3 : 
-              var cbev = match$5[1];
-              var cb = (function(cbev){
-              return function (ev) {
-                return Curry._1(callbacks[0][/* enqueue */0], Curry._1(cbev, ev));
-              }
-              }(cbev));
-              return Web_node.addEventListener(elem, match$5[0], cb, /* false */0);
-          case 4 : 
-              List.fold_left(function (elem, param) {
-                    Web_node.setStyle(elem, param[0], param[1]);
-                    return elem;
-                  }, elem, match$5[0]);
-              _newProperties = newProperties[1];
-              _oldProperties = /* [] */0;
-              continue ;
-              
-        }
-      }
+      patchVNodesOnElems_PropertiesApply_Add(callbacks, elem, idx, newProperties[0]);
+      _newProperties = newProperties[1];
+      _oldProperties = /* [] */0;
+      _idx = idx + 1 | 0;
+      continue ;
+      
     }
     else {
       return /* () */0;
@@ -8299,7 +8407,7 @@ function patchVNodesOnElems_Properties(callbacks, elem, oldProperties, newProper
     return /* () */0;
   }
   else {
-    return patchVNodesOnElems_PropertiesApply(callbacks, elem, oldProperties, newProperties);
+    return patchVNodesOnElems_PropertiesApply(callbacks, elem, 0, oldProperties, newProperties);
   }
 }
 
@@ -8498,33 +8606,39 @@ var noNode = /* NoVNode */0;
 
 var noProp = /* NoProp */0;
 
-exports.noNode                             = noNode;
-exports.text                               = text;
-exports.node                               = node;
-exports.keyedNode                          = keyedNode;
-exports.nsNode                             = nsNode;
-exports.nsKeyedNode                        = nsKeyedNode;
-exports.noProp                             = noProp;
-exports.prop                               = prop;
-exports.on                                 = on;
-exports.attr                               = attr;
-exports.attrNS                             = attrNS;
-exports.data                               = data;
-exports.style                              = style;
-exports.styles                             = styles;
-exports.renderToHtmlString                 = renderToHtmlString;
-exports.applyProperties                    = applyProperties;
-exports.createElementFromVNode_addProps    = createElementFromVNode_addProps;
-exports.createElementFromVNode_addChildren = createElementFromVNode_addChildren;
-exports.createElementFromVNode             = createElementFromVNode;
-exports.createVNodesIntoElement            = createVNodesIntoElement;
-exports.createVNodeIntoElement             = createVNodeIntoElement;
-exports.patchVNodesOnElems_PropertiesApply = patchVNodesOnElems_PropertiesApply;
-exports.patchVNodesOnElems_Properties      = patchVNodesOnElems_Properties;
-exports.patchVNodesOnElems_createElement   = patchVNodesOnElems_createElement;
-exports.patchVNodesOnElems                 = patchVNodesOnElems;
-exports.patchVNodesIntoElement             = patchVNodesIntoElement;
-exports.patchVNodeIntoElement              = patchVNodeIntoElement;
+exports.noNode                                       = noNode;
+exports.text                                         = text;
+exports.node                                         = node;
+exports.keyedNode                                    = keyedNode;
+exports.nsNode                                       = nsNode;
+exports.nsKeyedNode                                  = nsKeyedNode;
+exports.noProp                                       = noProp;
+exports.prop                                         = prop;
+exports.on                                           = on;
+exports.onKey                                        = onKey;
+exports.attr                                         = attr;
+exports.attrNS                                       = attrNS;
+exports.data                                         = data;
+exports.style                                        = style;
+exports.styles                                       = styles;
+exports.renderToHtmlString                           = renderToHtmlString;
+exports.applyProperties                              = applyProperties;
+exports.createElementFromVNode_addProps              = createElementFromVNode_addProps;
+exports.createElementFromVNode_addChildren           = createElementFromVNode_addChildren;
+exports.createElementFromVNode                       = createElementFromVNode;
+exports.createVNodesIntoElement                      = createVNodesIntoElement;
+exports.createVNodeIntoElement                       = createVNodeIntoElement;
+exports._handlerName                                 = _handlerName;
+exports.patchVNodesOnElems_PropertiesApply_Add       = patchVNodesOnElems_PropertiesApply_Add;
+exports.patchVNodesOnElems_PropertiesApply_Remove    = patchVNodesOnElems_PropertiesApply_Remove;
+exports.patchVNodesOnElems_PropertiesApply_RemoveAdd = patchVNodesOnElems_PropertiesApply_RemoveAdd;
+exports.patchVNodesOnElems_PropertiesApply_Mutate    = patchVNodesOnElems_PropertiesApply_Mutate;
+exports.patchVNodesOnElems_PropertiesApply           = patchVNodesOnElems_PropertiesApply;
+exports.patchVNodesOnElems_Properties                = patchVNodesOnElems_Properties;
+exports.patchVNodesOnElems_createElement             = patchVNodesOnElems_createElement;
+exports.patchVNodesOnElems                           = patchVNodesOnElems;
+exports.patchVNodesIntoElement                       = patchVNodesIntoElement;
+exports.patchVNodeIntoElement                        = patchVNodeIntoElement;
 /* No side effect */
 
 });
@@ -8535,44 +8649,44 @@ exports.patchVNodeIntoElement              = patchVNodeIntoElement;
 
 
 function polyfills() {
-  ((
-  // remove polyfill
-  (function() {
-    if (!('remove' in Element.prototype)) {
-      Element.prototype.remove = function() {
-        if (this.parentNode) {
-          this.parentNode.removeChild(this);
-        }
-      };
-    };
-  }())
+  ((
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
   ));
-  ((
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }())
+  ((
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   ));
   return /* () */0;
 }
@@ -8690,8 +8804,8 @@ function insertBefore(n, child, refNode) {
   return n.insertBefore(child, refNode);
 }
 
-function remove(n, _) {
-  return n.remove;
+function remove(n, child) {
+  return n.remove(child);
 }
 
 function setAttributeNS(n, namespace, key, value) {
@@ -8727,17 +8841,17 @@ function get_nodeValue(n) {
 }
 
 function remove_polyfill() {
-  return (
-  // remove polyfill
-  (function() {
-    if (!('remove' in Element.prototype)) {
-      Element.prototype.remove = function() {
-        if (this.parentNode) {
-          this.parentNode.removeChild(this);
-        }
-      };
-    };
-  }())
+  return (
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
   );
 }
 
@@ -8773,32 +8887,32 @@ function requestAnimationFrame(callback) {
 }
 
 function requestAnimationFrame_polyfill() {
-  return (
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }())
+  return (
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   );
 }
 
@@ -8808,7 +8922,7 @@ exports.requestAnimationFrame_polyfill = requestAnimationFrame_polyfill;
 
 });
 
-;require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+;require.alias("process/browser.js", "process");require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 

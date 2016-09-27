@@ -17,9 +17,11 @@ let update model =
 
 open Vdom
 
-let view_button title msg =
+let view_button title ?key msg =
   node "button"
-    [ on "click" (fun ev -> let () = Js.log ("Event", ev, msg) in msg)
+    [ match key with
+      | None -> on "click" (fun ev -> let () = Js.log ("Event", ev, msg) in msg)
+      | Some k -> onKey "click" k (fun ev -> let () = Js.log ("EventKeyed", ev, msg) in msg)
     ]
     [ text title
     ]
@@ -34,6 +36,7 @@ let view model =
     ; node "br" [] []
     ; view_button "Increment" Increment
     ; node "br" [] []
+    (* ; view_button "Decrement" ~key:(if model = 1 then "1" else "") (if model = 1 then Increment else Decrement) *)
     ; view_button "Decrement" Decrement
     ; node "br" [] []
     ; view_button "Set to 42" (Set 42)

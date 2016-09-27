@@ -27,6 +27,10 @@ type t = <
   nodeValue : string [@bs.set] [@bs.get {null}];
 > Js.t
 
+external getProp_asEventListener : t -> string -> Web_event.cb Js.undefined = "" [@@bs.get_index]
+
+external setProp_asEventListener : t -> string -> Web_event.cb Js.undefined -> unit = "" [@@bs.set_index]
+
 let style n = n##style
 
 let getStyle n key = getStyle n##style key
@@ -43,7 +47,7 @@ let removeChild n child = n##removeChild child
 
 let insertBefore n child refNode = n##insertBefore child refNode
 
-let remove n child = n##remove
+let remove n child = n##remove child
 
 let setAttributeNS n namespace key value = n##setAttributeNS namespace key value
 

@@ -11,7 +11,9 @@ type 'msg property =
   (* Attribute is (namespace, key, value) *)
   | Attribute of string option * string * string
   | Data of string * string
-  | Event of string * (Web.Event.t -> 'msg)
+  (* Event is (type, userkey, callback) *)
+  | Event of string * string * (Web.Event.t -> 'msg)
+  (* | Event of string * (Web.Event.t -> 'msg) *)
   | Style of (string * string) list
 
 type 'msg properties = 'msg property list
@@ -51,7 +53,11 @@ let noProp = NoProp
 
 let prop key value = RawProp (key, value)
 
-let on name cb = Event (name, cb)
+(* `on` sets no key, so it will not be updated on the DOM unless its position changes *)
+let on name cb = Event (name, "", cb)
+
+let onKey name key cb = Event (name, key, cb)
+(* let on name cb = Event (name, cb) *)
 
 let attr key value = Attribute (None, key, value)
 
@@ -75,7 +81,7 @@ let rec renderToHtmlString = function
       | RawProp (k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
       | Attribute (namespace, k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
       | Data (k, v) -> String.concat "" [" data-"; k; "=\""; v; "\""]
-      | Event (typ, v) -> String.concat "" [" "; typ; "=\"js:"; Js.typeof v; "\""]
+      | Event (typ, key, v) -> String.concat "" [" "; typ; "=\"js:"; Js.typeof v; "\""]
       | Style s -> String.concat "" [" style=\""; String.concat ";" (List.map (fun (k, v) -> String.concat "" [k;":";v;";"]) s); "\""]
     in
     String.concat ""
@@ -106,7 +112,7 @@ let applyProperties callbacks elem curProperties =
        | RawProp (k, v) -> elem
        | Attribute (namespace, k, v) -> elem
        | Data (k, v) -> elem
-       | Event (typ, v) ->
+       | Event (typ, _key, v) ->
          (* let () = Js.log [|"Event:"; typ|] in *)
          let cb : Web.Event.cb =
            fun [@bs] ev ->
@@ -197,54 +203,100 @@ let createVNodeIntoElement callbacks vnode elem =
       patchVNodesOnElems callbacks elem elems newIdx
   | _ -> fun newish -> Js.log "Blah" *)
 
+let _handlerName idx =
+  "_handler_" ^ (string_of_int idx)
 
-let rec patchVNodesOnElems_PropertiesApply callbacks elem oldProperties newProperties = match oldProperties, newProperties with
-  | [], [] -> ()
-  | [], NoProp :: newRest -> patchVNodesOnElems_PropertiesApply callbacks elem [] newRest
-  | [], RawProp (k, v) :: newRest -> let () = Js.log ("Unhandled RawProp", k, v) in patchVNodesOnElems_PropertiesApply callbacks elem [] newRest
-  | [], Attribute (namespace, k, v) :: newRest -> let () = Js.log ("Unhandled Attribute", namespace, k, v) in patchVNodesOnElems_PropertiesApply callbacks elem [] newRest
-  | [], Data (k, v) :: newRest -> let () = Js.log ("Unhandled Data", k, v) in patchVNodesOnElems_PropertiesApply callbacks elem [] newRest
-  | [], Event (typ, cbev) :: newRest ->
+let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
+  | NoProp -> ()
+  | RawProp (k, v) -> Js.log ("TODO:  Add RawProp Unhandled", k, v); failwith "TODO:  Add RawProp Unhandled"
+  | Attribute (namespace, k, v) -> Js.log ("TODO:  Add Attribute Unhandled", namespace, k, v); failwith "TODO:  Add Attribute Unhandled"
+  | Data (k, v) -> Js.log ("TODO:  Add Data Unhandled", k, v); failwith "TODO:  Add Data Unhandled"
+  | Event (t, k, f) ->
+    let () = Js.log ("Adding event", elem, t, k, f) in
     let cb : Web.Event.cb =
       fun [@bs] ev ->
-        let msg = cbev ev in
+        let msg = f ev in
         !callbacks.enqueue msg in
-    Web_node.addEventListener elem typ cb false
-  | [], Style s :: newRest ->
-    let _elem = List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k v in elem) elem s in
-    patchVNodesOnElems_PropertiesApply callbacks elem [] newRest
-  | prop :: oldRest, [] -> let () = Js.log ("Unhandled Removal", prop) in patchVNodesOnElems_PropertiesApply callbacks elem oldRest []
-  | NoProp :: oldRest, NoProp :: newRest -> patchVNodesOnElems_PropertiesApply callbacks elem [] newRest
-  | RawProp (oldK, oldV) :: oldRest, RawProp (newK, newV) :: newRest ->
+    let () = Web.Node.setProp_asEventListener elem (_handlerName idx) (Js.Undefined.return cb) in
+    Web.Node.addEventListener elem t cb false
+  | Style s ->
+    List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k v) () s
+
+let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
+  | NoProp -> ()
+  | RawProp (k, v) -> Js.log ("TODO:  Remove RawProp Unhandled", k, v); failwith "TODO:  Remove RawProp Unhandled"
+  | Attribute (namespace, k, v) -> Js.log ("TODO:  Remove Attribute Unhandled", namespace, k, v); failwith "TODO:  Remove Attribute Unhandled"
+  | Data (k, v) -> Js.log ("TODO:  Remove Data Unhandled", k, v); failwith "TODO:  Remove Data Unhandled"
+  | Event (t, k, f) ->
+    let () = Js.log ("Removing Event", t, f) in
+    let () = match Js.Undefined.to_opt (Web.Node.getProp_asEventListener elem (_handlerName idx)) with
+      | None -> failwith "Something else has messed with the DOM, inconsistent state!"
+      | Some cb -> Web.Node.removeEventListener elem t cb false in
+    ()
+  | Style s -> Js.log ("TODO:  Remove Style Unhandled", s); failwith "TODO:  Remove Style Unhandled"
+
+let patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp =
+  let () = patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx oldProp in
+  let () = patchVNodesOnElems_PropertiesApply_Add callbacks elem idx newProp in
+  ()
+
+let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = function
+  | NoProp as _newProp -> failwith "This should never be called as all entries through NoProp are gated."
+  | RawProp (k, v) as _newProp -> Js.log ("TODO:  Mutate RawProp Unhandled", k, v)
+  | Attribute (namespace, k, v) as _newProp -> Js.log ("TODO:  Mutate Attribute Unhandled", namespace, k, v)
+  | Data  (k, v) as _newProp -> Js.log ("TODO:  Mutate Data Unhandled", k, v)
+  | Event (t, k, f) as newProp -> patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp
+  | Style s as _newProp -> Js.log ("TODO:  Mutate Style Unhandled", s)
+
+let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newProperties = match oldProperties, newProperties with
+  | [], [] -> ()
+  | [], newProp :: newRest ->
+    let () = patchVNodesOnElems_PropertiesApply_Add callbacks elem idx newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) [] newRest
+  | oldProp :: oldRest, [] ->
+    let () = patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx oldProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) [] oldRest
+  (* NoProp *)
+  | NoProp :: oldRest, NoProp :: newRest -> patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) [] newRest
+  (* RawProp *)
+  | (RawProp (oldK, oldV) as oldProp) :: oldRest, (RawProp (newK, newV) as newProp) :: newRest ->
     let () = if oldK = newK && oldV = newV then () else
-        Js.log ("Unhandled RawProp", oldK, oldV, newK, newV) in
-    patchVNodesOnElems_PropertiesApply callbacks elem oldRest newRest
-  | Attribute (oldNS, oldK, oldV) :: oldRest, Attribute (newNS, newK, newV) :: newRest ->
+      patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
+  (* Attribute *)
+  | (Attribute (oldNS, oldK, oldV) as oldProp) :: oldRest, (Attribute (newNS, newK, newV) as newProp) :: newRest ->
     let () = if oldNS = newNS && oldK = newK && oldV = newV then () else
-        Js.log ("Unhandled Attribute", oldNS, oldK, oldV, newNS, newK, newV) in
-    patchVNodesOnElems_PropertiesApply callbacks elem oldRest newRest
-  | Data (oldK, oldV) :: oldRest, Data (newK, newV) :: newRest ->
+      patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
+  (* Data *)
+  | (Data (oldK, oldV) as oldProp) :: oldRest, (Data (newK, newV) as newProp) :: newRest ->
     let () = if oldK = newK && oldV = newV then () else
-        Js.log ("Unhandled Data", oldK, oldV, newK, newV) in
-    patchVNodesOnElems_PropertiesApply callbacks elem oldRest newRest
-  | Event (oldTyp, oldCbev) :: oldRest, Event (newTyp, newCbev) :: newRest ->
-    let () = if oldTyp = newTyp && oldCbev = newCbev then () else (* TODO:  Figure out if this is a half-decent way of function comaprison, probably not... *)
-        Js.log ("Unhandled Event", oldTyp, oldCbev, newTyp, newCbev) in
-    patchVNodesOnElems_PropertiesApply callbacks elem oldRest newRest
-  | Style oldS :: oldRest, Style newS :: newRest ->
+      patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
+  (* Event *)
+  (* | Event (oldTyp, oldKey, oldCbev) :: oldRest, Event (newTyp, newKey, newCbev) :: newRest ->
+     let () = if oldTyp = newTyp && oldKey = newKey then () else *)
+  | (Event (oldTyp, oldKey, oldCbev) as oldProp) :: oldRest, (Event (newTyp, newKey, newCbev) as newProp) :: newRest ->
+    (* TODO:  This is such a *BAD* way of doing this, but event removal needs to be passed in the same func as what was
+       registered.  So we enforce a string key, which is more than what most virtualdoms allow for at least... *)
+    let () = if oldTyp = newTyp && oldKey = newKey then () else
+      patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
+  (* Style *)
+  | (Style oldS as oldProp) :: oldRest, (Style newS as newProp) :: newRest ->
     let () = if oldS = newS then () else
-        Js.log ("Unhandled Style", oldS, newS) in
-    patchVNodesOnElems_PropertiesApply callbacks elem oldRest newRest
+      patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
   | oldProp :: oldRest, newProp :: newRest ->
-    let () = Js.log ("Unhandled property change", oldProp, newProp) in
-    patchVNodesOnElems_PropertiesApply callbacks elem oldRest newRest
+    let () = patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp in
+    patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
 
 
 let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
   if oldProperties = newProperties then
     ()
   else
-    patchVNodesOnElems_PropertiesApply callbacks elem oldProperties newProperties
+    patchVNodesOnElems_PropertiesApply callbacks elem 0 oldProperties newProperties
 
      (* | NoProp -> elem
      | RawProp (k, v) -> elem
