@@ -16,6 +16,10 @@ module.exports = {
   },
 
   plugins: {
+    closurecompiler: {
+      compilationLevel: 'SIMPLE', //'ADVANCED', // 'SIMPLE', // 'WHITESPACE_ONLY',
+      createSourceMap: true
+    },
     bucklescriptBrunch: {
       // binPaths: {}, // If empty it will look in the node_modules then the global path
       bscCwd: "src",

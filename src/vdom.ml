@@ -56,7 +56,7 @@ let prop key value = RawProp (key, value)
 (* `on` sets no key, so it will not be updated on the DOM unless its position changes *)
 let on name cb = Event (name, "", cb)
 
-let onKey name key cb = Event (name, key, cb)
+let on name ?(key="") cb = Event (name, key, cb)
 (* let on name cb = Event (name, cb) *)
 
 let attr key value = Attribute (None, key, value)
@@ -213,7 +213,7 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
   | Attribute (namespace, k, v) -> Js.log ("TODO:  Add Attribute Unhandled", namespace, k, v); failwith "TODO:  Add Attribute Unhandled"
   | Data (k, v) -> Js.log ("TODO:  Add Data Unhandled", k, v); failwith "TODO:  Add Data Unhandled"
   | Event (t, k, f) ->
-    let () = Js.log ("Adding event", elem, t, k, f) in
+    (* let () = Js.log ("Adding event", elem, t, k, f) in *)
     let cb : Web.Node.event_cb =
       fun [@bs] ev ->
         match f ev with
@@ -232,7 +232,7 @@ let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
   | Attribute (namespace, k, v) -> Js.log ("TODO:  Remove Attribute Unhandled", namespace, k, v); failwith "TODO:  Remove Attribute Unhandled"
   | Data (k, v) -> Js.log ("TODO:  Remove Data Unhandled", k, v); failwith "TODO:  Remove Data Unhandled"
   | Event (t, k, f) ->
-    let () = Js.log ("Removing Event", t, f) in
+    (* let () = Js.log ("Removing Event", t, f) in *)
     let () = match Js.Undefined.to_opt (Web.Node.getProp_asEventListener elem (_handlerName idx)) with
       | None -> failwith "Something else has messed with the DOM, inconsistent state!"
       | Some cb -> Web.Node.removeEventListener elem t cb false in
@@ -250,8 +250,22 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
   | RawProp (k, v) as _newProp -> Web.Node.setProp elem k v
   | Attribute (namespace, k, v) as _newProp -> Js.log ("TODO:  Mutate Attribute Unhandled", namespace, k, v)
   | Data  (k, v) as _newProp -> Js.log ("TODO:  Mutate Data Unhandled", k, v)
+  (* There is a bug here in Event on mutation! *)
   | Event (t, k, f) as newProp -> patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp
-  | Style s as _newProp -> Js.log ("TODO:  Mutate Style Unhandled", s)
+  | Style s as _newProp ->
+    match oldProp with
+    | Style oldS ->
+      List.fold_left2 (fun () (ok, ov) (nk, nv) ->
+          if ok = nk then
+            if ov = nv then
+              ()
+            else
+              Web.Node.setStyle elem nk nv
+          else
+            let () = Web.Node.setStyle elem ok "" in
+            Web.Node.setStyle elem nk nv
+        ) () oldS s
+    | _ -> failwith "Passed a non-Style to a new Style as a Mutations while the old Style is not actually a style!"
 
 let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newProperties = match oldProperties, newProperties with
   | [], [] -> ()

@@ -11,6 +11,7 @@ external setStyle : style -> string -> string -> unit = "" [@@bs.set_index]
 
 type t = <
   style : style [@bs.get];
+  value : string Js.undefined [@bs.set] [@bs.get];
   childNodes : t Js.Array.t [@bs.get];
   firstChild : t Js.Null.t [@bs.get];
   appendChild : t -> t [@bs.meth];

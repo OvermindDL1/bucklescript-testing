@@ -75,29 +75,30 @@ let hidden b = if b then prop "hidden" "hidden" else noProp
 
 (* Events *)
 
-let on typ cb = on typ cb
+let on typ ?(key="") cb = on typ ~key:key cb
 
-let _eventGetTarget ev = Js.Undefined.to_opt ev##target
-
-let _eventGetTargetValue ev = match _eventGetTarget ev with
-  | None -> None
-  | Some target -> Js.Undefined.to_opt target##value
-
-let onInput msg =
-  on "input" (fun ev -> Some (msg "Testering"))
+let onInput ?(key="") msg =
+  on "input" ~key:key (*(fun ev -> Some (msg "Testering"))*)
+    (fun ev ->
+       match Js.Undefined.to_opt ev##target with
+       | None -> None
+       | Some target -> match Js.Undefined.to_opt target##value with
+         | None -> None
+         | Some value -> Some (msg value)
+    )
     (* (fun ev -> match _eventGetTargetValue ev with
        | None -> failwith "onInput is not attached to something with a target.value on its event"
-       | Some value -> cb value
+       | Some value -> msg value
        ) *)
 
-let onClick msg =
-  on "click" (fun ev -> Some msg)
+let onClick ?(key="") msg =
+  on "click" ~key:key (fun ev -> Some msg)
 
-let onDoubleClick msg =
-  on "dblclick" (fun ev -> Some msg)
+let onDoubleClick ?(key="") msg =
+  on "dblclick" ~key:key (fun ev -> Some msg)
 
-let onBlur msg =
-  on "blur" (fun ev -> Some msg)
+let onBlur ?(key="") msg =
+  on "blur" ~key:key (fun ev -> Some msg)
 
-let onFocus msg =
-  on "focus" (fun ev -> Some msg)
+let onFocus ?(key="") msg =
+  on "focus" ~key:key (fun ev -> Some msg)

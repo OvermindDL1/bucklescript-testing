@@ -122,15 +122,16 @@ let update model = function
 
 (* View rendering *)
 
-let onEnter msg =
+let onEnter ?(key="") msg =
   let tagger ev = match ev##keyCode with
     | 13 -> Some msg
     | _ -> None
   in
-  on "keydown" tagger
+  on "keydown" ~key:key tagger
 
 
 let viewEntry todo =
+  let key = string_of_int todo.id in
   li
     [ classList
         [ ("completed", todo.completed)
@@ -143,15 +144,15 @@ let viewEntry todo =
             [ class' "toggle"
             ; type' "checkbox"
             ; checked todo.completed
-            ; onClick (Check (todo.id, not todo.completed))
+            ; onClick ~key:(key ^ string_of_bool todo.completed) (Check (todo.id, not todo.completed))
             ]
             []
         ; label
-            [ onDoubleClick (EditingEntry (todo.id, true)) ]
+            [ onDoubleClick ~key:key (EditingEntry (todo.id, true)) ]
             [ text todo.description ]
         ; button
             [ class' "destroy"
-            ; onClick (Delete todo.id)
+            ; onClick ~key:key (Delete todo.id)
             ]
             []
         ]
@@ -160,9 +161,9 @@ let viewEntry todo =
         ; value todo.description
         ; name "title"
         ; id ("todo-" ^ string_of_int todo.id)
-        ; onInput (fun value -> UpdateEntry (todo.id, value))
-        ; onBlur (EditingEntry (todo.id, false))
-        ; onEnter (EditingEntry (todo.id, false))
+        ; onInput ~key:key (fun value -> UpdateEntry (todo.id, value))
+        ; onBlur ~key:key (EditingEntry (todo.id, false))
+        ; onEnter ~key:key (EditingEntry (todo.id, false))
         ]
         []
     ]
@@ -187,7 +188,7 @@ let viewEntries visibility entries =
         ; type' "checkbox"
         ; name "toggle"
         ; checked allCompleted
-        ; onClick (CheckAll (not allCompleted))
+        ; onClick ~key:(string_of_bool allCompleted) (CheckAll (not allCompleted))
         ]
         []
     ; label
@@ -226,7 +227,7 @@ let viewControlsCount entriesLeft =
 
 let visibilitySwap uri visibility actualVisibility =
   li
-    [ onClick (ChangeVisibility visibility) ]
+    [ onClick ~key:visibility (ChangeVisibility visibility) ]
     [ a [ href uri; classList [("selected", visibility = actualVisibility)] ]
         [ text visibility ]
     ]
@@ -274,7 +275,7 @@ let infoFooter =
     ; p []
         [ text "Written by "
         ; a [ href "https://github.com/evancz" ] [ text "Evan Czaplicki" ]
-        ; text " and "
+        ; text " and converted by "
         ; a [ href "https://github.com/overminddl1" ] [ text "OvermindDL1" ]
         ]
     ; p []
@@ -297,33 +298,6 @@ let view model =
       ]
     ; infoFooter
     ]
-
-(* let view_button title ?key msg =
-  node "button"
-    [ match key with
-      | None -> on "click" (fun ev -> let () = Js.log ("Event", ev, msg) in msg)
-      | Some k -> onKey "click" k (fun ev -> let () = Js.log ("EventKeyed", ev, msg) in msg)
-    ]
-    [ text title
-    ]
-
-let view model =
-  let () = Js.log "View called" in
-  node "div"
-    []
-    [ node "span"
-        [ style "text-weight" "bold" ]
-        [ text (string_of_int model) ]
-    ; node "br" [] []
-    ; view_button "Increment" Increment
-    ; node "br" [] []
-    (* ; view_button "Decrement" ~key:(if model = 1 then "1" else "") (if model = 1 then Increment else Decrement) *)
-    ; view_button "Decrement" Decrement
-    ; node "br" [] []
-    ; view_button "Set to 42" (Set 42)
-    ; node "br" [] []
-    ; if model <> 0 then view_button "Reset" Reset else noNode
-    ] *)
 
 
 (* Main Entrance *)
