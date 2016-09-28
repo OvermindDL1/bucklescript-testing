@@ -7,12 +7,12 @@
 
 type 'msg property =
   | NoProp
-  | RawProp of string * string  (* This last string needs to be made something more generic, maybe a function... *)
+  | RawProp of string * string (* TODO:  This last string needs to be made something more generic, maybe a function... *)
   (* Attribute is (namespace, key, value) *)
   | Attribute of string option * string * string
   | Data of string * string
   (* Event is (type, userkey, callback) *)
-  | Event of string * string * (Web.Event.t -> 'msg)
+  | Event of string * string * (Web.Node.event -> 'msg option)
   (* | Event of string * (Web.Event.t -> 'msg) *)
   | Style of (string * string) list
 
@@ -114,10 +114,11 @@ let applyProperties callbacks elem curProperties =
        | Data (k, v) -> elem
        | Event (typ, _key, v) ->
          (* let () = Js.log [|"Event:"; typ|] in *)
-         let cb : Web.Event.cb =
+         let cb : Web.Node.event_cb =
            fun [@bs] ev ->
-             let msg = v ev in
-             !callbacks.enqueue msg in
+             match v ev with
+             | None -> ()
+             | Some msg -> !callbacks.enqueue msg in
          let () = Web_node.addEventListener elem typ cb false in
          elem
        | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k v in elem) elem s
@@ -208,15 +209,18 @@ let _handlerName idx =
 
 let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
   | NoProp -> ()
-  | RawProp (k, v) -> Js.log ("TODO:  Add RawProp Unhandled", k, v); failwith "TODO:  Add RawProp Unhandled"
+  | RawProp (k, v) -> Web.Node.setProp elem k v
   | Attribute (namespace, k, v) -> Js.log ("TODO:  Add Attribute Unhandled", namespace, k, v); failwith "TODO:  Add Attribute Unhandled"
   | Data (k, v) -> Js.log ("TODO:  Add Data Unhandled", k, v); failwith "TODO:  Add Data Unhandled"
   | Event (t, k, f) ->
     let () = Js.log ("Adding event", elem, t, k, f) in
-    let cb : Web.Event.cb =
+    let cb : Web.Node.event_cb =
       fun [@bs] ev ->
-        let msg = f ev in
-        !callbacks.enqueue msg in
+        match f ev with
+        | None -> ()
+        | Some msg -> !callbacks.enqueue msg in
+        (* let msg = f ev in
+        !callbacks.enqueue msg in *)
     let () = Web.Node.setProp_asEventListener elem (_handlerName idx) (Js.Undefined.return cb) in
     Web.Node.addEventListener elem t cb false
   | Style s ->
@@ -224,7 +228,7 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
 
 let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
   | NoProp -> ()
-  | RawProp (k, v) -> Js.log ("TODO:  Remove RawProp Unhandled", k, v); failwith "TODO:  Remove RawProp Unhandled"
+  | RawProp (k, v) -> Web.Node.setProp elem k Js.Undefined.empty
   | Attribute (namespace, k, v) -> Js.log ("TODO:  Remove Attribute Unhandled", namespace, k, v); failwith "TODO:  Remove Attribute Unhandled"
   | Data (k, v) -> Js.log ("TODO:  Remove Data Unhandled", k, v); failwith "TODO:  Remove Data Unhandled"
   | Event (t, k, f) ->
@@ -243,7 +247,7 @@ let patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newP
 
 let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = function
   | NoProp as _newProp -> failwith "This should never be called as all entries through NoProp are gated."
-  | RawProp (k, v) as _newProp -> Js.log ("TODO:  Mutate RawProp Unhandled", k, v)
+  | RawProp (k, v) as _newProp -> Web.Node.setProp elem k v
   | Attribute (namespace, k, v) as _newProp -> Js.log ("TODO:  Mutate Attribute Unhandled", namespace, k, v)
   | Data  (k, v) as _newProp -> Js.log ("TODO:  Mutate Data Unhandled", k, v)
   | Event (t, k, f) as newProp -> patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp

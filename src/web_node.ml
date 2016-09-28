@@ -21,15 +21,24 @@ type t = <
   setAttribute : string -> string -> unit [@bs.meth];
   removeAttributeNS : string -> string -> unit [@bs.meth];
   removeAttribute : string -> unit [@bs.meth];
-  addEventListener : string -> Web_event.cb -> Web_event.options -> unit [@bs.meth];
-  removeEventListener : string -> Web_event.cb -> Web_event.options -> unit [@bs.meth];
+  addEventListener : string -> t Web_event.cb -> Web_event.options -> unit [@bs.meth];
+  removeEventListener : string -> t Web_event.cb -> Web_event.options -> unit [@bs.meth];
   (* Text Nodes only *)
   nodeValue : string [@bs.set] [@bs.get {null}];
 > Js.t
 
-external getProp_asEventListener : t -> string -> Web_event.cb Js.undefined = "" [@@bs.get_index]
+type event = t Web_event.t
 
-external setProp_asEventListener : t -> string -> Web_event.cb Js.undefined -> unit = "" [@@bs.set_index]
+type event_cb = t Web_event.cb
+
+
+external getProp_asEventListener : t -> 'key -> t Web_event.cb Js.undefined = "" [@@bs.get_index]
+
+external setProp_asEventListener : t -> 'key -> t Web_event.cb Js.undefined -> unit = "" [@@bs.set_index]
+
+external getProp : t -> 'key -> 'value = "" [@@bs.get_index]
+
+external setProp : t -> 'key -> 'value -> unit = "" [@@bs.set_index]
 
 let style n = n##style
 

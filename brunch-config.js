@@ -20,16 +20,11 @@ module.exports = {
       // binPaths: {}, // If empty it will look in the node_modules then the global path
       bscCwd: "src",
       tempOutputFolder: "tmp",
-      compileAllAtOnce: true,
+      compileAllAtOnce: false,
       bscParameters: [
-        // "-c",
-        // "-bs-main", "main_entry.ml",
-        // "-o", "../static",
-        // "-bs-package-name", "testering",
-        // "-bs-package-output", "static",
-        // "-bs-eval",
         "-bs-cross-module-opt"
-      ]
+      ],
+      verbosity: 1
     }
   },
 

@@ -20,8 +20,8 @@ open Vdom
 let view_button title ?key msg =
   node "button"
     [ match key with
-      | None -> on "click" (fun ev -> let () = Js.log ("Event", ev, msg) in msg)
-      | Some k -> onKey "click" k (fun ev -> let () = Js.log ("EventKeyed", ev, msg) in msg)
+      | None -> on "click" (fun ev -> let () = Js.log ("Event", ev, msg) in Some msg)
+      | Some k -> onKey "click" k (fun ev -> let () = Js.log ("EventKeyed", ev, msg) in Some msg)
     ]
     [ text title
     ]

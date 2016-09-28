@@ -1,7 +1,7 @@
 
-(* let load = Main_counter.main (Web.Document.getElementById "content") *)
+(* let load = Main_counter.main (Web.Document.getElementById "content") () *)
 
-let load = Main_todo.main (Web.Document.getElementById "content")
+let load = Main_todo.main (Web.Document.getElementById "content") ()
 
 
 (* let () =

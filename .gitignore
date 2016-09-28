@@ -1,5 +1,6 @@
 # Node stuff first
 /node_modules
+/npm-debug.log
 
 # Ocaml binary left-overs
 *.cmi

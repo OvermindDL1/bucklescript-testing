@@ -1,6 +1,12 @@
+(* type target = <
+  value : string Js.undefined [@bs.get];
+> Js.t *)
 
-type t
+type 'node t = <
+  target : 'node Js.undefined [@bs.get];
+  keyCode : int [@bs.get];
+> Js.t
 
-type cb = t -> unit [@bs]
+type 'node cb = 'node t -> unit [@bs]
 
 type options = bool (* false | true (* TODO:  Define a javascript record as another option *) *)

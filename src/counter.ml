@@ -1,4 +1,4 @@
-
+(*
 type model =
   { count : int
   ; more : string
@@ -22,7 +22,7 @@ open Vdom
 
 let view_button title msg =
   node "button"
-    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in msg)
+    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in Some msg)
     ]
     [ text title
     ]
@@ -37,4 +37,4 @@ let view model =
     ; view_button "Decrement" Decrement
     ; if model.count <> 0 then view_button "Reset" Reset else noNode
     ; view_button "Set to 42" (Set 42)
-    ]
+    ] *)

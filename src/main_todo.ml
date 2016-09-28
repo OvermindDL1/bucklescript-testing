@@ -64,6 +64,7 @@ type msg =
 (* How we update our Model on a given Msg? *)
 let update model = function
   | NoOp -> model, Cmd.none
+
   | Add ->
     { model with
       uid = model.uid + 1;
@@ -74,33 +75,40 @@ let update model = function
         else
           (newEntry model.field model.uid) :: model.entries
     }, Cmd.none
+
   | UpdateField field -> { model with field }, Cmd.none
+
   | EditingEntry (id, editing) ->
     let updateEntry t =
       if t.id = id then { t with editing } else t
     in { model with
          entries = List.map updateEntry model.entries
        }, Cmd.none
+
   | UpdateEntry (id, description) ->
     let updateEntry t =
       if t.id = id then { t with description } else t
     in { model with
          entries = List.map updateEntry model.entries
        }, Cmd.none
+
   | Delete id ->
     { model with
       entries = List.filter (fun t -> t.id <> id) model.entries
     }, Cmd.none
+
   | DeleteComplete ->
     { model with
       entries = List.filter (fun {completed} -> not completed) model.entries
     }, Cmd.none
+
   | Check (id, completed) ->
     let updateEntry t =
       if t.id = id then { t with completed } else t
     in { model with
          entries = List.map updateEntry model.entries
        }, Cmd.none
+
   | CheckAll completed ->
     let updateEntry t =
       { t with completed }
@@ -114,29 +122,175 @@ let update model = function
 
 (* View rendering *)
 
+let onEnter msg =
+  let tagger ev = match ev##keyCode with
+    | 13 -> Some msg
+    | _ -> None
+  in
+  on "keydown" tagger
+
+
+let viewEntry todo =
+  li
+    [ classList
+        [ ("completed", todo.completed)
+        ; ("editing", todo.editing)
+        ]
+    ]
+    [ div
+        [ class' "view" ]
+        [ input
+            [ class' "toggle"
+            ; type' "checkbox"
+            ; checked todo.completed
+            ; onClick (Check (todo.id, not todo.completed))
+            ]
+            []
+        ; label
+            [ onDoubleClick (EditingEntry (todo.id, true)) ]
+            [ text todo.description ]
+        ; button
+            [ class' "destroy"
+            ; onClick (Delete todo.id)
+            ]
+            []
+        ]
+    ; input
+        [ class' "edit"
+        ; value todo.description
+        ; name "title"
+        ; id ("todo-" ^ string_of_int todo.id)
+        ; onInput (fun value -> UpdateEntry (todo.id, value))
+        ; onBlur (EditingEntry (todo.id, false))
+        ; onEnter (EditingEntry (todo.id, false))
+        ]
+        []
+    ]
+
+
+let viewEntries visibility entries =
+  let isVisible todo =
+    match visibility with
+    | "Completed" -> todo.completed
+    | "Active" -> not todo.completed
+    | _ -> true in
+  let allCompleted =
+    List.for_all (fun {completed} -> completed) entries in
+  let cssVisibility =
+    if [] = entries then "hidden" else "visible" in
+  section
+    [ class' "main"
+    ; style "visibility" cssVisibility
+    ]
+    [ input
+        [ class' "toggle-all"
+        ; type' "checkbox"
+        ; name "toggle"
+        ; checked allCompleted
+        ; onClick (CheckAll (not allCompleted))
+        ]
+        []
+    ; label
+        [ for' "toggle-all" ]
+        [ text "Mark all as complete" ]
+    ; ul [ class' "todo-list" ] (List.map viewEntry (List.filter isVisible entries))
+]
+
+
 let viewInput task =
   header
-    [ className "header" ]
+    [ class' "header" ]
     [ h1 [] [ text "todos" ]
     ; input
-        [ className "new-todo"
+        [ class' "new-todo"
         ; placeholder "What needs to be done?"
-        ; autofocus True
+        ; autofocus true
         ; value task
         ; name "newTodo"
-        ; onInput UpdateField
+        ; onInput (fun str -> (UpdateField str))
         ; onEnter Add
         ]
         []
     ]
 
+
+let viewControlsCount entriesLeft =
+  let item_ =
+    if entriesLeft == 1 then " item" else " items" in
+  span
+    [ class' "todo-count" ]
+    [ strong [] [ text (string_of_int entriesLeft) ]
+    ; text (item_ ^ " left")
+    ]
+
+
+let visibilitySwap uri visibility actualVisibility =
+  li
+    [ onClick (ChangeVisibility visibility) ]
+    [ a [ href uri; classList [("selected", visibility = actualVisibility)] ]
+        [ text visibility ]
+    ]
+
+
+let viewControlsFilters visibility =
+  ul
+    [ class' "filters" ]
+    [ visibilitySwap "#/" "All" visibility
+    ; text " "
+    ; visibilitySwap "#/active" "Active" visibility
+    ; text " "
+    ; visibilitySwap "#/completed" "Completed" visibility
+    ]
+
+
+let viewControlsClear entriesCompleted =
+  button
+    [ class' "clear-completed"
+    ; hidden (entriesCompleted == 0)
+    ; onClick DeleteComplete
+    ]
+    [ text ("Clear completed (" ^ string_of_int entriesCompleted ^ ")")
+    ]
+
+
+let viewControls visibility entries =
+  let entriesCompleted =
+    List.length (List.filter (fun {completed} -> completed) entries) in
+  let entriesLeft =
+    List.length entries - entriesCompleted in
+  footer
+    [ class' "footer"
+    ; hidden (List.length entries = 0)
+    ]
+    [ viewControlsCount entriesLeft
+    ; viewControlsFilters visibility
+    ; viewControlsClear entriesCompleted
+    ]
+
+
+let infoFooter =
+  footer [ class' "info" ]
+    [ p [] [ text "Double-click to edit a todo" ]
+    ; p []
+        [ text "Written by "
+        ; a [ href "https://github.com/evancz" ] [ text "Evan Czaplicki" ]
+        ; text " and "
+        ; a [ href "https://github.com/overminddl1" ] [ text "OvermindDL1" ]
+        ]
+    ; p []
+    [ text "Part of "
+    ; a [ href "http://todomvc.com" ] [ text "TodoMVC" ]
+    ]
+]
+
+
 let view model =
   div
-    [ className "todomvc-wrapper"
+    [ class' "todomvc-wrapper"
     ; style "visibility" "hidden"
     ]
     [ section
-      [ className "todoapp" ]
+      [ class' "todoapp" ]
       [ viewInput model.field
       ; viewEntries model.visibility model.entries
       ; viewControls model.visibility model.entries

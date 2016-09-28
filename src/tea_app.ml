@@ -30,9 +30,13 @@ type ('flags, 'model, 'msg) program = {
 type ('model, 'msg) beginnerProgram = {
   model : 'model;
   update : 'model -> 'msg -> 'model;
-  view : 'model -> 'msg Vdom.t;
+  view : 'model -> 'msg  Vdom.t;
 }
 
+
+type 'msg programInterface = {
+  pushMsg : 'msg -> unit;
+}
 
 
 
@@ -44,18 +48,28 @@ type ('model, 'msg) beginnerProgram = {
    handler *)
 
 let programStateWrapper initModel pump =
+(* let programStateWrapper : 'model -> ('msg Vdom.applicationCallbacks ref -> 'model -> 'msg) -> ('msg -> unit) = fun initModel pump -> *)
+(* let programStateWrapper : 'model -> ('msg Vdom.applicationCallbacks ref -> 'model -> 'msg -> 'model) -> 'msg programInterface = fun initModel pump -> *)
   let open Vdom in
   let model = ref initModel in
   let callbacks = ref { enqueue = fun msg -> () } in
   let pumperC () = pump callbacks in
   let pumper = pumperC () in
+  (* let handler = function
+    | None -> ()
+    | Some msg ->
+      let newModel = pumper !model msg in
+      let () = (model := newModel) in
+      () in *)
   let handler msg =
     let newModel = pumper !model msg in
-    (model := newModel) in
-  let () = (callbacks := {
-      enqueue = handler;
-    }) in
-  handler
+    let () = (model := newModel) in
+    () in
+  let finalizedCBs : 'msg Vdom.applicationCallbacks = {
+    enqueue = fun msg -> handler msg;
+  } in
+  let () = (callbacks := finalizedCBs) in
+  { pushMsg = handler; }
 
 let programLoop update view initModel = function
   | None -> fun callbacks -> fun model msg ->
@@ -83,7 +97,7 @@ let programLoop update view initModel = function
         | None -> ()
         | Some firstChild -> let _removedChild = Web.Node.removeChild parentNode firstChild in ()
       done in
-    let () = Js.log (Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom)) in
+    let () = Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom) in
     let handler model msg =
       let newModel, _newCmd = update model msg in (* TODO:  Process commands to callbacks *)
       (* TODO:  Figure out if it is better to get view on update like here, or do it in doRender... *)
@@ -98,13 +112,16 @@ let programLoop update view initModel = function
     handler
 
 
-let program {init; update; view} pnode flags =
+(* let program {init; update; view} pnode flags = *)
+(* let program : ('flags, 'model, 'msg) program -> Web.Node.t Js.null_undefined -> 'flags -> ('msg -> 'msg) = fun {init; update; view} pnode flags -> *)
+let program : ('flags, 'model, 'msg) program -> Web.Node.t Js.null_undefined -> 'flags -> 'msg programInterface = fun {init; update; view} pnode flags ->
   let () = Web.polyfills () in
   let initModel, initCmd = init flags in
   let opnode = Js.Null_undefined.to_opt pnode in
   let pump = programLoop update view initModel opnode in
   let msgHandler = programStateWrapper initModel pump in
-  fun msg -> msgHandler msg
+  (* fun msg -> msgHandler msg *)
+  msgHandler
 
 
 (* let fullProgram program pnode flags =
