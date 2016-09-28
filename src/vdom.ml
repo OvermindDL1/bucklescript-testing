@@ -232,6 +232,7 @@ let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
     let () = match Js.Undefined.to_opt (Web.Node.getProp_asEventListener elem (_handlerName idx)) with
       | None -> failwith "Something else has messed with the DOM, inconsistent state!"
       | Some cb -> Web.Node.removeEventListener elem t cb false in
+    let () = Web.Node.setProp_asEventListener elem (_handlerName idx) Js.Undefined.empty in
     ()
   | Style s -> Js.log ("TODO:  Remove Style Unhandled", s); failwith "TODO:  Remove Style Unhandled"
 
