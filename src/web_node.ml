@@ -5,9 +5,9 @@ type style
    set : string -> string -> unit [@bs.set_index];
    > Js.t *)
 
-external getStyle : style -> string -> string = "" [@@bs.get_index]
+external getStyle : style -> string -> string Js.null = "" [@@bs.get_index]
 
-external setStyle : style -> string -> string -> unit = "" [@@bs.set_index]
+external setStyle : style -> string -> string Js.null -> unit = "" [@@bs.set_index]
 
 type t = <
   style : style [@bs.get];

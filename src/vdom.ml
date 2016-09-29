@@ -121,7 +121,7 @@ let applyProperties callbacks elem curProperties =
              | Some msg -> !callbacks.enqueue msg in
          let () = Web_node.addEventListener elem typ cb false in
          elem
-       | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k v in elem) elem s
+       | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k (Js.Null.return v) in elem) elem s
        (* | Style s -> List.fold_left (fun (k, v) elem -> let _ = elem##style##set k v in elem) elem s *)
     ) elem curProperties
 
@@ -137,10 +137,10 @@ let rec createElementFromVNode_addChildren callbacks children elem =
   children |> List.fold_left (fun n child -> let _childelem = Web.Node.appendChild n (createElementFromVNode callbacks child) in n) elem
     and createElementFromVNode callbacks = function
   | NoVNode -> Web.Document.createComment ""
-  | Text text -> let () = Js.log ("Text:", text) in Web.Document.createTextNode text
-  | Node (namespace, _key_unused, tagName, properties, children) -> let () = Js.log (callbacks, namespace, _key_unused, tagName, properties, children) in
+  | Text text -> Web.Document.createTextNode text
+  | Node (namespace, _key_unused, tagName, properties, children) -> (* let () = Js.log (callbacks, namespace, _key_unused, tagName, properties, children) in *)
     let child = Web.Document.createElementNsOptional namespace tagName in
-    let () = Js.log ("Blooop", child) in
+    (* let () = Js.log ("Blooop", child) in *)
     child
     |> createElementFromVNode_addProps callbacks properties
     |> createElementFromVNode_addChildren callbacks children
@@ -216,15 +216,16 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
     (* let () = Js.log ("Adding event", elem, t, k, f) in *)
     let cb : Web.Node.event_cb =
       fun [@bs] ev ->
+        (* let () = Js.log ("ON-EVENT", elem, idx, ev) in *)
         match f ev with
-        | None -> ()
-        | Some msg -> !callbacks.enqueue msg in
+        | None -> () (*Js.log "Nothing"*)
+        | Some msg -> (*let () = Js.log ("Handling msg", msg) in*) !callbacks.enqueue msg in
         (* let msg = f ev in
         !callbacks.enqueue msg in *)
     let () = Web.Node.setProp_asEventListener elem (_handlerName idx) (Js.Undefined.return cb) in
     Web.Node.addEventListener elem t cb false
   | Style s ->
-    List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k v) () s
+    List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k (Js.Null.return v)) () s
 
 let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
   | NoProp -> ()
@@ -232,13 +233,13 @@ let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
   | Attribute (namespace, k, v) -> Js.log ("TODO:  Remove Attribute Unhandled", namespace, k, v); failwith "TODO:  Remove Attribute Unhandled"
   | Data (k, v) -> Js.log ("TODO:  Remove Data Unhandled", k, v); failwith "TODO:  Remove Data Unhandled"
   | Event (t, k, f) ->
-    (* let () = Js.log ("Removing Event", t, f) in *)
+    (* let () = Js.log ("Removing Event", elem, t, k, f) in *)
     let () = match Js.Undefined.to_opt (Web.Node.getProp_asEventListener elem (_handlerName idx)) with
       | None -> failwith "Something else has messed with the DOM, inconsistent state!"
       | Some cb -> Web.Node.removeEventListener elem t cb false in
     let () = Web.Node.setProp_asEventListener elem (_handlerName idx) Js.Undefined.empty in
     ()
-  | Style s -> Js.log ("TODO:  Remove Style Unhandled", s); failwith "TODO:  Remove Style Unhandled"
+  | Style s -> List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k Js.Null.empty) () s
 
 let patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp =
   let () = patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx oldProp in
@@ -260,14 +261,16 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
             if ov = nv then
               ()
             else
-              Web.Node.setStyle elem nk nv
+              Web.Node.setStyle elem nk (Js.Null.return nv)
           else
-            let () = Web.Node.setStyle elem ok "" in
-            Web.Node.setStyle elem nk nv
+            let () = Web.Node.setStyle elem ok Js.Null.empty in
+            Web.Node.setStyle elem nk (Js.Null.return nv)
         ) () oldS s
     | _ -> failwith "Passed a non-Style to a new Style as a Mutations while the old Style is not actually a style!"
 
-let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newProperties = match oldProperties, newProperties with
+let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newProperties =
+  (* let () = Js.log ("PROPERTY-APPLY", elem, idx, oldProperties, newProperties) in *)
+  match oldProperties, newProperties with
   | [], [] -> ()
   | [], newProp :: newRest ->
     let () = patchVNodesOnElems_PropertiesApply_Add callbacks elem idx newProp in
@@ -276,9 +279,10 @@ let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newP
     let () = patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx oldProp in
     patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) [] oldRest
   (* NoProp *)
-  | NoProp :: oldRest, NoProp :: newRest -> patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) [] newRest
+  | NoProp :: oldRest, NoProp :: newRest -> patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
   (* RawProp *)
   | (RawProp (oldK, oldV) as oldProp) :: oldRest, (RawProp (newK, newV) as newProp) :: newRest ->
+    (* let () = Js.log ("RawProp Test", elem, idx, oldProp, newProp, oldK = newK && oldV = newV, oldRest, newRest) in *)
     let () = if oldK = newK && oldV = newV then () else
       patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
     patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
@@ -296,8 +300,10 @@ let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newP
   (* | Event (oldTyp, oldKey, oldCbev) :: oldRest, Event (newTyp, newKey, newCbev) :: newRest ->
      let () = if oldTyp = newTyp && oldKey = newKey then () else *)
   | (Event (oldTyp, oldKey, oldCbev) as oldProp) :: oldRest, (Event (newTyp, newKey, newCbev) as newProp) :: newRest ->
+    (* let () = Js.log ("Event Test", elem, idx, oldProp, newProp, oldTyp = newTyp && oldKey = newKey, oldRest, newRest) in *)
     (* TODO:  This is such a *BAD* way of doing this, but event removal needs to be passed in the same func as what was
-       registered.  So we enforce a string key, which is more than what most virtualdoms allow for at least... *)
+       registered.  So we enforce a string key, which is more than what some virtualdoms allow for at least since with
+       a key you can have multiple events of the same type registered without issue... *)
     let () = if oldTyp = newTyp && oldKey = newKey then () else
       patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp newProp in
     patchVNodesOnElems_PropertiesApply callbacks elem (idx+1) oldRest newRest
