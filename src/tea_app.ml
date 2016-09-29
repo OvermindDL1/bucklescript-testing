@@ -86,9 +86,12 @@ let programLoop update view initModel = function
     let scheduleRender () = match !nextFrameID with
       | Some _ -> ()
       | None ->
-        let id = Web.Window.requestAnimationFrame doRender in
-        (nextFrameID := Some id);
-        () in
+        if true then
+          let id = Web.Window.requestAnimationFrame doRender in
+          (nextFrameID := Some id);
+          ()
+        else
+          doRender 0 in
     (* let () = Js.log (Vdom.createVNodeIntoElement callbacks !lastVdom parentNode) in *)
     (* We own the passed in node, clear it out TODO:  Clear it out properly *)
     (* let () = Js.log ("Blah", Web.Node.firstChild parentNode, Js.Null.test (Web.Node.firstChild parentNode), false, true) in *)

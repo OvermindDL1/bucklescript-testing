@@ -35,14 +35,14 @@ let text s = Text s
 let node tagName props vdoms =
   Node ("", "", tagName, props, vdoms)
 
-let keyedNode key tagName props vdoms =
-  Node ("", key, tagName, props, vdoms)
+(* let keyedNode key tagName props vdoms =
+  Node ("", key, tagName, props, vdoms) *)
 
 let nsNode namespace tagName props vdoms =
   Node (namespace, "", tagName, props, vdoms)
 
-let nsKeyedNode namespace key tagName props vdoms =
-  Node (namespace, key, tagName, props, vdoms)
+(* let nsKeyedNode namespace key tagName props vdoms =
+  Node (namespace, key, tagName, props, vdoms) *)
 
 (* let keyedNode tagName props keyed_vdoms =
   KeyedNode (tagName, props, keyed_vdoms) *)
@@ -204,8 +204,15 @@ let createVNodeIntoElement callbacks vnode elem =
       patchVNodesOnElems callbacks elem elems newIdx
   | _ -> fun newish -> Js.log "Blah" *)
 
-let _handlerName idx =
-  "_handler_" ^ (string_of_int idx)
+let _handlerName idx typ =
+  "_handler_" ^ (string_of_int idx) ^ typ
+
+let _usercb callbacks f =
+  fun ev ->
+    (* let () = Js.log ("ON-EVENT", elem, idx, ev) in *)
+    match f ev with
+    | None -> () (*Js.log "Nothing"*)
+    | Some msg -> (*let () = Js.log ("Handling msg", msg) in*) !callbacks.enqueue msg
 
 let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
   | NoProp -> ()
@@ -214,16 +221,24 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
   | Data (k, v) -> Js.log ("TODO:  Add Data Unhandled", k, v); failwith "TODO:  Add Data Unhandled"
   | Event (t, k, f) ->
     (* let () = Js.log ("Adding event", elem, t, k, f) in *)
-    let cb : Web.Node.event_cb =
+    (* let cb : Web.Node.event_cb =
       fun [@bs] ev ->
         (* let () = Js.log ("ON-EVENT", elem, idx, ev) in *)
         match f ev with
         | None -> () (*Js.log "Nothing"*)
         | Some msg -> (*let () = Js.log ("Handling msg", msg) in*) !callbacks.enqueue msg in
         (* let msg = f ev in
-        !callbacks.enqueue msg in *)
-    let () = Web.Node.setProp_asEventListener elem (_handlerName idx) (Js.Undefined.return cb) in
-    Web.Node.addEventListener elem t cb false
+           !callbacks.enqueue msg in *) *)
+    let cb = _usercb callbacks f in
+    let handler : Web.Node.event_cb =
+      fun [@bs] ev -> match Js.Undefined.to_opt ev##target with
+        | None -> failwith "Element Event called without being attached to an element?!  Report this with minimal test case!"
+        | Some target ->
+          let userCB = Web.Node.getProp elem (_handlerName idx "cb") in
+          userCB ev [@bs] in
+    let () = Web.Node.setProp elem (_handlerName idx "cb") (Js.Undefined.return cb) in
+    let () = Web.Node.setProp_asEventListener elem (_handlerName idx "") (Js.Undefined.return handler) in
+    Web.Node.addEventListener elem t handler false
   | Style s ->
     List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k (Js.Null.return v)) () s
 
@@ -237,7 +252,8 @@ let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
     let () = match Js.Undefined.to_opt (Web.Node.getProp_asEventListener elem (_handlerName idx)) with
       | None -> failwith "Something else has messed with the DOM, inconsistent state!"
       | Some cb -> Web.Node.removeEventListener elem t cb false in
-    let () = Web.Node.setProp_asEventListener elem (_handlerName idx) Js.Undefined.empty in
+    let () = Web.Node.setProp elem (_handlerName idx "cb") Js.Undefined.empty in
+    let () = Web.Node.setProp_asEventListener elem (_handlerName idx "") Js.Undefined.empty in
     ()
   | Style s -> List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k Js.Null.empty) () s
 
@@ -251,8 +267,18 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
   | RawProp (k, v) as _newProp -> Web.Node.setProp elem k v
   | Attribute (namespace, k, v) as _newProp -> Js.log ("TODO:  Mutate Attribute Unhandled", namespace, k, v)
   | Data  (k, v) as _newProp -> Js.log ("TODO:  Mutate Data Unhandled", k, v)
-  (* There is a bug here in Event on mutation! *)
-  | Event (t, k, f) as newProp -> patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp
+  (* Wow but adding and removing event handlers is slow on the DOM, lets do this to see if it is faster... *)
+  (* Initial profiling tests reveal a fairly substantial speed improvement in event handlers switching now! *)
+  | Event (t, k, f) as newProp ->
+    (* let () = Js.log ("Mutating event", elem, oldProp, newProp) in *)
+    let oldT = match oldProp with
+      | Event (oldT, oldK, oldF) -> oldT
+      | _ -> failwith "This should never be called as all entries to mutate are gated to the same types" in
+    if oldT = t then
+      let cb = _usercb callbacks f in
+      let () = Web.Node.setProp elem (_handlerName idx "cb") (Js.Undefined.return cb) in
+      ()
+    else patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp
   | Style s as _newProp ->
     match oldProp with
     | Style oldS ->
@@ -318,9 +344,13 @@ let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newP
 
 
 let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
-  if oldProperties = newProperties then
+  (* Profiling here show `=` to be very slow, but testing reveals it to be faster than checking through the properties
+     manually on times when there are few to no changes, which is most of the time, so keeping it for now... *)
+  (* TODO:  Look into if there is a better way to quick test property comparisons, especially since it likely returns
+     false when events are included *)
+  (* if oldProperties = newProperties then
     ()
-  else
+  else *)
     patchVNodesOnElems_PropertiesApply callbacks elem 0 oldProperties newProperties
 
      (* | NoProp -> elem
