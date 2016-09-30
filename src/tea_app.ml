@@ -76,22 +76,27 @@ let programLoop update view initModel = function
     let newModel, _newCmd = update model msg in (* TODO:  Process commands to callbacks *)
     newModel
   | Some parentNode -> fun callbacks ->
-    let priorRenderedVdom = ref [view initModel] in
-    let lastVdom = ref (!priorRenderedVdom) in
+    (* let priorRenderedVdom = ref [view initModel] in *)
+    let priorRenderedVdom = ref [] in
+    (* let lastVdom = ref (!priorRenderedVdom) in *)
+    let latestModel = ref initModel in
     let nextFrameID = ref None in
     let doRender _delta =
-      let () = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom !lastVdom in
-      (priorRenderedVdom := (!lastVdom));
+      let newVdom = [view !latestModel] in
+      let () = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom newVdom in
+      let () = priorRenderedVdom := (newVdom) in
+      (* let () = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom !lastVdom in
+      let () = priorRenderedVdom := (!lastVdom) in *)
       (nextFrameID := None) in
     let scheduleRender () = match !nextFrameID with
-      | Some _ -> ()
+      | Some _ -> () (* A frame is already scheduled, nothing to do *)
       | None ->
-        if true then
+        if true then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
           let id = Web.Window.requestAnimationFrame doRender in
           (nextFrameID := Some id);
           ()
         else
-          doRender 0 in
+          doRender 16 in
     (* let () = Js.log (Vdom.createVNodeIntoElement callbacks !lastVdom parentNode) in *)
     (* We own the passed in node, clear it out TODO:  Clear it out properly *)
     (* let () = Js.log ("Blah", Web.Node.firstChild parentNode, Js.Null.test (Web.Node.firstChild parentNode), false, true) in *)
@@ -100,16 +105,19 @@ let programLoop update view initModel = function
         | None -> ()
         | Some firstChild -> let _removedChild = Web.Node.removeChild parentNode firstChild in ()
       done in
-    let () = Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom) in
+    (* let () = Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom) in *)
+    (* let () = Vdom.patchVNodesIntoElement callbacks parentNode [] (!priorRenderedVdom) in *)
+    let () = doRender 16 in
     let handler model msg =
       let newModel, _newCmd = update model msg in (* TODO:  Process commands to callbacks *)
       (* TODO:  Figure out if it is better to get view on update like here, or do it in doRender... *)
-      let newVdom = view newModel in (* Process VDom diffs here with callbacks *)
+      (* let newVdom = view newModel in (* Process VDom diffs here with callbacks *) *)
       (* let () = Vdom.patchVNodeIntoElement callbacks parentNode !lastVdom newVdom in *)
       (* let () = Js.log lastVdom in *)
       (* let () = Js.log newVdom in *)
       (* let () = Js.log (Vdom.createVNodeIntoElement callbacks newVdom parentNode) in *)
-      (lastVdom := [newVdom]);
+      (* let () = lastVdom := [newVdom] in *)
+      let () = latestModel := newModel in
       scheduleRender ();
       newModel in
     handler

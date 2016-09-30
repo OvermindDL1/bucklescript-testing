@@ -6,35 +6,35 @@ let text str = text str
 
 (* HTML Elements *)
 
-let div props nodes = node "div" props nodes
+let div ?(key="") ?(unique="") props nodes = fullnode "" "div" key unique props nodes
 
-let span props nodes = node "span" props nodes
+let span ?(key="") ?(unique="") props nodes = fullnode "" "span" key unique props nodes
 
-let p props nodes = node "p" props nodes
+let p ?(key="") ?(unique="") props nodes = fullnode "" "p" key unique props nodes
 
-let a props nodes = node "a" props nodes
+let a ?(key="") ?(unique="") props nodes = fullnode "" "a" key unique props nodes
 
-let section props nodes = node "section" props nodes
+let section ?(key="") ?(unique="") props nodes = fullnode "" "section" key unique props nodes
 
-let header props nodes = node "header" props nodes
+let header ?(key="") ?(unique="") props nodes = fullnode "" "header" key unique props nodes
 
-let footer props nodes = node "footer" props nodes
+let footer ?(key="") ?(unique="") props nodes = fullnode "" "footer" key unique props nodes
 
-let h1 props nodes = node "h1" props nodes
+let h1 ?(key="") ?(unique="") props nodes = fullnode "" "h1" key unique props nodes
 
-let strong props nodes = node "strong" props nodes
+let strong ?(key="") ?(unique="") props nodes = fullnode "" "strong" key unique props nodes
 
-let button props nodes = node "button" props nodes
+let button ?(key="") ?(unique="") props nodes = fullnode "" "button" key unique props nodes
 
-let input props nodes = node "input" props nodes
+let input ?(key="") ?(unique="") props nodes = fullnode "" "input" key unique props nodes
 
-let label props nodes = node "label" props nodes
+let label ?(key="") ?(unique="") props nodes = fullnode "" "label" key unique props nodes
 
-let ul props nodes = node "ul" props nodes
+let ul ?(key="") ?(unique="") props nodes = fullnode "" "ul" key unique props nodes
 
-let ol props nodes = node "ol" props nodes
+let ol ?(key="") ?(unique="") props nodes = fullnode "" "ol" key unique props nodes
 
-let li props nodes = node "li" props nodes
+let li ?(key="") ?(unique="") props nodes = fullnode "" "li" key unique props nodes
 
 
 (* Properties *)

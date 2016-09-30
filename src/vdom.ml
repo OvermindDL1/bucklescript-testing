@@ -21,9 +21,14 @@ type 'msg properties = 'msg property list
 type 'msg t =
   | NoVNode
   | Text of string
-  (* Node namespace key tagName properties children  *)
-  | Node of string * string * string * 'msg properties * 'msg t list
+  (* Node namespace tagName key unique properties children  *)
+  | Node of string * string * string * string * 'msg properties * 'msg t list
   (* | NSKeyedNode of string option * string * 'msg property list * (int * 'msg t) list *)
+
+
+type 'msg applicationCallbacks = {
+  enqueue : 'msg -> unit;
+}
 
 
 (* Nodes *)
@@ -32,20 +37,12 @@ let noNode = NoVNode
 
 let text s = Text s
 
-let node tagName props vdoms =
-  Node ("", "", tagName, props, vdoms)
+let node ?(namespace="") tagName ?(key="") ?(unique="") props vdoms =
+  Node (namespace, tagName, key, unique, props, vdoms)
 
-(* let keyedNode key tagName props vdoms =
-  Node ("", key, tagName, props, vdoms) *)
+let fullnode namespace tagName key unique props vdoms =
+  Node (namespace, tagName, key, unique, props, vdoms)
 
-let nsNode namespace tagName props vdoms =
-  Node (namespace, "", tagName, props, vdoms)
-
-(* let nsKeyedNode namespace key tagName props vdoms =
-  Node (namespace, key, tagName, props, vdoms) *)
-
-(* let keyedNode tagName props keyed_vdoms =
-  KeyedNode (tagName, props, keyed_vdoms) *)
 
 (* Properties *)
 
@@ -75,7 +72,7 @@ let styles s = Style s
 let rec renderToHtmlString = function
   | NoVNode -> ""
   | Text s -> s
-  | Node (namespace, key, tagName, props, vdoms) ->
+  | Node (namespace, tagName, _key, _unique, props, vdoms) ->
     let rec renderProp = function
       | NoProp -> ""
       | RawProp (k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
@@ -100,12 +97,8 @@ let rec renderToHtmlString = function
 (* Patch elements *)
 
 
-type 'msg applicationCallbacks = {
-  enqueue : 'msg -> unit;
-}
 
-
-let applyProperties callbacks elem curProperties =
+(* let applyProperties callbacks elem curProperties =
   List.fold_left
     (fun elem -> function
        | NoProp -> elem
@@ -153,7 +146,7 @@ let createVNodesIntoElement callbacks vnodes elem =
   vnodes |> List.fold_left (fun n vnode -> let _childelem = Web.Node.appendChild n (createElementFromVNode callbacks vnode) in n) elem
 
 let createVNodeIntoElement callbacks vnode elem =
-  createVNodesIntoElement callbacks [vnode] elem
+  createVNodesIntoElement callbacks [vnode] elem *)
 
 
 
@@ -209,7 +202,6 @@ let _handlerName idx typ =
 
 let _usercb callbacks f =
   fun ev ->
-    (* let () = Js.log ("ON-EVENT", elem, idx, ev) in *)
     match f ev with
     | None -> () (*Js.log "Nothing"*)
     | Some msg -> (*let () = Js.log ("Handling msg", msg) in*) !callbacks.enqueue msg
@@ -234,6 +226,7 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
       fun [@bs] ev -> match Js.Undefined.to_opt ev##target with
         | None -> failwith "Element Event called without being attached to an element?!  Report this with minimal test case!"
         | Some target ->
+          (* let () = Js.log ("ON-EVENT", elem, idx, ev) in *)
           let userCB = Web.Node.getProp elem (_handlerName idx "cb") in
           userCB ev [@bs] in
     let () = Web.Node.setProp elem (_handlerName idx "cb") (Js.Undefined.return cb) in
@@ -264,7 +257,9 @@ let patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newP
 
 let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = function
   | NoProp as _newProp -> failwith "This should never be called as all entries through NoProp are gated."
-  | RawProp (k, v) as _newProp -> Web.Node.setProp elem k v
+  | RawProp (k, v) as _newProp ->
+    (* let () = Js.log ("Mutating RawProp", elem, oldProp, _newProp) in *)
+    Web.Node.setProp elem k v (* Wow setting properties is slow, unsure how to optimize this further though... *)
   | Attribute (namespace, k, v) as _newProp -> Js.log ("TODO:  Mutate Attribute Unhandled", namespace, k, v)
   | Data  (k, v) as _newProp -> Js.log ("TODO:  Mutate Data Unhandled", k, v)
   (* Wow but adding and removing event handlers is slow on the DOM, lets do this to see if it is faster... *)
@@ -280,6 +275,7 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
       ()
     else patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp
   | Style s as _newProp ->
+    (* let () = Js.log ("Mutating Style", elem, oldProp, _newProp) in *)
     match oldProp with
     | Style oldS ->
       List.fold_left2 (fun () (ok, ov) (nk, nv) ->
@@ -347,10 +343,10 @@ let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
   (* Profiling here show `=` to be very slow, but testing reveals it to be faster than checking through the properties
      manually on times when there are few to no changes, which is most of the time, so keeping it for now... *)
   (* TODO:  Look into if there is a better way to quick test property comparisons, especially since it likely returns
-     false when events are included *)
-  (* if oldProperties = newProperties then
+     false when events are included regardless of anything else. *)
+  if oldProperties = newProperties then
     ()
-  else *)
+  else
     patchVNodesOnElems_PropertiesApply callbacks elem 0 oldProperties newProperties
 
      (* | NoProp -> elem
@@ -375,12 +371,23 @@ let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
   let _attachedChild = Web.Node.appendChild elem newChild in
   () *)
 
-let patchVNodesOnElems_createElement callbacks namespace tagName properties =
+(* let patchVNodesOnElems_createElement callbacks namespace tagName properties =
     let child = Web.Document.createElementNsOptional namespace tagName in
     let () = patchVNodesOnElems_Properties callbacks child [] properties in
-    child
+    child *)
 
-let rec patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldVNodes, newVNodes with
+let rec patchVNodesOnElems_ReplaceNode callbacks elem elems idx (Node (newNamespace, newTagName, newKey, newUnique, newProperties, newChildren)) =
+  let oldChild = elems.(idx) in
+  let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
+  let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
+  let childChildren = Web.Node.childNodes newChild in
+  let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
+  let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
+  let _removedChild = Web.Node.removeChild elem oldChild in
+  (* let () = Js.log ("Fullswap happened", oldChild, newChild) in *)
+  ()
+
+and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldVNodes, newVNodes with
   | [], [] -> ()
   | [], NoVNode :: newRest ->
     let newChild = Web.Document.createComment "" in
@@ -390,8 +397,9 @@ let rec patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match 
     let newChild = Web.Document.createTextNode text in
     let _attachedChild = Web.Node.appendChild elem newChild in
     patchVNodesOnElems callbacks elem elems (idx + 1) [] newRest
-  | [], Node (newNamespace, newKey_unused, newTagName, newProperties, newChildren) :: newRest ->
-    let newChild = patchVNodesOnElems_createElement callbacks newNamespace newTagName newProperties in
+  | [], Node (newNamespace, newTagName, _newKey, _unique, newProperties, newChildren) :: newRest ->
+    let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
+    let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
     let childChildren = Web.Node.childNodes newChild in
     let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
     let _attachedChild = Web.Node.appendChild elem newChild in
@@ -408,9 +416,87 @@ let rec patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match 
       let child = elems.(idx) in
       let () = Web.Node.set_nodeValue child newText in
       patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
-  | Node (oldNamespace, oldKey, oldTagName, oldProperties, oldChildren) :: oldRest,
-    Node (newNamespace, newKey, newTagName, newProperties, newChildren) :: newRest ->
-    if oldNamespace <> newNamespace || oldKey <> newKey || oldTagName <> newTagName then (* Major structural change then, replace it all *)
+  | Node (oldNamespace, oldTagName, oldKey, oldUnique, oldProperties, oldChildren) :: oldRest,
+    (Node (newNamespace, newTagName, newKey, newUnique, newProperties, newChildren) as newNode) :: newRest ->
+    if newKey = "" then
+      if oldUnique = newUnique then
+        (* let () = Js.log ("Node test", "parse", elem, elems.(idx), newNode) in *)
+        let child = elems.(idx) in
+        let childChildren = Web.Node.childNodes child in
+        let () = patchVNodesOnElems_Properties callbacks child oldProperties newProperties in
+        let () = patchVNodesOnElems callbacks child childChildren 0 oldChildren newChildren in
+        patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+      else
+        (* let () = Js.log ("Node test", "unique swap", elem, elems.(idx), newNode) in *)
+        let () = patchVNodesOnElems_ReplaceNode callbacks elem elems idx newNode in
+        patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+    else if oldKey = newKey then
+      (* let () = Js.log ("Node test", "match", elem, elems.(idx), newNode) in *)
+      patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+    else (* Keys do not match but do exist *)
+      ( match oldRest with
+        | Node (olderNamespace, olderTagName, olderKey, olderUnique, olderProperties, olderChildren) :: olderRest ->
+          if olderNamespace = newNamespace && olderTagName = newTagName && olderKey = newKey then
+            (* Older is perfect match, kill current and advance past *)
+              (* let () = Js.log ("Node test", "older match", elem, elems.(idx), newNode) in *)
+              let oldChild = elems.(idx) in
+              let _removedChild = Web.Node.removeChild elem oldChild in
+              patchVNodesOnElems callbacks elem elems (idx+1) olderRest newRest
+          else (* Older is not perfect match, do usual parsing, same as the `| _ ->` branch *)
+            if oldUnique = newUnique then
+              (* let () = Js.log ("Node test", "non-older keyed parse", elem, elems.(idx), newNode) in *)
+              let child = elems.(idx) in
+              let childChildren = Web.Node.childNodes child in
+              let () = patchVNodesOnElems_Properties callbacks child oldProperties newProperties in
+              let () = patchVNodesOnElems callbacks child childChildren 0 oldChildren newChildren in
+              patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+            else
+              (* let () = Js.log ("Node test", "non-older keyed unique swap", elem, elems.(idx), newNode) in *)
+              let () = patchVNodesOnElems_ReplaceNode callbacks elem elems idx newNode in
+              patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+        | _ -> (* Keys do not match, but do exist, and older does not exist, swap or parse *)
+          if oldUnique = newUnique then
+            (* let () = Js.log ("Node test", "keyed parse", elem, elems.(idx), newNode) in *)
+            let child = elems.(idx) in
+            let childChildren = Web.Node.childNodes child in
+            let () = patchVNodesOnElems_Properties callbacks child oldProperties newProperties in
+            let () = patchVNodesOnElems callbacks child childChildren 0 oldChildren newChildren in
+            patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+          else
+            (* let () = Js.log ("Node test", "keyed unique swap", elem, elems.(idx), newNode) in *)
+            let () = patchVNodesOnElems_ReplaceNode callbacks elem elems idx newNode in
+            patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+      )
+    (* if newKey = "" || oldKey <> newKey then
+      match oldRest with
+      | Node (olderNamespace, olderTagName, olderKey, olderUnique, olderProperties, olderChildren) :: olderRest ->
+        if oldNamespace <> newNamespace || oldTagName <> newTagName || oldUnique <> newUnique then (* Major structural change.  Replace it all! *)
+          if newKey = "" || olderKey <> newKey || oldNamespace <> newNamespace || oldTagName <> newTagName || oldUnique <> newUnique then
+            let () = Js.log ("Node swap", "everything older", elem, elems.(idx), newNode) in
+            let () = patchVNodesOnElems_ReplaceNode callbacks elem elems idx newNode in
+            patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+          else
+            let () = Js.log ("Node swap", "skipping", elem, elems.(idx), newNode) in
+            (* Actually, the next old one matches, meaning it seems a single thing was removed, so remove this thing, a very common pattern *)
+            let oldChild = elems.(idx) in
+            let _removedChild = Web.Node.removeChild elem oldChild in
+            patchVNodesOnElems callbacks elem elems (idx+1) olderRest newRest
+        else
+          let () = Js.log ("Node swap", "parsing", elem, elems.(idx), newNode) in
+          let child = elems.(idx) in
+          let childChildren = Web.Node.childNodes child in
+          let () = patchVNodesOnElems_Properties callbacks child oldProperties newProperties in
+          let () = patchVNodesOnElems callbacks child childChildren 0 oldChildren newChildren in
+          patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+      | _ ->
+        let () = Js.log ("Node swap", "everything", elem, elems.(idx), newNode) in
+        let () = patchVNodesOnElems_ReplaceNode callbacks elem elems idx newNode in
+        patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+    else (* Identical keys and keys are not "", skip entire subtree *)
+      let () = Js.log ("Node swap", "match", elem, elems.(idx), newNode) in
+      patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest *)
+
+    (* if oldNamespace <> newNamespace || oldKey <> newKey || oldTagName <> newTagName then (* Major structural change then, replace it all *)
       (* let () = patchVNodesOnElems_ReplaceVnodeAt callbacks elem elems idx (Node (newNamespace, newKey, newTagName, newProperties, newChildren)) in *)
       patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
     else
@@ -418,7 +504,7 @@ let rec patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match 
       let childChildren = Web.Node.childNodes child in
       let () = patchVNodesOnElems_Properties callbacks child oldProperties newProperties in
       let () = patchVNodesOnElems callbacks child childChildren 0 oldChildren newChildren in
-      patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+      patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest *)
   | _oldVnode :: oldRest, NoVNode :: newRest ->
     let child = elems.(idx) in
     let newChild = Web.Document.createComment "" in
@@ -431,13 +517,15 @@ let rec patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match 
     let _attachedChild = Web.Node.insertBefore elem newChild child in
     let _removedChild = Web.Node.removeChild elem child in
     patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
-  | _oldVnode :: oldRest, Node (newNamespace, newKey_unused, newTagName, newProperties, newChildren) :: newRest ->
-    let child = elems.(idx) in
-    let newChild = patchVNodesOnElems_createElement callbacks newNamespace newTagName newProperties in
+  | _oldVnode :: oldRest, Node (newNamespace, newTagName, _newKey, _unique, newProperties, newChildren) :: newRest ->
+    let oldChild = elems.(idx) in
+    (* let newChild = patchVNodesOnElems_createElement callbacks newNamespace newTagName newProperties in *)
+    let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
+    let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
     let childChildren = Web.Node.childNodes newChild in
     let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
-    let _attachedChild = Web.Node.insertBefore elem newChild child in
-    let _removedChild = Web.Node.removeChild elem child in
+    let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
+    let _removedChild = Web.Node.removeChild elem oldChild in
     patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
 
 
