@@ -1,8 +1,7 @@
-(*
-type model =
-  { count : int
-  ; more : string
-  }
+
+open Tea.App
+open Tea.Html
+
 
 type msg =
   | Increment
@@ -10,31 +9,39 @@ type msg =
   | Reset
   | Set of int
 
-let init () = { count = 0; more = "" }
+
+type model = int
+
+
+let init () = 4
+
 
 let update model = function
-  | Increment -> { model with count = model.count + 1 }, Cmd.none
-  | Decrement -> { model with count = model.count - 1 }, Cmd.none
-  | Reset -> { model with count = 0 }, Cmd.none
-  | Set v -> { model with count = v }, Cmd.none
+  | Increment -> model + 1
+  | Decrement -> model - 1
+  | Reset -> 0
+  | Set v -> v
 
-open Vdom
 
-let view_button title msg =
-  node "button"
-    [ on "click" (fun ev -> let () = Js.log [|"Event", ev, msg|] in Some msg)
+let view_button title ?(key="") msg =
+  button
+    [ onClick ~key:key msg
     ]
     [ text title
     ]
 
-let view model =
-  node "div"
-    []
-    [ node "span"
+let view lift model =
+  div
+    [ styles [("display","inline-block"); ("vertical-align","top")] ]
+    [ span
         [ style "text-weight" "bold" ]
-        [ text (string_of_int model.count) ]
-    ; view_button "Increment" Increment
-    ; view_button "Decrement" Decrement
-    ; if model.count <> 0 then view_button "Reset" Reset else noNode
-    ; view_button "Set to 42" (Set 42)
-    ] *)
+        [ text (string_of_int model) ]
+    ; br []
+    ; view_button "Increment" (lift Increment)
+    ; br []
+    ; view_button "Decrement" (lift Decrement)
+    ; br []
+    ; view_button "Set to 42" (lift (Set 42))
+    ; br []
+    ; if model <> 0 then view_button "Reset" (lift Reset) else noNode
+    ]

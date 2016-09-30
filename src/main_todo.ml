@@ -83,7 +83,7 @@ let update model = function
       if t.id = id then { t with editing } else t
     in { model with
          entries = List.map updateEntry model.entries
-       }, Cmd.none
+       }, if editing then Cmds.focus ("todo-" ^ string_of_int id) else Cmd.none
 
   | UpdateEntry (id, description) ->
     let updateEntry t =
@@ -303,7 +303,7 @@ let view model =
 (* Main Entrance *)
 
 let main =
-  program
+  standardProgram
     { init
     ; update
     ; view

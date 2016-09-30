@@ -1,15 +1,60 @@
-<!DOCTYPE HTML>
-<html>
-
+<!DOCTYPE html>
 <head>
-  <meta charset="UTF-8">
-  <title>OAK-TEA • TodoMVC</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+  <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height" />
+  <title>Testing</title>
   <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
 </head>
-
 <body>
-  <div id="content">
-  <script type="text/javascript" src="app.js"></script>
+  <div>
+    <button onclick="toggleExtra()">Toggle an extra Counter</button>
+    <br />
+    <button onclick="loadApp()">Shutdown</button>
+    <button onclick="loadApp('counter')">Counter</button>
+    <button onclick="loadApp('field')">Field</button>
+    <button onclick="loadApp('form')">Form</button>
+    <button onclick="loadApp('todo')">Todo</button>
+    <button onclick="loadApp('todo_optimized')">Todo (optimized)</button>
+    <button onclick="loadApp('embeddedCounters')">Embedded Counter Programs</button>
+    <button onclick="loadApp('embeddedCountersParts')">Embedded Counter Programs (Parts Variant)</button>
+  </div>
+  <br />
+  <div id="content" style="width:49%;display:inline-block;vertical-align:top;">
+  </div>
+  <div id="extraContent" style="width:49%;display:inline-block;vertical-align:top;">
+  </div>
+  <script type="text/javascript">
+    var elem = document.getElementById("content");
+    var extraElem = document.getElementById("extraContent");
+    var app = undefined;
+    var extraApp = undefined;
+    function loadApp(name) {
+      if(app) {
+        console.log("Shutting down app");
+        app.shutdown();
+        elem.className = "app";
+        app = undefined;
+      }
+      if(name) {
+        console.log("Loading app:", name)
+        elem.className = "app-" + name;
+        app = require("src/main_"+name+".ml").main(elem, 0);
+      }
+    }
+    function toggleExtra() {
+      if(extraApp) {
+        console.log("Shutting down extra app");
+        extraApp.shutdown();
+        extraApp = undefined;
+      }
+      else {
+        console.log("Loading extra app");
+        extraApp = require("src/main_counter.ml").main(extraElem, 0);
+      }
+    }
+  </script>
 </body>
-
 </html>

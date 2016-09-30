@@ -24,6 +24,7 @@ type t = <
   removeAttribute : string -> unit [@bs.meth];
   addEventListener : string -> t Web_event.cb -> Web_event.options -> unit [@bs.meth];
   removeEventListener : string -> t Web_event.cb -> Web_event.options -> unit [@bs.meth];
+  focus : unit -> unit [@bs.meth];
   (* Text Nodes only *)
   nodeValue : string [@bs.set] [@bs.get {null}];
 > Js.t
@@ -70,6 +71,8 @@ let removeAttribute n key = n##removeAttribute key
 let addEventListener n typ listener options = n##addEventListener typ listener options
 
 let removeEventListener n typ listener options = n##removeEventListener typ listener options
+
+let focus n = n##focus ()
 
 (* Text Nodes only *)
 

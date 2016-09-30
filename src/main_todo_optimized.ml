@@ -83,7 +83,7 @@ let update model = function
       if t.id = id then { t with editing } else t
     in { model with
          entries = List.map updateEntry model.entries
-       }, Cmd.none
+       }, if editing then Cmds.focus ("todo-" ^ string_of_int id) else Cmd.none
 
   | UpdateEntry (id, description) ->
     let updateEntry t =
@@ -131,7 +131,7 @@ let onEnter ?(key="") msg =
   on "keydown" ~key:key tagger
 
 
-let viewEntry todo =
+let viewEntry todo () =
   let key = string_of_int todo.id in
   let fullkey = (key ^ string_of_bool todo.completed) in
   (* Optimized:  Added a key to the node to early-out if exact match, if key is unspecified then the sub section is
@@ -198,11 +198,11 @@ let viewEntries visibility entries =
     ; label
         [ for' "toggle-all" ]
         [ text "Mark all as complete" ]
-    ; ul [ class' "todo-list" ] (List.rev_map viewEntry (List.filter isVisible entries))
+    ; ul [ class' "todo-list" ] (List.rev_map (fun todo -> lazy1 (string_of_int todo.id ^ string_of_bool todo.completed) (viewEntry todo)) (List.filter isVisible entries))
 ]
 
 
-let viewInput task =
+let viewInput task () =
   header ~key:task
     [ class' "header" ]
     [ h1 [] [ text "todos" ]
@@ -273,7 +273,7 @@ let viewControls visibility entries =
     ]
 
 
-let infoFooter =
+let infoFooter () =
   footer ~key:"1"
     [ class' "info" ]
     [ p [] [ text "Double-click to edit a todo" ]
@@ -297,18 +297,18 @@ let view model =
     ]
     [ section
       [ class' "todoapp" ]
-      [ viewInput model.field
+      [ lazy1 model.field (viewInput model.field)
       ; viewEntries model.visibility model.entries
       ; viewControls model.visibility model.entries
       ]
-    ; infoFooter
+    ; lazy1 "" infoFooter
     ]
 
 
 (* Main Entrance *)
 
 let main =
-  program
+  standardProgram
     { init
     ; update
     ; view

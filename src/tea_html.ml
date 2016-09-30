@@ -1,10 +1,26 @@
 open Vdom
 
+module Cmds = Tea_html_cmds
+
+(* let map lift vdom =
+   *)
+
+(* Nodes *)
+
+let noNode = noNode
 
 let text str = text str
 
+let lazy1 key gen = lazyGen key gen
+
+(* let embedProgram main = custom *)
+
 
 (* HTML Elements *)
+
+let br props = fullnode "" "br" "br" "br" props []
+
+let br' ?(key="") ?(unique="") props nodes = fullnode "" "br" key unique props nodes
 
 let div ?(key="") ?(unique="") props nodes = fullnode "" "div" key unique props nodes
 
@@ -68,7 +84,7 @@ let name str = prop "name" str
 
 let checked b = if b then prop "checked" "checked" else noProp
 
-let for' str = prop "for" str
+let for' str = prop "htmlFor" str
 
 let hidden b = if b then prop "hidden" "hidden" else noProp
 

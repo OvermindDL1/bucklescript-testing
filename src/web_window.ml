@@ -1,6 +1,11 @@
 
+type timeoutHandlerID = int
+
 type t = <
-  requestAnimationFrame : (float -> unit) -> int64 [@bs.meth];
+  clearTimeout : timeoutHandlerID -> unit [@bs.meth];
+  requestAnimationFrame : (float -> unit) -> int [@bs.meth];
+  setInterval : (unit -> unit) -> int -> timeoutHandlerID [@bs.meth];
+  setTimeout : (unit -> unit) -> int -> timeoutHandlerID [@bs.meth];
 > Js.t
 
 external window : t = "window" [@@bs.val]
@@ -9,6 +14,11 @@ external window : t = "window" [@@bs.val]
 (* requestAnimationFrame callback is a float timestamp in milliseconds *)
 let requestAnimationFrame callback = window##requestAnimationFrame callback
 
+let clearTimeout id = window##clearTimeout id
+
+let setInterval cb msTime = window##setInterval cb msTime
+
+let setTimeout cb msTime = window##setTimeout cb msTime
 
 
 

@@ -21,9 +21,14 @@ type 'msg properties = 'msg property list
 type 'msg t =
   | NoVNode
   | Text of string
-  (* Node namespace tagName key unique properties children  *)
+  (* Node (namespace, tagName, key, unique, properties, children)  *)
   | Node of string * string * string * string * 'msg properties * 'msg t list
-  (* | NSKeyedNode of string option * string * 'msg property list * (int * 'msg t) list *)
+  (* LazyGen (key, fnGenerator) *)
+  | LazyGen of string * (unit -> 'msg t) * 'msg t ref
+  (*  *)
+  (* | Tagger of ('a -> 'msg) -> 'a t -> 'msg t *)
+  (* Custom (key, cbAdd, cbRemove, cbChange, properties, children) *)
+  (* | Custom of string * (unit -> Web.Node.t) * (Web.Node.t -> unit) * *)
 
 
 type 'msg applicationCallbacks = {
@@ -43,6 +48,8 @@ let node ?(namespace="") tagName ?(key="") ?(unique="") props vdoms =
 let fullnode namespace tagName key unique props vdoms =
   Node (namespace, tagName, key, unique, props, vdoms)
 
+let lazyGen key fn =
+  LazyGen (key, fn, ref NoVNode)
 
 (* Properties *)
 
@@ -91,6 +98,9 @@ let rec renderToHtmlString = function
       ; tagName
       ; ">"
       ]
+  | LazyGen (_key, gen, _cache) ->
+    let vdom = gen () in
+    renderToHtmlString vdom
   (* | KeyedNode (elemType, props, vdoms) -> String.concat ":" ["UNIMPLEMENTED"; elemType] *)
 
 
@@ -376,16 +386,18 @@ let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
     let () = patchVNodesOnElems_Properties callbacks child [] properties in
     child *)
 
-let rec patchVNodesOnElems_ReplaceNode callbacks elem elems idx (Node (newNamespace, newTagName, newKey, newUnique, newProperties, newChildren)) =
-  let oldChild = elems.(idx) in
-  let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
-  let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
-  let childChildren = Web.Node.childNodes newChild in
-  let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
-  let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
-  let _removedChild = Web.Node.removeChild elem oldChild in
-  (* let () = Js.log ("Fullswap happened", oldChild, newChild) in *)
-  ()
+let rec patchVNodesOnElems_ReplaceNode callbacks elem elems idx = function
+  | (Node (newNamespace, newTagName, newKey, newUnique, newProperties, newChildren)) ->
+    let oldChild = elems.(idx) in
+    let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
+    let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
+    let childChildren = Web.Node.childNodes newChild in
+    let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
+    let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
+    let _removedChild = Web.Node.removeChild elem oldChild in
+    (* let () = Js.log ("Fullswap happened", oldChild, newChild) in *)
+    ()
+  | _ -> failwith "Node replacement should never be passed anything but a node itself"
 
 and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldVNodes, newVNodes with
   | [], [] -> ()
@@ -404,6 +416,10 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldV
     let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
     let _attachedChild = Web.Node.appendChild elem newChild in
     patchVNodesOnElems callbacks elem elems (idx + 1) [] newRest
+  | [], LazyGen (newKey, newGen, newCache) :: newRest ->
+    let vdom = newGen () in
+    let () = newCache := vdom in
+    patchVNodesOnElems callbacks elem elems idx [] (vdom :: newRest)
   | oldVnode :: oldRest, [] ->
     let child = elems.(idx) in
     let _removedChild = Web.Node.removeChild elem child in
@@ -416,6 +432,32 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldV
       let child = elems.(idx) in
       let () = Web.Node.set_nodeValue child newText in
       patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+  | LazyGen (oldKey, oldGen, oldCache) :: oldRest, LazyGen (newKey, newGen, newCache) :: newRest ->
+    if oldKey = newKey then
+      (* let () = Js.log ("Lazy match!", oldKey, newKey, elem, elems, idx) in *)
+      let () = newCache := !oldCache in (* Don't forget to pass the cache the along... *)
+      patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+    else
+      ( match oldRest with
+        | LazyGen (olderKey, olderGen, olderCache) :: olderRest ->
+          if olderKey = newKey then
+            (* let () = Js.log ("Lazy older match", olderKey, newKey, elem, elems, idx) in *)
+            let oldChild = elems.(idx) in
+            let _removedChild = Web.Node.removeChild elem oldChild in
+            patchVNodesOnElems callbacks elem elems idx olderRest newRest
+          else
+            (* let () = Js.log ("Lazy older nomatch", olderKey, newKey, elem, elems, idx) in *)
+            let oldVdom = !oldCache in
+            let newVdom = newGen () in
+            let () = newCache := newVdom in
+            patchVNodesOnElems callbacks elem elems idx (oldVdom :: oldRest) (newVdom :: newRest)
+        | _ ->
+          (* let () = Js.log ("Lazy nomatch", oldKey, newKey, elem, elems, idx) in *)
+          let oldVdom = !oldCache in
+          let newVdom = newGen () in
+          let () = newCache := newVdom in
+          patchVNodesOnElems callbacks elem elems idx (oldVdom :: oldRest) (newVdom :: newRest)
+      )
   | Node (oldNamespace, oldTagName, oldKey, oldUnique, oldProperties, oldChildren) :: oldRest,
     (Node (newNamespace, newTagName, newKey, newUnique, newProperties, newChildren) as newNode) :: newRest ->
     if newKey = "" then
@@ -517,6 +559,10 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldV
     let _attachedChild = Web.Node.insertBefore elem newChild child in
     let _removedChild = Web.Node.removeChild elem child in
     patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+  | oldVnodes, LazyGen (newKey, newGen, newCache) :: newRest ->
+    let vdom = newGen () in
+    let () = newCache := vdom in
+    patchVNodesOnElems callbacks elem elems idx oldVnodes (vdom :: newRest)
   | _oldVnode :: oldRest, Node (newNamespace, newTagName, _newKey, _unique, newProperties, newChildren) :: newRest ->
     let oldChild = elems.(idx) in
     (* let newChild = patchVNodesOnElems_createElement callbacks newNamespace newTagName newProperties in *)
