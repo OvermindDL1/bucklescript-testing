@@ -1,5 +1,4 @@
 
-
 let focus id =
   Tea_cmd.call (fun _enqueue -> match Js.Null_undefined.to_opt (Web.Document.getElementById id) with
       | None -> Js.log ("Attempted to focus a non-existant element of: " ^ id)
