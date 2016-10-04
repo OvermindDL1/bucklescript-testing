@@ -24,7 +24,7 @@ module.exports = {
       // binPaths: {}, // If empty it will look in the node_modules then the global path
       bscCwd: "src",
       tempOutputFolder: "tmp",
-      compileAllAtOnce: false,
+      compileAllAtOnce: true,
       bscParameters: [
         "-bs-cross-module-opt"
       ],

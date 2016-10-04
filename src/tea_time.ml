@@ -1,4 +1,5 @@
 
+
 type t = float
 
 
@@ -11,16 +12,15 @@ type 'msg myCmd =
 
 
 let every interval tagger =
+  let open Vdom in
   let key = string_of_int interval in
-  let state = ref None in
-  let enableCall enqueue =
-    state := Some (Web.Window.setInterval (fun () -> enqueue (tagger (Web.Date.now ())) ) interval)
-  in
-  let disableCall enqueue = match !state with
-    | None -> ()
-    | Some id -> Web.Window.clearTimeout id
-  in
-  Tea_sub.registration key enableCall disableCall
+  let enableCall callbacks =
+    let id = (Web.Window.setInterval (fun () -> callbacks.enqueue (tagger (Web.Date.now ())) ) interval) in
+    let () = Js.log ("Time.every", "enable", interval, tagger, callbacks) in
+    fun () ->
+      let () = Js.log ("Time.every", "disable", id, interval, tagger, callbacks) in
+      Web.Window.clearTimeout id
+  in Tea_sub.registration key enableCall
 
 
 let delay msTime msg =

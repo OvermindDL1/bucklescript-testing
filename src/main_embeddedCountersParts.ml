@@ -1,6 +1,7 @@
 
-open Tea.App
-open Tea.Html
+open Tea
+open App
+open Html
 
 
 type msg =
@@ -15,19 +16,25 @@ type model =
   }
 
 
+let init () =
+  { counters = CounterParts.init 4 (fun sm -> Counters sm)
+  ; count = 0
+  }, Cmd.none
+
+
 let update model = function
   | Counters cMsg -> let () = Js.log (model, cMsg) in
     { model with
       counters = CounterParts.update model.counters cMsg
-    }
+    }, Cmd.none
   | AddCounter ->
     { model with
       count = model.count + 1;
-    }
+    }, Cmd.none
   | RemoveCounter ->
     { model with
       count = model.count - 1;
-    }
+    }, CounterParts.shutdown model.counters model.count
 
 
 let view_button title ?(key="") msg =
@@ -47,7 +54,7 @@ let view model =
     []
     [ button
         [ onClick AddCounter ]
-        [ text "Prepend a Counter" ]
+        [ text "Append a Counter" ]
     ; if model.count = 0 then noNode else
         button
           [ onClick RemoveCounter ]
@@ -59,8 +66,9 @@ let view model =
 
 
 let main =
-  beginnerProgram {
-    model={ counters = CounterParts.init 4 (fun sm -> Counters sm); count = 0 };
+  standardProgram {
+    init;
     update;
     view;
+    subscriptions=fun model -> Sub.none;
   }

@@ -1,5 +1,5 @@
 
-open Tea.App
+open Tea
 open Tea.Html
 
 
@@ -8,6 +8,7 @@ type msg =
   | Decrement of int
   | Reset of int
   | Set of int * int
+  | Shutdown of int
 
 
 module IntMap = Map.Make(struct type t = int let compare = compare end)
@@ -44,11 +45,22 @@ let mutate_value id op model =
   put_value id (op value) model
 
 
+let remove_value id model =
+  { model with
+    values = IntMap.remove id model.values
+  }
+
+
 let update model = function
   | Increment id -> mutate_value id ((+)1) model
   | Decrement id -> mutate_value id (fun i->i-1) model
   | Reset id -> put_value id 0 model
   | Set (id, v) -> put_value id v model
+  | Shutdown id -> remove_value id model
+
+
+let shutdown model id =
+  Cmd.msg (model.lift (Shutdown id))
 
 
 let view_button title ?(key="") msg =

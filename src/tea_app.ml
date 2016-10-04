@@ -53,8 +53,9 @@ type ('model, 'msg) beginnerProgram = {
 
 
 type ('model, 'msg) pumpInterface = {
+  startup : unit -> unit;
   handleMsg : 'model -> 'msg -> 'model;
-  shutdown : unit -> unit;
+  shutdown : 'msg Tea_cmd.t -> unit;
 }
 
 
@@ -78,7 +79,7 @@ let programStateWrapper initModel pump shutdown =
 (* let programStateWrapper : 'model -> ('msg Vdom.applicationCallbacks ref -> 'model -> 'msg -> 'model) -> 'msg programInterface = fun initModel pump -> *)
   let open Vdom in
   let model = ref initModel in
-  let callbacks = ref { enqueue = fun msg -> () } in
+  let callbacks = ref { enqueue = fun msg -> Js.log "INVALID enqueue CALL!" } in
   let pumperInterfaceC () = pump callbacks in
   let pumperInterface = pumperInterfaceC () in
   (* let handler = function
@@ -96,32 +97,42 @@ let programStateWrapper initModel pump shutdown =
   } in
   let () = (callbacks := finalizedCBs) in
   let pi_requestShutdown () =
-    let _cmd = shutdown !model in (* TODO:  Process commands to callbacks *)
-    let () = pumperInterface.shutdown () in
     let () = callbacks := { enqueue = fun msg -> () } in
+    let cmd = shutdown !model in
+    let () = pumperInterface.shutdown cmd in
     () in
+  let () = pumperInterface.startup () in
   makeProgramInterface
     ~pushMsg:handler
     ~shutdown:pi_requestShutdown
 
 
-let programLoop update view subscriptions initModel = function
+let programLoop update view subscriptions initModel initCmd = function
   | None -> fun callbacks ->
     let oldSub = ref Tea_sub.none in
     let handleSubscriptionChange model =
       let open Vdom in
       let newSub = subscriptions model in
-      oldSub := (Tea_sub.run !callbacks.enqueue !oldSub newSub) in
-    let () = handleSubscriptionChange initModel in
-    { handleMsg =
+      oldSub := (Tea_sub.run callbacks !oldSub newSub) in
+    { startup =
+        ( fun () ->
+            let () = Tea_cmd.run callbacks initCmd in
+            let () = handleSubscriptionChange initModel in
+            ()
+        )
+    ; handleMsg =
         ( fun model msg ->
             let newModel, cmd = update model msg in (* TODO:  Process commands to callbacks *)
             let open Vdom in
-            let () = Tea_cmd.run !callbacks.enqueue cmd in
+            let () = Tea_cmd.run callbacks cmd in
             let () = handleSubscriptionChange newModel in
             newModel
         )
-    ; shutdown = (fun () -> ())
+    ; shutdown = (fun cmd ->
+          let () = Tea_cmd.run callbacks cmd in
+          let () = oldSub := (Tea_sub.run callbacks !oldSub Tea_sub.none) in
+          ()
+        )
     }
   | Some parentNode -> fun callbacks ->
     (* let priorRenderedVdom = ref [view initModel] in *)
@@ -142,7 +153,7 @@ let programLoop update view subscriptions initModel = function
     let scheduleRender () = match !nextFrameID with
       | Some _ -> () (* A frame is already scheduled, nothing to do *)
       | None ->
-        if false then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
+        if true then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
           let id = Web.Window.requestAnimationFrame doRender in
           let () = nextFrameID := Some id in
           ()
@@ -157,22 +168,25 @@ let programLoop update view subscriptions initModel = function
         | None -> ()
         | Some firstChild -> let _removedChild = Web.Node.removeChild parentNode firstChild in ()
       done in
-    let () = clearPnode () in
     (* let () = Vdom.patchVNodesIntoElement callbacks parentNode [] (!lastVdom) in *)
     (* let () = Vdom.patchVNodesIntoElement callbacks parentNode [] (!priorRenderedVdom) in *)
     (*  Initial render *)
-    let () = nextFrameID := Some (-1) in
-    let () = doRender 16 in
     let oldSub = ref Tea_sub.none in
     let handleSubscriptionChange model =
       let open Vdom in
       let newSub = subscriptions model in
-      oldSub := (Tea_sub.run !callbacks.enqueue !oldSub newSub) in
-    let () = handleSubscriptionChange !latestModel in
+      oldSub := (Tea_sub.run callbacks !oldSub newSub) in
+    let handlerStartup () =
+      let () = clearPnode () in
+      let () = Tea_cmd.run callbacks initCmd in
+      let () = handleSubscriptionChange !latestModel in
+      let () = nextFrameID := Some (-1) in
+      let () = doRender 16 in
+      () in
     let handler model msg =
-      let newModel, cmd = update model msg in (* TODO:  Process commands to callbacks *)
+      let newModel, cmd = update model msg in
       let open Vdom in
-      let () = Tea_cmd.run !callbacks.enqueue cmd in
+      let () = Tea_cmd.run callbacks cmd in
       (* TODO:  Figure out if it is better to get view on update like here, or do it in doRender... *)
       (* let newVdom = view newModel in (* Process VDom diffs here with callbacks *) *)
       (* let () = Vdom.patchVNodeIntoElement callbacks parentNode !lastVdom newVdom in *)
@@ -184,12 +198,16 @@ let programLoop update view subscriptions initModel = function
       let () = scheduleRender () in
       let () = handleSubscriptionChange newModel in
       newModel in
-    let handlerShutdown () =
+    let handlerShutdown cmd =
+      let open Vdom in
       let () = nextFrameID := None in
+      let () = Tea_cmd.run callbacks cmd in
+      let () = oldSub := (Tea_sub.run callbacks !oldSub Tea_sub.none) in
       let () = priorRenderedVdom := [] in
       let () = clearPnode () in
       () in
-    { handleMsg = handler
+    { startup = handlerStartup
+    ; handleMsg = handler
     ; shutdown = handlerShutdown
     }
 
@@ -199,7 +217,7 @@ let program : ('flags, 'model, 'msg) program -> Web.Node.t Js.null_undefined -> 
   let () = Web.polyfills () in
   let initModel, initCmd = init flags in
   let opnode = Js.Null_undefined.to_opt pnode in
-  let pumpInterface = programLoop update view subscriptions initModel opnode in
+  let pumpInterface = programLoop update view subscriptions initModel initCmd opnode in
   programStateWrapper initModel pumpInterface shutdown
 
 

@@ -91,10 +91,12 @@ let hidden b = if b then prop "hidden" "hidden" else noProp
 
 (* Events *)
 
-let on typ ?(key="") cb = on typ ~key:key cb
+let onKeyed typ key cb = on typ key cb
+
+let on typ ?(key="") cb = on typ key cb
 
 let onInput ?(key="") msg =
-  on "input" ~key:key (*(fun ev -> Some (msg "Testering"))*)
+  onKeyed "input" key
     (fun ev ->
        match Js.Undefined.to_opt ev##target with
        | None -> None
@@ -108,13 +110,13 @@ let onInput ?(key="") msg =
        ) *)
 
 let onClick ?(key="") msg =
-  on "click" ~key:key (fun ev -> Some msg)
+  onKeyed "click" key (fun ev -> Some msg)
 
 let onDoubleClick ?(key="") msg =
-  on "dblclick" ~key:key (fun ev -> Some msg)
+  onKeyed "dblclick" key (fun ev -> Some msg)
 
 let onBlur ?(key="") msg =
-  on "blur" ~key:key (fun ev -> Some msg)
+  onKeyed "blur" key (fun ev -> Some msg)
 
 let onFocus ?(key="") msg =
-  on "focus" ~key:key (fun ev -> Some msg)
+  onKeyed "focus" key (fun ev -> Some msg)

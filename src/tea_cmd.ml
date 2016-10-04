@@ -1,11 +1,14 @@
 
 type 'msg t =
-  | None
+  | NoCmd
   | Batch of 'msg t list
   | EnqueueCall of (('msg -> unit) -> unit)
 
 
-let none = None
+type 'msg applicationCallbacks = 'msg Vdom.applicationCallbacks
+
+
+let none = NoCmd
 
 
 let batch cmds =
@@ -24,7 +27,11 @@ let msg msg =
   EnqueueCall (fun enqueue -> enqueue msg)
 
 
-let rec run enqueue = function
-  | None -> ()
-  | Batch cmds -> List.fold_left (fun () cmd -> run enqueue cmd) () cmds
-  | EnqueueCall cb -> let () = Js.log ("Cmd.run", "enqueue", cb) in cb enqueue
+let rec run callbacks =
+  let open Vdom in
+  function
+  | NoCmd -> ()
+  | Batch cmds -> List.fold_left (fun () cmd -> run callbacks cmd) () cmds
+  | EnqueueCall cb ->
+    (* let () = Js.log ("Cmd.run", "enqueue", cb) in *)
+    cb !callbacks.enqueue
