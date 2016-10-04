@@ -33,6 +33,7 @@ type ('flags, 'model, 'msg) program = {
   init : 'flags -> 'model * 'msg Tea_cmd.t;
   update : 'model -> 'msg -> 'model * 'msg Tea_cmd.t;
   view : 'model -> 'msg Vdom.t;
+  subscriptions : 'model -> 'msg Tea_sub.t;
   shutdown : 'model -> 'msg Tea_cmd.t;
 }
 
@@ -41,6 +42,7 @@ type ('flags, 'model, 'msg) standardProgram = {
   init : 'flags -> 'model * 'msg Tea_cmd.t;
   update : 'model -> 'msg -> 'model * 'msg Tea_cmd.t;
   view : 'model -> 'msg Vdom.t;
+  subscriptions : 'model -> 'msg Tea_sub.t;
 }
 
 type ('model, 'msg) beginnerProgram = {
@@ -103,13 +105,20 @@ let programStateWrapper initModel pump shutdown =
     ~shutdown:pi_requestShutdown
 
 
-let programLoop update view initModel = function
+let programLoop update view subscriptions initModel = function
   | None -> fun callbacks ->
+    let oldSub = ref Tea_sub.none in
+    let handleSubscriptionChange model =
+      let open Vdom in
+      let newSub = subscriptions model in
+      oldSub := (Tea_sub.run !callbacks.enqueue !oldSub newSub) in
+    let () = handleSubscriptionChange initModel in
     { handleMsg =
         ( fun model msg ->
             let newModel, cmd = update model msg in (* TODO:  Process commands to callbacks *)
             let open Vdom in
             let () = Tea_cmd.run !callbacks.enqueue cmd in
+            let () = handleSubscriptionChange newModel in
             newModel
         )
     ; shutdown = (fun () -> ())
@@ -133,7 +142,7 @@ let programLoop update view initModel = function
     let scheduleRender () = match !nextFrameID with
       | Some _ -> () (* A frame is already scheduled, nothing to do *)
       | None ->
-        if true then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
+        if false then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
           let id = Web.Window.requestAnimationFrame doRender in
           let () = nextFrameID := Some id in
           ()
@@ -154,6 +163,12 @@ let programLoop update view initModel = function
     (*  Initial render *)
     let () = nextFrameID := Some (-1) in
     let () = doRender 16 in
+    let oldSub = ref Tea_sub.none in
+    let handleSubscriptionChange model =
+      let open Vdom in
+      let newSub = subscriptions model in
+      oldSub := (Tea_sub.run !callbacks.enqueue !oldSub newSub) in
+    let () = handleSubscriptionChange !latestModel in
     let handler model msg =
       let newModel, cmd = update model msg in (* TODO:  Process commands to callbacks *)
       let open Vdom in
@@ -166,7 +181,8 @@ let programLoop update view initModel = function
       (* let () = Js.log (Vdom.createVNodeIntoElement callbacks newVdom parentNode) in *)
       (* let () = lastVdom := [newVdom] in *)
       let () = latestModel := newModel in
-      scheduleRender ();
+      let () = scheduleRender () in
+      let () = handleSubscriptionChange newModel in
       newModel in
     let handlerShutdown () =
       let () = nextFrameID := None in
@@ -179,20 +195,21 @@ let programLoop update view initModel = function
 
 
 let program : ('flags, 'model, 'msg) program -> Web.Node.t Js.null_undefined -> 'flags -> 'msg programInterface =
-  fun {init; update; view; shutdown} pnode flags ->
+  fun {init; update; view; subscriptions; shutdown} pnode flags ->
   let () = Web.polyfills () in
   let initModel, initCmd = init flags in
   let opnode = Js.Null_undefined.to_opt pnode in
-  let pumpInterface = programLoop update view initModel opnode in
+  let pumpInterface = programLoop update view subscriptions initModel opnode in
   programStateWrapper initModel pumpInterface shutdown
 
 
 let standardProgram : ('flags, 'model, 'msg) standardProgram -> Web.Node.t Js.null_undefined -> 'flags -> 'msg programInterface =
-  fun {init; update; view} pnode args ->
+  fun {init; update; view; subscriptions} pnode args ->
     program {
       init = init;
       update = update;
       view = view;
+      subscriptions = subscriptions;
       shutdown = fun _model -> Tea_cmd.none
     } pnode args
 
@@ -203,6 +220,7 @@ let beginnerProgram : ('model, 'msg) beginnerProgram -> Web.Node.t Js.null_undef
       init = (fun () -> (model, Tea_cmd.none));
       update = (fun model msg -> (update model msg, Tea_cmd.none));
       view = view;
+      subscriptions = (fun model -> Tea_sub.none)
     } pnode ()
 
 (* let fullProgram program pnode flags =

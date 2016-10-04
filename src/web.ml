@@ -9,6 +9,9 @@ module Node = Web_node
 module Document = Web_document
 
 
+module Date = Web_date
+
+
 module Window = Web_window
 
 

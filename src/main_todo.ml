@@ -307,4 +307,5 @@ let main =
     { init
     ; update
     ; view
+    ; subscriptions = (fun model -> Sub.none)
     }
