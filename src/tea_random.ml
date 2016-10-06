@@ -90,10 +90,6 @@ let pair gen1 gen2 =
   map2 (fun a b -> a, b) gen1 gen2
 
 
-(* let map func (Generator genCmd) =
-  Generator (fun tagger -> tagger (func genCmd)) *)
-
-
 
 let generate tagger (Generator genCmd) =
   Tea_cmd.call (fun enqueue ->

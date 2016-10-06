@@ -463,7 +463,7 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
   | LazyGen (oldKey, oldGen, oldCache) :: oldRest, LazyGen (newKey, newGen, newCache) :: newRest ->
     if oldKey = newKey then
       (* let () = Js.log ("Lazy match!", oldKey, newKey, elem, elems, idx) in *)
-      let () = newCache := !oldCache in (* Don't forget to pass the cache the along... *)
+      let () = newCache := !oldCache in (* Don't forget to pass the cache along... *)
       patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
     else
       ( match oldRest, newRest with
@@ -480,13 +480,13 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
           let oldChild = elems.(idx) in
           let _removedChild = Web.Node.removeChild elem oldChild in
           let oldVdom = !olderCache in
-          let () = newCache := oldVdom in (* Don't forget to pass the cache the along... *)
+          let () = newCache := oldVdom in (* Don't forget to pass the cache along... *)
           patchVNodesOnElems callbacks elem elems (idx+1) olderRest newRest
         | _, LazyGen (newerKey, newerGen, newerCache) :: newerRest when newerKey = oldKey ->
           (* let () = Js.log ("Lazy newer match", "parse", oldKey, newKey, newerKey, elem, elems.(idx)) in *)
           let oldChild = elems.(idx) in
           let newVdom = newGen () in
-          let () = newCache := newVdom in (* Don't forget to pass the cache the along... *)
+          let () = newCache := newVdom in (* Don't forget to pass the cache along... *)
           let newChild = patchVNodesOnElems_CreateElement callbacks newVdom in
           let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
           patchVNodesOnElems callbacks elem elems (idx+1) oldVNodes newRest
@@ -494,7 +494,7 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
           (* let () = Js.log ("Lazy nomatch", oldKey, newKey, elem, elems.(idx)) in *)
           let oldVdom = !oldCache in
           let newVdom = newGen () in
-          let () = newCache := newVdom in (* Don't forget to pass the cache the along... *)
+          let () = newCache := newVdom in (* Don't forget to pass the cache along... *)
           patchVNodesOnElems callbacks elem elems idx (oldVdom :: oldRest) (newVdom :: newRest)
       )
   | Node (oldNamespace, oldTagName, oldKey, oldUnique, oldProperties, oldChildren) :: oldRest,

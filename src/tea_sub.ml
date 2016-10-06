@@ -83,7 +83,7 @@ let map : ('a -> 'b) -> 'a t -> 'b t = fun func vdom ->
     ref
       { enqueue = (fun msg -> !callbacks.enqueue (func msg))
       } in
-  Tagger (Obj.magic tagger, Obj.magic vdom)
+  Tagger (Obj.magic tagger, Obj.magic vdom) (* Perhaps an explicit polymorphic type in a record might help here, unsure if it would on the vdom part... *)
 
 (* let map : ('a -> 'b) -> 'a t -> 'b t = fun func cmd ->
   let open Vdom in
