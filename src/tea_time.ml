@@ -16,9 +16,9 @@ let every interval tagger =
   let key = string_of_int interval in
   let enableCall callbacks =
     let id = (Web.Window.setInterval (fun () -> callbacks.enqueue (tagger (Web.Date.now ())) ) interval) in
-    let () = Js.log ("Time.every", "enable", interval, tagger, callbacks) in
+    (* let () = Js.log ("Time.every", "enable", interval, tagger, callbacks) in *)
     fun () ->
-      let () = Js.log ("Time.every", "disable", id, interval, tagger, callbacks) in
+      (* let () = Js.log ("Time.every", "disable", id, interval, tagger, callbacks) in *)
       Web.Window.clearTimeout id
   in Tea_sub.registration key enableCall
 

@@ -1,11 +1,12 @@
 
 type t = <
-  body : Web_node.t;
+  body : Web_node.t [@bs.get];
   createElement : string -> Web_node.t [@bs.meth];
   createElementNS : string -> string -> Web_node.t [@bs.meth];
   createComment : string -> Web_node.t [@bs.meth];
   createTextNode : string -> Web_node.t [@bs.meth];
   getElementById : string -> Web_node.t Js.null_undefined [@bs.meth];
+  location : Web_location.t [@bs.get];
 > Js.t
 
 external document : t = "document" [@@bs.val]
@@ -26,3 +27,5 @@ let createElementNsOptional namespace tagName =
   match namespace with
   | "" -> document##createElement tagName
   | ns -> document##createElementNS ns tagName
+
+let location () = document##location

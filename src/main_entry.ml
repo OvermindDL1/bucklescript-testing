@@ -3,7 +3,11 @@
 
 (* let load = Main_todo.main (Web.Document.getElementById "content") () *)
 
-let load = Main_todo_optimized.main (Web.Document.getElementById "content") ()
+(* let load = Main_todo_optimized.main (Web.Document.getElementById "content") () *)
+
+(* let load = Main_todoarray.main (Web.Document.getElementById "content") () *)
+
+(* let load = Main_todo_optimizedarray.main (Web.Document.getElementById "content") () *)
 
 
 (* let () =

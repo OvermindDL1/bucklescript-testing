@@ -67,6 +67,9 @@ external makeProgramInterface : pushMsg:('msg -> unit) -> shutdown:(unit -> unit
 
 
 
+(* TODO:  Need to refactor the program layers to layer everything properly, things are a bit mixed up right now... *)
+
+
 (* let programStateWrapper initModel pump =
   let model = ref initModel in
   let rec handler msg =
@@ -88,10 +91,23 @@ let programStateWrapper initModel pump shutdown =
       let newModel = pumper !model msg in
       let () = (model := newModel) in
       () in *)
-  let handler msg =
-    let newModel = pumperInterface.handleMsg !model msg in
-    let () = (model := newModel) in
-    () in
+  let pending : 'msg list option ref = ref None in
+  let rec handler msg =
+    match !pending with
+    | None ->
+      let () = pending := Some [] in
+      (* let () = Js.log ("APP", "mainloop", "pre", !model) in *)
+      let newModel = pumperInterface.handleMsg !model msg in
+      (* let () = Js.log ("APP", "mainloop", "post", newModel) in *)
+      let () = (model := newModel) in
+      ( match !pending with
+        | None -> failwith "INVALID message queue state, should never be None during message processing!"
+        | Some [] -> pending := None
+        | Some msgs ->
+          let () = pending := None in
+          List.iter handler (List.rev msgs)
+      )
+    | Some msgs -> pending := Some (msg :: msgs) in
   let finalizedCBs : 'msg Vdom.applicationCallbacks = {
     enqueue = fun msg -> handler msg;
   } in
@@ -145,15 +161,15 @@ let programLoop update view subscriptions initModel initCmd = function
       | None -> () (* The render has been canceled, possibly by shutting down, do nothing *)
       | Some _id ->
         let newVdom = [view !latestModel] in
-        let () = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom newVdom in
-        let () = priorRenderedVdom := (newVdom) in
+        let justRenderedVdom = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom newVdom in
+        let () = priorRenderedVdom := justRenderedVdom in
         (* let () = Vdom.patchVNodesIntoElement callbacks parentNode !priorRenderedVdom !lastVdom in
         let () = priorRenderedVdom := (!lastVdom) in *)
         (nextFrameID := None) in
     let scheduleRender () = match !nextFrameID with
       | Some _ -> () (* A frame is already scheduled, nothing to do *)
       | None ->
-        if true then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
+        if false then (* This turns on or off requestAnimationFrame or real-time rendering, false for the benchmark, should be true about everywhere else. *)
           let id = Web.Window.requestAnimationFrame doRender in
           let () = nextFrameID := Some id in
           ()
@@ -185,8 +201,11 @@ let programLoop update view subscriptions initModel initCmd = function
       () in
     let handler model msg =
       let newModel, cmd = update model msg in
+      let () = latestModel := newModel in
       let open Vdom in
+      (* let () = Js.log ("APP", "latestModel", "precmd", !latestModel) in *)
       let () = Tea_cmd.run callbacks cmd in
+      (* let () = Js.log ("APP", "latestModel", "postcmd", !latestModel) in *)
       (* TODO:  Figure out if it is better to get view on update like here, or do it in doRender... *)
       (* let newVdom = view newModel in (* Process VDom diffs here with callbacks *) *)
       (* let () = Vdom.patchVNodeIntoElement callbacks parentNode !lastVdom newVdom in *)
@@ -194,9 +213,10 @@ let programLoop update view subscriptions initModel initCmd = function
       (* let () = Js.log newVdom in *)
       (* let () = Js.log (Vdom.createVNodeIntoElement callbacks newVdom parentNode) in *)
       (* let () = lastVdom := [newVdom] in *)
-      let () = latestModel := newModel in
       let () = scheduleRender () in
+      (* let () = Js.log ("APP", "latestModel", "presub", !latestModel) in *)
       let () = handleSubscriptionChange newModel in
+      (* let () = Js.log ("APP", "latestModel", "postsub", !latestModel) in *)
       newModel in
     let handlerShutdown cmd =
       let open Vdom in
@@ -240,6 +260,10 @@ let beginnerProgram : ('model, 'msg) beginnerProgram -> Web.Node.t Js.null_undef
       view = view;
       subscriptions = (fun model -> Tea_sub.none)
     } pnode ()
+
+
+let map func vnode =
+  Vdom.map func vnode
 
 (* let fullProgram program pnode flags =
   match Js.Null_undefined.to_opt pnode with

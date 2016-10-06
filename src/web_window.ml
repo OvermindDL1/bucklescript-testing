@@ -1,15 +1,25 @@
 
+module History = Web_window_history
+
 type timeoutHandlerID = int
 
 type t = <
+  history : History.t [@bs.get];
+  location : Web_location.t [@bs.get];
   clearTimeout : timeoutHandlerID -> unit [@bs.meth];
   requestAnimationFrame : (float -> unit) -> int [@bs.meth];
   setInterval : (unit -> unit) -> int -> timeoutHandlerID [@bs.meth];
   setTimeout : (unit -> unit) -> int -> timeoutHandlerID [@bs.meth];
+  addEventListener : string -> Web_node.t Web_event.cb -> Web_event.options -> unit [@bs.meth];
+  removeEventListener : string -> Web_node.t Web_event.cb -> Web_event.options -> unit [@bs.meth];
 > Js.t
 
 external window : t = "window" [@@bs.val]
 
+
+let history () = window##history
+
+let location () = window##location
 
 (* requestAnimationFrame callback is a float timestamp in milliseconds *)
 let requestAnimationFrame callback = window##requestAnimationFrame callback
@@ -19,6 +29,10 @@ let clearTimeout id = window##clearTimeout id
 let setInterval cb msTime = window##setInterval cb msTime
 
 let setTimeout cb msTime = window##setTimeout cb msTime
+
+let addEventListener typ listener options = window##addEventListener typ listener options
+
+let removeEventListener typ listener options = window##removeEventListener typ listener options
 
 
 

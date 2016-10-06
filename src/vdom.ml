@@ -2,6 +2,12 @@
 (* https://github.com/Matt-Esch/virtual-dom/blob/master/docs/vnode.md *)
 
 
+
+type 'msg applicationCallbacks = {
+  enqueue : 'msg -> unit;
+}
+
+
 (* Attributes are not properties *)
 (* https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes *)
 
@@ -18,22 +24,28 @@ type 'msg property =
 
 type 'msg properties = 'msg property list
 
+(* type 'msg taggerCallbacks =
+  { renderToHtmlString : unit -> string
+  ; patchVNodesIntoElement : 'msg applicationCallbacks ref -> Web.Node.t
+  } *)
+
 type 'msg t =
   | NoVNode
   | Text of string
   (* Node (namespace, tagName, key, unique, properties, children)  *)
   | Node of string * string * string * string * 'msg properties * 'msg t list
+  (* | ArrayNode of string * string * string * string * 'msg property array * 'msg t array *)
   (* LazyGen (key, fnGenerator) *)
   | LazyGen of string * (unit -> 'msg t) * 'msg t ref
+  (* Tagger (toString, toDom, toVNodes) *)
+(* | Tagger of (unit -> string) * ('msg applicationCallbacks ref -> Web.Node.t -> Web.Node.t -> int ->  'msg t list -> Web.Node.t) * (unit -> 'msg t) *)
+  (* Tagger (tagger, vdom) *)
+  | Tagger of ('msg applicationCallbacks ref -> 'msg applicationCallbacks ref) * 'msg t
   (*  *)
-  (* | Tagger of ('a -> 'msg) -> 'a t -> 'msg t *)
+  (* | Tagger of (('a -> 'msg) -> 'a t -> 'msg t) *)
   (* Custom (key, cbAdd, cbRemove, cbChange, properties, children) *)
   (* | Custom of string * (unit -> Web.Node.t) * (Web.Node.t -> unit) * *)
 
-
-type 'msg applicationCallbacks = {
-  enqueue : 'msg -> unit;
-}
 
 
 (* Nodes *)
@@ -47,6 +59,9 @@ let fullnode namespace tagName key unique props vdoms =
 
 let node ?(namespace="") tagName ?(key="") ?(unique="") props vdoms =
   fullnode namespace tagName key unique props vdoms
+
+(* let arraynode namespace tagName key unique props vdoms =
+  ArrayNode (namespace, tagName, key, unique, props, vdoms) *)
 
 let lazyGen key fn =
   LazyGen (key, fn, ref NoVNode)
@@ -101,6 +116,8 @@ let rec renderToHtmlString = function
   | LazyGen (_key, gen, _cache) ->
     let vdom = gen () in
     renderToHtmlString vdom
+  | Tagger (tagger, vdom) -> renderToHtmlString vdom
+
   (* | KeyedNode (elemType, props, vdoms) -> String.concat ":" ["UNIMPLEMENTED"; elemType] *)
 
 
@@ -413,10 +430,20 @@ and patchVNodesOnElems_CreateElement callbacks = function
     let vdom = newGen () in
     let () = newCache := vdom in
     patchVNodesOnElems_CreateElement callbacks vdom
+  | Tagger (tagger, vdom) ->
+    (* let () = Js.log ("Tagger", "creating", tagger, vdom) in *)
+    patchVNodesOnElems_CreateElement (tagger callbacks) vdom
 
 and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
   (* let () = Js.log ("patchVNodesOnElems", elem, elems, idx, oldVNodes, newVNodes) in *)
   match oldVNodes, newVNodes with
+  | Tagger (oldTagger, oldVdom) :: oldRest, _ ->
+    (* let () = Js.log ("Tagger", "old", oldTagger, oldVdom) in *)
+    patchVNodesOnElems callbacks elem elems idx (oldVdom :: oldRest) newVNodes
+  | oldNode :: oldRest, Tagger (newTagger, newVdom) :: newRest ->
+    (* let () = Js.log ("Tagger", "new", newTagger, newVdom) in *)
+    let () = patchVNodesOnElems (newTagger callbacks) elem elems idx [oldNode] [newVdom] in
+    patchVNodesOnElems callbacks elem elems (idx + 1) oldRest newRest
   | [], [] -> ()
   | [], newNode :: newRest ->
     let newChild = patchVNodesOnElems_CreateElement callbacks newNode in
@@ -506,7 +533,13 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
             let () = patchVNodesOnElems_ReplaceNode callbacks elem elems idx newNode in
             patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
       )
-  | _oldVnode :: oldRest, NoVNode :: newRest ->
+  | _oldVnode :: oldRest, newNode :: newRest ->
+    let oldChild = elems.(idx) in
+    let newChild = patchVNodesOnElems_CreateElement callbacks newNode in
+    let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
+    let _removedChild = Web.Node.removeChild elem oldChild in
+    patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+  (* | _oldVnode :: oldRest, NoVNode :: newRest ->
     let child = elems.(idx) in
     let newChild = Web.Document.createComment "" in
     let _attachedChild = Web.Node.insertBefore elem newChild child in
@@ -531,12 +564,14 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
     let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
     let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
     let _removedChild = Web.Node.removeChild elem oldChild in
-    patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+    patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest *)
+
 
 
 let patchVNodesIntoElement callbacks elem oldVNodes newVNodes =
   let elems = Web.Node.childNodes elem in
-  patchVNodesOnElems callbacks elem elems 0 oldVNodes newVNodes
+  let () = patchVNodesOnElems callbacks elem elems 0 oldVNodes newVNodes in (* Planning to return an altered vdom set here instead of using mutation... *)
+  newVNodes
 
 let patchVNodeIntoElement callbacks elem oldVNode newVNode =
   patchVNodesIntoElement callbacks elem [oldVNode] [newVNode]
@@ -544,3 +579,22 @@ let patchVNodeIntoElement callbacks elem oldVNode newVNode =
 
 (* Node namespace key tagName properties children  *)
 (* | Node of string option * string option * string * 'msg property list * 'msg velem list *)
+
+
+
+let wrapCallbacks func callbacks =
+  ref
+    { enqueue = (fun msg -> !callbacks.enqueue (func msg))
+    }
+
+let map : ('a -> 'b) -> 'a t -> 'b t = fun func vdom ->
+  let tagger callbacks =
+    ref
+      { enqueue = (fun msg -> !callbacks.enqueue (func msg))
+      } in
+  Tagger (Obj.magic tagger, Obj.magic vdom)
+
+(* let map func vdom =
+  let toString () = renderToHtmlString vdom in
+  let toDom in
+  Tagger (toString, toDom, toVNodes) *)

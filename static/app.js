@@ -149,6 +149,474 @@ var __makeRelativeRequire = function(require, mappings, pref) {
   }
 };
 
+require.register("bs-platform/lib/js/array.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_builtin_exceptions = require("/bs-platform/lib/js/caml_builtin_exceptions");
+var Caml_exceptions         = require("/bs-platform/lib/js/caml_exceptions");
+var Curry                   = require("/bs-platform/lib/js/curry");
+var Caml_array              = require("/bs-platform/lib/js/caml_array");
+
+function init(l, f) {
+  if (l) {
+    if (l < 0) {
+      throw [
+            Caml_builtin_exceptions.invalid_argument,
+            "Array.init"
+          ];
+    }
+    else {
+      var res = Caml_array.caml_make_vect(l, Curry._1(f, 0));
+      for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
+        res[i] = Curry._1(f, i);
+      }
+      return res;
+    }
+  }
+  else {
+    return /* array */[];
+  }
+}
+
+function make_matrix(sx, sy, init) {
+  var res = Caml_array.caml_make_vect(sx, /* array */[]);
+  for(var x = 0 ,x_finish = sx - 1 | 0; x <= x_finish; ++x){
+    res[x] = Caml_array.caml_make_vect(sy, init);
+  }
+  return res;
+}
+
+function copy(a) {
+  var l = a.length;
+  if (l) {
+    return Caml_array.caml_array_sub(a, 0, l);
+  }
+  else {
+    return /* array */[];
+  }
+}
+
+function append(a1, a2) {
+  var l1 = a1.length;
+  if (l1) {
+    if (a2.length) {
+      return a1.concat(a2);
+    }
+    else {
+      return Caml_array.caml_array_sub(a1, 0, l1);
+    }
+  }
+  else {
+    return copy(a2);
+  }
+}
+
+function sub(a, ofs, len) {
+  if (len < 0 || ofs > (a.length - len | 0)) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Array.sub"
+        ];
+  }
+  else {
+    return Caml_array.caml_array_sub(a, ofs, len);
+  }
+}
+
+function fill(a, ofs, len, v) {
+  if (ofs < 0 || len < 0 || ofs > (a.length - len | 0)) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Array.fill"
+        ];
+  }
+  else {
+    for(var i = ofs ,i_finish = (ofs + len | 0) - 1 | 0; i <= i_finish; ++i){
+      a[i] = v;
+    }
+    return /* () */0;
+  }
+}
+
+function blit(a1, ofs1, a2, ofs2, len) {
+  if (len < 0 || ofs1 < 0 || ofs1 > (a1.length - len | 0) || ofs2 < 0 || ofs2 > (a2.length - len | 0)) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Array.blit"
+        ];
+  }
+  else {
+    return Caml_array.caml_array_blit(a1, ofs1, a2, ofs2, len);
+  }
+}
+
+function iter(f, a) {
+  for(var i = 0 ,i_finish = a.length - 1 | 0; i <= i_finish; ++i){
+    Curry._1(f, a[i]);
+  }
+  return /* () */0;
+}
+
+function map(f, a) {
+  var l = a.length;
+  if (l) {
+    var r = Caml_array.caml_make_vect(l, Curry._1(f, a[0]));
+    for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
+      r[i] = Curry._1(f, a[i]);
+    }
+    return r;
+  }
+  else {
+    return /* array */[];
+  }
+}
+
+function iteri(f, a) {
+  for(var i = 0 ,i_finish = a.length - 1 | 0; i <= i_finish; ++i){
+    Curry._2(f, i, a[i]);
+  }
+  return /* () */0;
+}
+
+function mapi(f, a) {
+  var l = a.length;
+  if (l) {
+    var r = Caml_array.caml_make_vect(l, Curry._2(f, 0, a[0]));
+    for(var i = 1 ,i_finish = l - 1 | 0; i <= i_finish; ++i){
+      r[i] = Curry._2(f, i, a[i]);
+    }
+    return r;
+  }
+  else {
+    return /* array */[];
+  }
+}
+
+function to_list(a) {
+  var _i = a.length - 1 | 0;
+  var _res = /* [] */0;
+  while(true) {
+    var res = _res;
+    var i = _i;
+    if (i < 0) {
+      return res;
+    }
+    else {
+      _res = /* :: */[
+        a[i],
+        res
+      ];
+      _i = i - 1 | 0;
+      continue ;
+      
+    }
+  };
+}
+
+function list_length(_accu, _param) {
+  while(true) {
+    var param = _param;
+    var accu = _accu;
+    if (param) {
+      _param = param[1];
+      _accu = accu + 1 | 0;
+      continue ;
+      
+    }
+    else {
+      return accu;
+    }
+  };
+}
+
+function of_list(l) {
+  if (l) {
+    var a = Caml_array.caml_make_vect(list_length(0, l), l[0]);
+    var _i = 1;
+    var _param = l[1];
+    while(true) {
+      var param = _param;
+      var i = _i;
+      if (param) {
+        a[i] = param[0];
+        _param = param[1];
+        _i = i + 1 | 0;
+        continue ;
+        
+      }
+      else {
+        return a;
+      }
+    };
+  }
+  else {
+    return /* array */[];
+  }
+}
+
+function fold_left(f, x, a) {
+  var r = x;
+  for(var i = 0 ,i_finish = a.length - 1 | 0; i <= i_finish; ++i){
+    r = Curry._2(f, r, a[i]);
+  }
+  return r;
+}
+
+function fold_right(f, a, x) {
+  var r = x;
+  for(var i = a.length - 1 | 0; i >= 0; --i){
+    r = Curry._2(f, a[i], r);
+  }
+  return r;
+}
+
+var Bottom = Caml_exceptions.create("Array.Bottom");
+
+function sort(cmp, a) {
+  var maxson = function (l, i) {
+    var i31 = ((i + i | 0) + i | 0) + 1 | 0;
+    var x = i31;
+    if ((i31 + 2 | 0) < l) {
+      if (Curry._2(cmp, a[i31], a[i31 + 1 | 0]) < 0) {
+        x = i31 + 1 | 0;
+      }
+      if (Curry._2(cmp, a[x], a[i31 + 2 | 0]) < 0) {
+        x = i31 + 2 | 0;
+      }
+      return x;
+    }
+    else if ((i31 + 1 | 0) < l && Curry._2(cmp, a[i31], a[i31 + 1 | 0]) < 0) {
+      return i31 + 1 | 0;
+    }
+    else if (i31 < l) {
+      return i31;
+    }
+    else {
+      throw [
+            Bottom,
+            i
+          ];
+    }
+  };
+  var trickle = function (l, i, e) {
+    try {
+      var l$1 = l;
+      var _i = i;
+      var e$1 = e;
+      while(true) {
+        var i$1 = _i;
+        var j = maxson(l$1, i$1);
+        if (Curry._2(cmp, a[j], e$1) > 0) {
+          a[i$1] = a[j];
+          _i = j;
+          continue ;
+          
+        }
+        else {
+          a[i$1] = e$1;
+          return /* () */0;
+        }
+      };
+    }
+    catch (exn){
+      if (exn[0] === Bottom) {
+        a[exn[1]] = e;
+        return /* () */0;
+      }
+      else {
+        throw exn;
+      }
+    }
+  };
+  var bubble = function (l, i) {
+    try {
+      var l$1 = l;
+      var _i = i;
+      while(true) {
+        var i$1 = _i;
+        var j = maxson(l$1, i$1);
+        a[i$1] = a[j];
+        _i = j;
+        continue ;
+        
+      };
+    }
+    catch (exn){
+      if (exn[0] === Bottom) {
+        return exn[1];
+      }
+      else {
+        throw exn;
+      }
+    }
+  };
+  var trickleup = function (_i, e) {
+    while(true) {
+      var i = _i;
+      var father = (i - 1 | 0) / 3 | 0;
+      if (i === father) {
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "array.ml",
+                168,
+                4
+              ]
+            ];
+      }
+      if (Curry._2(cmp, a[father], e) < 0) {
+        a[i] = a[father];
+        if (father > 0) {
+          _i = father;
+          continue ;
+          
+        }
+        else {
+          a[0] = e;
+          return /* () */0;
+        }
+      }
+      else {
+        a[i] = e;
+        return /* () */0;
+      }
+    };
+  };
+  var l = a.length;
+  for(var i = ((l + 1 | 0) / 3 | 0) - 1 | 0; i >= 0; --i){
+    trickle(l, i, a[i]);
+  }
+  for(var i$1 = l - 1 | 0; i$1 >= 2; --i$1){
+    var e = a[i$1];
+    a[i$1] = a[0];
+    trickleup(bubble(i$1, 0), e);
+  }
+  if (l > 1) {
+    var e$1 = a[1];
+    a[1] = a[0];
+    a[0] = e$1;
+    return /* () */0;
+  }
+  else {
+    return 0;
+  }
+}
+
+function stable_sort(cmp, a) {
+  var merge = function (src1ofs, src1len, src2, src2ofs, src2len, dst, dstofs) {
+    var src1r = src1ofs + src1len | 0;
+    var src2r = src2ofs + src2len | 0;
+    var _i1 = src1ofs;
+    var _s1 = a[src1ofs];
+    var _i2 = src2ofs;
+    var _s2 = src2[src2ofs];
+    var _d = dstofs;
+    while(true) {
+      var d = _d;
+      var s2 = _s2;
+      var i2 = _i2;
+      var s1 = _s1;
+      var i1 = _i1;
+      if (Curry._2(cmp, s1, s2) <= 0) {
+        dst[d] = s1;
+        var i1$1 = i1 + 1 | 0;
+        if (i1$1 < src1r) {
+          _d = d + 1 | 0;
+          _s1 = a[i1$1];
+          _i1 = i1$1;
+          continue ;
+          
+        }
+        else {
+          return blit(src2, i2, dst, d + 1 | 0, src2r - i2 | 0);
+        }
+      }
+      else {
+        dst[d] = s2;
+        var i2$1 = i2 + 1 | 0;
+        if (i2$1 < src2r) {
+          _d = d + 1 | 0;
+          _s2 = src2[i2$1];
+          _i2 = i2$1;
+          continue ;
+          
+        }
+        else {
+          return blit(a, i1, dst, d + 1 | 0, src1r - i1 | 0);
+        }
+      }
+    };
+  };
+  var isortto = function (srcofs, dst, dstofs, len) {
+    for(var i = 0 ,i_finish = len - 1 | 0; i <= i_finish; ++i){
+      var e = a[srcofs + i | 0];
+      var j = (dstofs + i | 0) - 1 | 0;
+      while(j >= dstofs && Curry._2(cmp, dst[j], e) > 0) {
+        dst[j + 1 | 0] = dst[j];
+        j = j - 1 | 0;
+      };
+      dst[j + 1 | 0] = e;
+    }
+    return /* () */0;
+  };
+  var sortto = function (srcofs, dst, dstofs, len) {
+    if (len <= 5) {
+      return isortto(srcofs, dst, dstofs, len);
+    }
+    else {
+      var l1 = len / 2 | 0;
+      var l2 = len - l1 | 0;
+      sortto(srcofs + l1 | 0, dst, dstofs + l1 | 0, l2);
+      sortto(srcofs, a, srcofs + l2 | 0, l1);
+      return merge(srcofs + l2 | 0, l1, dst, dstofs + l1 | 0, l2, dst, dstofs);
+    }
+  };
+  var l = a.length;
+  if (l <= 5) {
+    return isortto(0, a, 0, l);
+  }
+  else {
+    var l1 = l / 2 | 0;
+    var l2 = l - l1 | 0;
+    var t = Caml_array.caml_make_vect(l2, a[0]);
+    sortto(l1, t, 0, l2);
+    sortto(0, a, l2, l1);
+    return merge(l2, l1, t, 0, l2, a, 0);
+  }
+}
+
+var create_matrix = make_matrix;
+
+var concat = Caml_array.caml_array_concat
+
+var fast_sort = stable_sort;
+
+exports.init          = init;
+exports.make_matrix   = make_matrix;
+exports.create_matrix = create_matrix;
+exports.append        = append;
+exports.concat        = concat;
+exports.sub           = sub;
+exports.copy          = copy;
+exports.fill          = fill;
+exports.blit          = blit;
+exports.to_list       = to_list;
+exports.of_list       = of_list;
+exports.iter          = iter;
+exports.map           = map;
+exports.iteri         = iteri;
+exports.mapi          = mapi;
+exports.fold_left     = fold_left;
+exports.fold_right    = fold_right;
+exports.sort          = sort;
+exports.stable_sort   = stable_sort;
+exports.fast_sort     = fast_sort;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/block.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -8239,7 +8707,7 @@ function update(model, param) {
 
 function shutdown(model, id) {
   var msg = Curry._1(model[/* lift */2], /* Shutdown */Block.__(4, [id]));
-  return /* EnqueueCall */Block.__(1, [function (enqueue) {
+  return /* EnqueueCall */Block.__(2, [function (enqueue) {
               return Curry._1(enqueue, msg);
             }]);
 }
@@ -8342,7 +8810,7 @@ function every(interval, tagger) {
 }
 
 function delay(msTime, msg) {
-  return /* EnqueueCall */Block.__(1, [function (enqueue) {
+  return /* EnqueueCall */Block.__(2, [function (enqueue) {
               Web_window.setTimeout(function () {
                     return Curry._1(enqueue, msg);
                   }, msTime);
@@ -8546,6 +9014,151 @@ exports.view_button = view_button;
 exports.view        = view;
 exports.main        = main;
 /* No side effect */
+
+});
+
+;require.register("src/main_counter_navigation.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_navigation = require("./tea_navigation");
+var Tea_html       = require("./tea_html");
+var Caml_format    = require("bs-platform/lib/js/caml_format");
+var Block          = require("bs-platform/lib/js/block");
+var Vdom           = require("./vdom");
+var $$String       = require("bs-platform/lib/js/string");
+
+function toUrl(count) {
+  return "#/" + count;
+}
+
+function fromUrl(url) {
+  try {
+    return /* Some */[Caml_format.caml_int_of_string($$String.sub(url, 2, url.length - 2 | 0))];
+  }
+  catch (exn){
+    return /* None */0;
+  }
+}
+
+function update(model, msg) {
+  var newModel;
+  if (typeof msg === "number") {
+    switch (msg) {
+      case 0 : 
+          newModel = model + 1 | 0;
+          break;
+      case 1 : 
+          newModel = model - 1 | 0;
+          break;
+      case 2 : 
+          newModel = 0;
+          break;
+      
+    }
+  }
+  else {
+    newModel = msg[0];
+  }
+  return /* tuple */[
+          model,
+          Tea_navigation.newUrl("#/" + newModel)
+        ];
+}
+
+function view_button(title, msg) {
+  return Tea_html.button(/* None */0, /* None */0, /* :: */[
+              Tea_html.onClick(/* None */0, msg),
+              /* [] */0
+            ], /* :: */[
+              /* Text */Block.__(0, [title]),
+              /* [] */0
+            ]);
+}
+
+function view(model) {
+  return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
+              Tea_html.span(/* None */0, /* None */0, /* :: */[
+                    Vdom.style("text-weight", "bold"),
+                    /* [] */0
+                  ], /* :: */[
+                    /* Text */Block.__(0, ["" + model]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                Tea_html.br(/* [] */0),
+                /* :: */[
+                  view_button("Increment", /* Increment */0),
+                  /* :: */[
+                    Tea_html.br(/* [] */0),
+                    /* :: */[
+                      view_button("Decrement", /* Decrement */1),
+                      /* :: */[
+                        Tea_html.br(/* [] */0),
+                        /* :: */[
+                          view_button("Set to 42", /* Set */[42]),
+                          /* :: */[
+                            Tea_html.br(/* [] */0),
+                            /* :: */[
+                              model !== 0 ? view_button("Reset", /* Reset */2) : Tea_html.noNode,
+                              /* [] */0
+                            ]
+                          ]
+                        ]
+                      ]
+                    ]
+                  ]
+                ]
+              ]
+            ]);
+}
+
+function urlParser($$location) {
+  return fromUrl($$location[/* hash */7]);
+}
+
+function urlUpdate(model, param) {
+  if (param) {
+    return /* tuple */[
+            param[0],
+            /* NoCmd */0
+          ];
+  }
+  else {
+    return /* tuple */[
+            model,
+            Tea_navigation.modifyUrl("#/" + model)
+          ];
+  }
+}
+
+function init(_, result) {
+  return urlUpdate(0, result);
+}
+
+var main = Tea_navigation.navigationProgram(urlParser, /* record */[
+      /* urlUpdate */urlUpdate,
+      /* init */init,
+      /* update */update,
+      /* view */view,
+      /* subscriptions */function () {
+        return /* NoSub */0;
+      },
+      /* shutdown */function () {
+        return /* NoCmd */0;
+      }
+    ]);
+
+exports.toUrl       = toUrl;
+exports.fromUrl     = fromUrl;
+exports.update      = update;
+exports.view_button = view_button;
+exports.view        = view;
+exports.urlParser   = urlParser;
+exports.urlUpdate   = urlUpdate;
+exports.init        = init;
+exports.main        = main;
+/* main Not a pure module */
 
 });
 
@@ -8800,12 +9413,9 @@ exports.main        = main;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
-var Main_todo_optimized = require("./main_todo_optimized");
 
-var load = Main_todo_optimized.main(document.getElementById("content"), /* () */0);
 
-exports.load = load;
-/* load Not a pure module */
+/* No side effect */
 
 });
 
@@ -10532,6 +11142,1522 @@ exports.main                = main;
 
 });
 
+;require.register("src/main_todo_optimizedarray.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_app       = require("./tea_app");
+var Tea_html      = require("./tea_html");
+var Block         = require("bs-platform/lib/js/block");
+var Caml_array    = require("bs-platform/lib/js/caml_array");
+var $$Array       = require("bs-platform/lib/js/array");
+var Vdom          = require("./vdom");
+var List          = require("bs-platform/lib/js/list");
+var Tea_html_cmds = require("./tea_html_cmds");
+
+var emptyModel_000 = /* entries : array */[];
+
+var emptyModel = /* record */[
+  emptyModel_000,
+  /* field */"",
+  /* uid */0,
+  /* visibility */"All"
+];
+
+function newEntry(desc, id) {
+  return /* record */[
+          /* description */desc,
+          /* completed : false */0,
+          /* editing : false */0,
+          /* id */id
+        ];
+}
+
+function init() {
+  return /* tuple */[
+          emptyModel,
+          /* NoCmd */0
+        ];
+}
+
+function update(model, param) {
+  if (typeof param === "number") {
+    if (param) {
+      return /* tuple */[
+              /* record */[
+                /* entries */$$Array.of_list(List.filter(function (param) {
+                            return !param[/* completed */1];
+                          })($$Array.to_list(model[/* entries */0]))),
+                /* field */model[/* field */1],
+                /* uid */model[/* uid */2],
+                /* visibility */model[/* visibility */3]
+              ],
+              /* NoCmd */0
+            ];
+    }
+    else {
+      return /* tuple */[
+              /* record */[
+                /* entries */model[/* field */1] === "" ? model[/* entries */0] : Caml_array.caml_array_concat(/* :: */[
+                        model[/* entries */0],
+                        /* :: */[
+                          /* array */[newEntry(model[/* field */1], model[/* uid */2])],
+                          /* [] */0
+                        ]
+                      ]),
+                /* field */"",
+                /* uid */model[/* uid */2] + 1 | 0,
+                /* visibility */model[/* visibility */3]
+              ],
+              /* NoCmd */0
+            ];
+    }
+  }
+  else {
+    switch (param.tag | 0) {
+      case 0 : 
+          return /* tuple */[
+                  /* record */[
+                    /* entries */model[/* entries */0],
+                    /* field */param[0],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 1 : 
+          var editing = param[1];
+          var id = param[0];
+          var updateEntry = function (t) {
+            if (t[/* id */3] === id) {
+              return /* record */[
+                      /* description */t[/* description */0],
+                      /* completed */t[/* completed */1],
+                      /* editing */editing,
+                      /* id */t[/* id */3]
+                    ];
+            }
+            else {
+              return t;
+            }
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  editing ? Tea_html_cmds.focus("todo-" + id) : /* NoCmd */0
+                ];
+      case 2 : 
+          var description = param[1];
+          var id$1 = param[0];
+          var updateEntry$1 = function (t) {
+            if (t[/* id */3] === id$1) {
+              return /* record */[
+                      /* description */description,
+                      /* completed */t[/* completed */1],
+                      /* editing */t[/* editing */2],
+                      /* id */t[/* id */3]
+                    ];
+            }
+            else {
+              return t;
+            }
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry$1, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 3 : 
+          var id$2 = param[0];
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.of_list(List.filter(function (t) {
+                                return +(t[/* id */3] !== id$2);
+                              })($$Array.to_list(model[/* entries */0]))),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 4 : 
+          var completed = param[1];
+          var id$3 = param[0];
+          var updateEntry$2 = function (t) {
+            if (t[/* id */3] === id$3) {
+              return /* record */[
+                      /* description */t[/* description */0],
+                      /* completed */completed,
+                      /* editing */t[/* editing */2],
+                      /* id */t[/* id */3]
+                    ];
+            }
+            else {
+              return t;
+            }
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry$2, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 5 : 
+          var completed$1 = param[0];
+          var updateEntry$3 = function (t) {
+            return /* record */[
+                    /* description */t[/* description */0],
+                    /* completed */completed$1,
+                    /* editing */t[/* editing */2],
+                    /* id */t[/* id */3]
+                  ];
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry$3, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 6 : 
+          return /* tuple */[
+                  /* record */[
+                    /* entries */model[/* entries */0],
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */param[0]
+                  ],
+                  /* NoCmd */0
+                ];
+      
+    }
+  }
+}
+
+function onEnter($staropt$star, msg) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var tagger = function (ev) {
+    var match = ev.keyCode;
+    if (match !== 13) {
+      return /* None */0;
+    }
+    else {
+      return /* Some */[msg];
+    }
+  };
+  return Tea_html.on("keydown", /* Some */[key], tagger);
+}
+
+function viewEntry(todo, _) {
+  var key = "" + todo[/* id */3];
+  var b = todo[/* completed */1];
+  var b$1 = todo[/* editing */2];
+  var fullkey = key + ((
+      b ? "true" : "false"
+    ) + (
+      b$1 ? "true" : "false"
+    ));
+  var str = todo[/* description */0];
+  var str$1 = "todo-" + todo[/* id */3];
+  return Tea_html.li(/* Some */[fullkey], /* None */0, /* :: */[
+              Tea_html.classList(/* :: */[
+                    /* tuple */[
+                      "completed",
+                      todo[/* completed */1]
+                    ],
+                    /* :: */[
+                      /* tuple */[
+                        "editing",
+                        todo[/* editing */2]
+                      ],
+                      /* [] */0
+                    ]
+                  ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.div(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "className",
+                        "view"
+                      ]),
+                    /* [] */0
+                  ], /* :: */[
+                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                          /* RawProp */Block.__(0, [
+                              "className",
+                              "toggle"
+                            ]),
+                          /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "type",
+                                "checkbox"
+                              ]),
+                            /* :: */[
+                              Tea_html.checked(todo[/* completed */1]),
+                              /* :: */[
+                                Tea_html.onClick(/* Some */[fullkey], /* Check */Block.__(4, [
+                                        todo[/* id */3],
+                                        !todo[/* completed */1]
+                                      ])),
+                                /* [] */0
+                              ]
+                            ]
+                          ]
+                        ], /* [] */0),
+                    /* :: */[
+                      Tea_html.label(/* None */0, /* None */0, /* :: */[
+                            Tea_html.onDoubleClick(/* Some */[key], /* EditingEntry */Block.__(1, [
+                                    todo[/* id */3],
+                                    /* true */1
+                                  ])),
+                            /* [] */0
+                          ], /* :: */[
+                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* [] */0
+                          ]),
+                      /* :: */[
+                        Tea_html.button(/* None */0, /* None */0, /* :: */[
+                              /* RawProp */Block.__(0, [
+                                  "className",
+                                  "destroy"
+                                ]),
+                              /* :: */[
+                                Tea_html.onClick(/* Some */[key], /* Delete */Block.__(3, [todo[/* id */3]])),
+                                /* [] */0
+                              ]
+                            ], /* [] */0),
+                        /* [] */0
+                      ]
+                    ]
+                  ]),
+              /* :: */[
+                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "className",
+                          "edit"
+                        ]),
+                      /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "value",
+                            str
+                          ]),
+                        /* :: */[
+                          /* RawProp */Block.__(0, [
+                              "name",
+                              "title"
+                            ]),
+                          /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "id",
+                                str$1
+                              ]),
+                            /* :: */[
+                              Tea_html.onInput(/* Some */[key], function (value) {
+                                    return /* UpdateEntry */Block.__(2, [
+                                              todo[/* id */3],
+                                              value
+                                            ]);
+                                  }),
+                              /* :: */[
+                                Tea_html.onBlur(/* Some */[key], /* EditingEntry */Block.__(1, [
+                                        todo[/* id */3],
+                                        /* false */0
+                                      ])),
+                                /* :: */[
+                                  onEnter(/* Some */[key], /* EditingEntry */Block.__(1, [
+                                          todo[/* id */3],
+                                          /* false */0
+                                        ])),
+                                  /* [] */0
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ], /* [] */0),
+                /* [] */0
+              ]
+            ]);
+}
+
+function viewEntries(visibility, entries) {
+  var isVisible = function (todo) {
+    switch (visibility) {
+      case "Active" : 
+          return !todo[/* completed */1];
+      case "Completed" : 
+          return todo[/* completed */1];
+      default:
+        return /* true */1;
+    }
+  };
+  var allCompleted = $$Array.fold_left(function (b, param) {
+        if (b) {
+          return param[/* completed */1];
+        }
+        else {
+          return /* false */0;
+        }
+      }, /* true */1, entries);
+  var cssVisibility = entries.length ? "visible" : "hidden";
+  return Tea_html.section(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "main"
+                ]),
+              /* :: */[
+                Vdom.style("visibility", cssVisibility),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "className",
+                        "toggle-all"
+                      ]),
+                    /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "type",
+                          "checkbox"
+                        ]),
+                      /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "name",
+                            "toggle"
+                          ]),
+                        /* :: */[
+                          Tea_html.checked(allCompleted),
+                          /* :: */[
+                            Tea_html.onClick(/* Some */[allCompleted ? "true" : "false"], /* CheckAll */Block.__(5, [!allCompleted])),
+                            /* [] */0
+                          ]
+                        ]
+                      ]
+                    ]
+                  ], /* [] */0),
+              /* :: */[
+                Tea_html.label(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "htmlFor",
+                          "toggle-all"
+                        ]),
+                      /* [] */0
+                    ], /* :: */[
+                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* [] */0
+                    ]),
+                /* :: */[
+                  Tea_html.ul(/* None */0, /* None */0, /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "className",
+                            "todo-list"
+                          ]),
+                        /* [] */0
+                      ], $$Array.to_list($$Array.map(function (todo) {
+                                if (isVisible(todo)) {
+                                  var gen = function (param) {
+                                    return viewEntry(todo, param);
+                                  };
+                                  var b = todo[/* completed */1];
+                                  var b$1 = todo[/* editing */2];
+                                  var key = todo[/* id */3] + ((
+                                      b ? "true" : "false"
+                                    ) + (
+                                      b$1 ? "true" : "false"
+                                    ));
+                                  return Vdom.lazyGen(key, gen);
+                                }
+                                else {
+                                  return Tea_html.noNode;
+                                }
+                              }, entries))),
+                  /* [] */0
+                ]
+              ]
+            ]);
+}
+
+function viewInput(task, _) {
+  return Tea_html.header(/* Some */[task], /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "header"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(0, ["todos"]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "className",
+                          "new-todo"
+                        ]),
+                      /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "placeholder",
+                            "What needs to be done?"
+                          ]),
+                        /* :: */[
+                          Tea_html.autofocus(/* true */1),
+                          /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "value",
+                                task
+                              ]),
+                            /* :: */[
+                              /* RawProp */Block.__(0, [
+                                  "name",
+                                  "newTodo"
+                                ]),
+                              /* :: */[
+                                Tea_html.onInput(/* None */0, function (str) {
+                                      return /* UpdateField */Block.__(0, [str]);
+                                    }),
+                                /* :: */[
+                                  onEnter(/* None */0, /* Add */0),
+                                  /* [] */0
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ], /* [] */0),
+                /* [] */0
+              ]
+            ]);
+}
+
+function viewControlsCount(entriesLeft) {
+  var item_ = entriesLeft === 1 ? " item" : " items";
+  var left = "" + entriesLeft;
+  return Tea_html.span(/* Some */[left], /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "todo-count"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(0, [left]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                /* Text */Block.__(0, [item_ + " left"]),
+                /* [] */0
+              ]
+            ]);
+}
+
+function visibilitySwap(uri, visibility, actualVisibility) {
+  return Tea_html.li(/* None */0, /* None */0, /* :: */[
+              Tea_html.onClick(/* Some */[visibility], /* ChangeVisibility */Block.__(6, [visibility])),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.a(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "href",
+                        uri
+                      ]),
+                    /* :: */[
+                      Tea_html.classList(/* :: */[
+                            /* tuple */[
+                              "selected",
+                              +(visibility === actualVisibility)
+                            ],
+                            /* [] */0
+                          ]),
+                      /* [] */0
+                    ]
+                  ], /* :: */[
+                    /* Text */Block.__(0, [visibility]),
+                    /* [] */0
+                  ]),
+              /* [] */0
+            ]);
+}
+
+function viewControlsFilters(visibility) {
+  return Tea_html.ul(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "filters"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              visibilitySwap("#/", "All", visibility),
+              /* :: */[
+                /* Text */Block.__(0, [" "]),
+                /* :: */[
+                  visibilitySwap("#/active", "Active", visibility),
+                  /* :: */[
+                    /* Text */Block.__(0, [" "]),
+                    /* :: */[
+                      visibilitySwap("#/completed", "Completed", visibility),
+                      /* [] */0
+                    ]
+                  ]
+                ]
+              ]
+            ]);
+}
+
+function viewControlsClear(entriesCompleted) {
+  return Tea_html.button(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "clear-completed"
+                ]),
+              /* :: */[
+                Tea_html.hidden(+(entriesCompleted === 0)),
+                /* :: */[
+                  Tea_html.onClick(/* None */0, /* DeleteComplete */1),
+                  /* [] */0
+                ]
+              ]
+            ], /* :: */[
+              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* [] */0
+            ]);
+}
+
+function viewControls(visibility, entries) {
+  var entriesCompleted = $$Array.fold_left(function (c, param) {
+        if (param[/* completed */1]) {
+          return c + 1 | 0;
+        }
+        else {
+          return c;
+        }
+      }, 0, entries);
+  var entriesLeft = entries.length - entriesCompleted | 0;
+  return Tea_html.footer(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "footer"
+                ]),
+              /* :: */[
+                Tea_html.hidden(+(entries.length === 0)),
+                /* [] */0
+              ]
+            ], /* :: */[
+              viewControlsCount(entriesLeft),
+              /* :: */[
+                viewControlsFilters(visibility),
+                /* :: */[
+                  viewControlsClear(entriesCompleted),
+                  /* [] */0
+                ]
+              ]
+            ]);
+}
+
+function infoFooter() {
+  return Tea_html.footer(/* Some */["1"], /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "info"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(0, ["Double-click to edit a todo"]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
+                      /* Text */Block.__(0, ["Written by "]),
+                      /* :: */[
+                        Tea_html.a(/* None */0, /* None */0, /* :: */[
+                              /* RawProp */Block.__(0, [
+                                  "href",
+                                  "https://github.com/evancz"
+                                ]),
+                              /* [] */0
+                            ], /* :: */[
+                              /* Text */Block.__(0, ["Evan Czaplicki"]),
+                              /* [] */0
+                            ]),
+                        /* :: */[
+                          /* Text */Block.__(0, [" and converted by "]),
+                          /* :: */[
+                            Tea_html.a(/* None */0, /* None */0, /* :: */[
+                                  /* RawProp */Block.__(0, [
+                                      "href",
+                                      "https://github.com/overminddl1"
+                                    ]),
+                                  /* [] */0
+                                ], /* :: */[
+                                  /* Text */Block.__(0, ["OvermindDL1"]),
+                                  /* [] */0
+                                ]),
+                            /* [] */0
+                          ]
+                        ]
+                      ]
+                    ]),
+                /* :: */[
+                  Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
+                        /* Text */Block.__(0, ["Part of "]),
+                        /* :: */[
+                          Tea_html.a(/* None */0, /* None */0, /* :: */[
+                                /* RawProp */Block.__(0, [
+                                    "href",
+                                    "http://todomvc.com"
+                                  ]),
+                                /* [] */0
+                              ], /* :: */[
+                                /* Text */Block.__(0, ["TodoMVC"]),
+                                /* [] */0
+                              ]),
+                          /* [] */0
+                        ]
+                      ]),
+                  /* [] */0
+                ]
+              ]
+            ]);
+}
+
+function view(model) {
+  var partial_arg = model[/* field */1];
+  var gen = function (param) {
+    return viewInput(partial_arg, param);
+  };
+  var key = model[/* field */1];
+  return Tea_html.div(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "todomvc-wrapper"
+                ]),
+              /* :: */[
+                Vdom.style("visibility", "hidden"),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_html.section(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "className",
+                        "todoapp"
+                      ]),
+                    /* [] */0
+                  ], /* :: */[
+                    Vdom.lazyGen(key, gen),
+                    /* :: */[
+                      viewEntries(model[/* visibility */3], model[/* entries */0]),
+                      /* :: */[
+                        viewControls(model[/* visibility */3], model[/* entries */0]),
+                        /* [] */0
+                      ]
+                    ]
+                  ]),
+              /* :: */[
+                Vdom.lazyGen("", infoFooter),
+                /* [] */0
+              ]
+            ]);
+}
+
+function partial_arg_003() {
+  return /* NoSub */0;
+}
+
+var partial_arg = /* record */[
+  /* init */init,
+  /* update */update,
+  /* view */view,
+  partial_arg_003
+];
+
+function main(param, param$1) {
+  return Tea_app.standardProgram(partial_arg, param, param$1);
+}
+
+exports.emptyModel          = emptyModel;
+exports.newEntry            = newEntry;
+exports.init                = init;
+exports.update              = update;
+exports.onEnter             = onEnter;
+exports.viewEntry           = viewEntry;
+exports.viewEntries         = viewEntries;
+exports.viewInput           = viewInput;
+exports.viewControlsCount   = viewControlsCount;
+exports.visibilitySwap      = visibilitySwap;
+exports.viewControlsFilters = viewControlsFilters;
+exports.viewControlsClear   = viewControlsClear;
+exports.viewControls        = viewControls;
+exports.infoFooter          = infoFooter;
+exports.view                = view;
+exports.main                = main;
+/* No side effect */
+
+});
+
+;require.register("src/main_todoarray.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_app       = require("./tea_app");
+var Tea_html      = require("./tea_html");
+var Block         = require("bs-platform/lib/js/block");
+var Caml_array    = require("bs-platform/lib/js/caml_array");
+var $$Array       = require("bs-platform/lib/js/array");
+var Vdom          = require("./vdom");
+var List          = require("bs-platform/lib/js/list");
+var Tea_html_cmds = require("./tea_html_cmds");
+
+var emptyModel_000 = /* entries : array */[];
+
+var emptyModel = /* record */[
+  emptyModel_000,
+  /* field */"",
+  /* uid */0,
+  /* visibility */"All"
+];
+
+function newEntry(desc, id) {
+  return /* record */[
+          /* description */desc,
+          /* completed : false */0,
+          /* editing : false */0,
+          /* id */id
+        ];
+}
+
+function init() {
+  return /* tuple */[
+          emptyModel,
+          /* NoCmd */0
+        ];
+}
+
+function update(model, param) {
+  if (typeof param === "number") {
+    switch (param) {
+      case 0 : 
+          return /* tuple */[
+                  model,
+                  /* NoCmd */0
+                ];
+      case 1 : 
+          return /* tuple */[
+                  /* record */[
+                    /* entries */model[/* field */1] === "" ? model[/* entries */0] : Caml_array.caml_array_concat(/* :: */[
+                            model[/* entries */0],
+                            /* :: */[
+                              /* array */[newEntry(model[/* field */1], model[/* uid */2])],
+                              /* [] */0
+                            ]
+                          ]),
+                    /* field */"",
+                    /* uid */model[/* uid */2] + 1 | 0,
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 2 : 
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.of_list(List.filter(function (param) {
+                                return !param[/* completed */1];
+                              })($$Array.to_list(model[/* entries */0]))),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      
+    }
+  }
+  else {
+    switch (param.tag | 0) {
+      case 0 : 
+          return /* tuple */[
+                  /* record */[
+                    /* entries */model[/* entries */0],
+                    /* field */param[0],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 1 : 
+          var editing = param[1];
+          var id = param[0];
+          var updateEntry = function (t) {
+            if (t[/* id */3] === id) {
+              return /* record */[
+                      /* description */t[/* description */0],
+                      /* completed */t[/* completed */1],
+                      /* editing */editing,
+                      /* id */t[/* id */3]
+                    ];
+            }
+            else {
+              return t;
+            }
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  editing ? Tea_html_cmds.focus("todo-" + id) : /* NoCmd */0
+                ];
+      case 2 : 
+          var description = param[1];
+          var id$1 = param[0];
+          var updateEntry$1 = function (t) {
+            if (t[/* id */3] === id$1) {
+              return /* record */[
+                      /* description */description,
+                      /* completed */t[/* completed */1],
+                      /* editing */t[/* editing */2],
+                      /* id */t[/* id */3]
+                    ];
+            }
+            else {
+              return t;
+            }
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry$1, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 3 : 
+          var id$2 = param[0];
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.of_list(List.filter(function (t) {
+                                return +(t[/* id */3] !== id$2);
+                              })($$Array.to_list(model[/* entries */0]))),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 4 : 
+          var completed = param[1];
+          var id$3 = param[0];
+          var updateEntry$2 = function (t) {
+            if (t[/* id */3] === id$3) {
+              return /* record */[
+                      /* description */t[/* description */0],
+                      /* completed */completed,
+                      /* editing */t[/* editing */2],
+                      /* id */t[/* id */3]
+                    ];
+            }
+            else {
+              return t;
+            }
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry$2, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 5 : 
+          var completed$1 = param[0];
+          var updateEntry$3 = function (t) {
+            return /* record */[
+                    /* description */t[/* description */0],
+                    /* completed */completed$1,
+                    /* editing */t[/* editing */2],
+                    /* id */t[/* id */3]
+                  ];
+          };
+          return /* tuple */[
+                  /* record */[
+                    /* entries */$$Array.map(updateEntry$3, model[/* entries */0]),
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */model[/* visibility */3]
+                  ],
+                  /* NoCmd */0
+                ];
+      case 6 : 
+          return /* tuple */[
+                  /* record */[
+                    /* entries */model[/* entries */0],
+                    /* field */model[/* field */1],
+                    /* uid */model[/* uid */2],
+                    /* visibility */param[0]
+                  ],
+                  /* NoCmd */0
+                ];
+      
+    }
+  }
+}
+
+function onEnter($staropt$star, msg) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var tagger = function (ev) {
+    var match = ev.keyCode;
+    if (match !== 13) {
+      return /* None */0;
+    }
+    else {
+      return /* Some */[msg];
+    }
+  };
+  return Tea_html.on("keydown", /* Some */[key], tagger);
+}
+
+function viewEntry(todo) {
+  var key = "" + todo[/* id */3];
+  var b = todo[/* completed */1];
+  var str = todo[/* description */0];
+  var str$1 = "todo-" + todo[/* id */3];
+  return Tea_html.li(/* None */0, /* None */0, /* :: */[
+              Tea_html.classList(/* :: */[
+                    /* tuple */[
+                      "completed",
+                      todo[/* completed */1]
+                    ],
+                    /* :: */[
+                      /* tuple */[
+                        "editing",
+                        todo[/* editing */2]
+                      ],
+                      /* [] */0
+                    ]
+                  ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.div(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "className",
+                        "view"
+                      ]),
+                    /* [] */0
+                  ], /* :: */[
+                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                          /* RawProp */Block.__(0, [
+                              "className",
+                              "toggle"
+                            ]),
+                          /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "type",
+                                "checkbox"
+                              ]),
+                            /* :: */[
+                              Tea_html.checked(todo[/* completed */1]),
+                              /* :: */[
+                                Tea_html.onClick(/* Some */[key + (
+                                        b ? "true" : "false"
+                                      )], /* Check */Block.__(4, [
+                                        todo[/* id */3],
+                                        !todo[/* completed */1]
+                                      ])),
+                                /* [] */0
+                              ]
+                            ]
+                          ]
+                        ], /* [] */0),
+                    /* :: */[
+                      Tea_html.label(/* None */0, /* None */0, /* :: */[
+                            Tea_html.onDoubleClick(/* Some */[key], /* EditingEntry */Block.__(1, [
+                                    todo[/* id */3],
+                                    /* true */1
+                                  ])),
+                            /* [] */0
+                          ], /* :: */[
+                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* [] */0
+                          ]),
+                      /* :: */[
+                        Tea_html.button(/* None */0, /* None */0, /* :: */[
+                              /* RawProp */Block.__(0, [
+                                  "className",
+                                  "destroy"
+                                ]),
+                              /* :: */[
+                                Tea_html.onClick(/* Some */[key], /* Delete */Block.__(3, [todo[/* id */3]])),
+                                /* [] */0
+                              ]
+                            ], /* [] */0),
+                        /* [] */0
+                      ]
+                    ]
+                  ]),
+              /* :: */[
+                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "className",
+                          "edit"
+                        ]),
+                      /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "value",
+                            str
+                          ]),
+                        /* :: */[
+                          /* RawProp */Block.__(0, [
+                              "name",
+                              "title"
+                            ]),
+                          /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "id",
+                                str$1
+                              ]),
+                            /* :: */[
+                              Tea_html.onInput(/* Some */[key], function (value) {
+                                    return /* UpdateEntry */Block.__(2, [
+                                              todo[/* id */3],
+                                              value
+                                            ]);
+                                  }),
+                              /* :: */[
+                                Tea_html.onBlur(/* Some */[key], /* EditingEntry */Block.__(1, [
+                                        todo[/* id */3],
+                                        /* false */0
+                                      ])),
+                                /* :: */[
+                                  onEnter(/* Some */[key], /* EditingEntry */Block.__(1, [
+                                          todo[/* id */3],
+                                          /* false */0
+                                        ])),
+                                  /* [] */0
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ], /* [] */0),
+                /* [] */0
+              ]
+            ]);
+}
+
+function viewEntries(visibility, entries) {
+  var isVisible = function (todo) {
+    switch (visibility) {
+      case "Active" : 
+          return !todo[/* completed */1];
+      case "Completed" : 
+          return todo[/* completed */1];
+      default:
+        return /* true */1;
+    }
+  };
+  var allCompleted = $$Array.fold_left(function (b, param) {
+        if (b) {
+          return param[/* completed */1];
+        }
+        else {
+          return /* false */0;
+        }
+      }, /* true */1, entries);
+  var cssVisibility = entries.length ? "visible" : "hidden";
+  return Tea_html.section(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "main"
+                ]),
+              /* :: */[
+                Vdom.style("visibility", cssVisibility),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "className",
+                        "toggle-all"
+                      ]),
+                    /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "type",
+                          "checkbox"
+                        ]),
+                      /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "name",
+                            "toggle"
+                          ]),
+                        /* :: */[
+                          Tea_html.checked(allCompleted),
+                          /* :: */[
+                            Tea_html.onClick(/* Some */[allCompleted ? "true" : "false"], /* CheckAll */Block.__(5, [!allCompleted])),
+                            /* [] */0
+                          ]
+                        ]
+                      ]
+                    ]
+                  ], /* [] */0),
+              /* :: */[
+                Tea_html.label(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "htmlFor",
+                          "toggle-all"
+                        ]),
+                      /* [] */0
+                    ], /* :: */[
+                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* [] */0
+                    ]),
+                /* :: */[
+                  Tea_html.ul(/* None */0, /* None */0, /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "className",
+                            "todo-list"
+                          ]),
+                        /* [] */0
+                      ], List.map(viewEntry, List.filter(isVisible)($$Array.to_list(entries)))),
+                  /* [] */0
+                ]
+              ]
+            ]);
+}
+
+function viewInput(task) {
+  return Tea_html.header(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "header"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(0, ["todos"]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "className",
+                          "new-todo"
+                        ]),
+                      /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "placeholder",
+                            "What needs to be done?"
+                          ]),
+                        /* :: */[
+                          Tea_html.autofocus(/* true */1),
+                          /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "value",
+                                task
+                              ]),
+                            /* :: */[
+                              /* RawProp */Block.__(0, [
+                                  "name",
+                                  "newTodo"
+                                ]),
+                              /* :: */[
+                                Tea_html.onInput(/* None */0, function (str) {
+                                      return /* UpdateField */Block.__(0, [str]);
+                                    }),
+                                /* :: */[
+                                  onEnter(/* None */0, /* Add */1),
+                                  /* [] */0
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ], /* [] */0),
+                /* [] */0
+              ]
+            ]);
+}
+
+function viewControlsCount(entriesLeft) {
+  var item_ = entriesLeft === 1 ? " item" : " items";
+  return Tea_html.span(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "todo-count"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(0, ["" + entriesLeft]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                /* Text */Block.__(0, [item_ + " left"]),
+                /* [] */0
+              ]
+            ]);
+}
+
+function visibilitySwap(uri, visibility, actualVisibility) {
+  return Tea_html.li(/* None */0, /* None */0, /* :: */[
+              Tea_html.onClick(/* Some */[visibility], /* ChangeVisibility */Block.__(6, [visibility])),
+              /* [] */0
+            ], /* :: */[
+              Tea_html.a(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "href",
+                        uri
+                      ]),
+                    /* :: */[
+                      Tea_html.classList(/* :: */[
+                            /* tuple */[
+                              "selected",
+                              +(visibility === actualVisibility)
+                            ],
+                            /* [] */0
+                          ]),
+                      /* [] */0
+                    ]
+                  ], /* :: */[
+                    /* Text */Block.__(0, [visibility]),
+                    /* [] */0
+                  ]),
+              /* [] */0
+            ]);
+}
+
+function viewControlsFilters(visibility) {
+  return Tea_html.ul(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "filters"
+                ]),
+              /* [] */0
+            ], /* :: */[
+              visibilitySwap("#/", "All", visibility),
+              /* :: */[
+                /* Text */Block.__(0, [" "]),
+                /* :: */[
+                  visibilitySwap("#/active", "Active", visibility),
+                  /* :: */[
+                    /* Text */Block.__(0, [" "]),
+                    /* :: */[
+                      visibilitySwap("#/completed", "Completed", visibility),
+                      /* [] */0
+                    ]
+                  ]
+                ]
+              ]
+            ]);
+}
+
+function viewControlsClear(entriesCompleted) {
+  return Tea_html.button(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "clear-completed"
+                ]),
+              /* :: */[
+                Tea_html.hidden(+(entriesCompleted === 0)),
+                /* :: */[
+                  Tea_html.onClick(/* None */0, /* DeleteComplete */2),
+                  /* [] */0
+                ]
+              ]
+            ], /* :: */[
+              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* [] */0
+            ]);
+}
+
+function viewControls(visibility, entries) {
+  var entriesCompleted = $$Array.fold_left(function (c, param) {
+        if (param[/* completed */1]) {
+          return c + 1 | 0;
+        }
+        else {
+          return c;
+        }
+      }, 0, entries);
+  var entriesLeft = entries.length - entriesCompleted | 0;
+  return Tea_html.footer(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "footer"
+                ]),
+              /* :: */[
+                Tea_html.hidden(+(entries.length === 0)),
+                /* [] */0
+              ]
+            ], /* :: */[
+              viewControlsCount(entriesLeft),
+              /* :: */[
+                viewControlsFilters(visibility),
+                /* :: */[
+                  viewControlsClear(entriesCompleted),
+                  /* [] */0
+                ]
+              ]
+            ]);
+}
+
+var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
+      /* RawProp */Block.__(0, [
+          "className",
+          "info"
+        ]),
+      /* [] */0
+    ], /* :: */[
+      Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
+            /* Text */Block.__(0, ["Double-click to edit a todo"]),
+            /* [] */0
+          ]),
+      /* :: */[
+        Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
+              /* Text */Block.__(0, ["Written by "]),
+              /* :: */[
+                Tea_html.a(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "href",
+                          "https://github.com/evancz"
+                        ]),
+                      /* [] */0
+                    ], /* :: */[
+                      /* Text */Block.__(0, ["Evan Czaplicki"]),
+                      /* [] */0
+                    ]),
+                /* :: */[
+                  /* Text */Block.__(0, [" and converted by "]),
+                  /* :: */[
+                    Tea_html.a(/* None */0, /* None */0, /* :: */[
+                          /* RawProp */Block.__(0, [
+                              "href",
+                              "https://github.com/overminddl1"
+                            ]),
+                          /* [] */0
+                        ], /* :: */[
+                          /* Text */Block.__(0, ["OvermindDL1"]),
+                          /* [] */0
+                        ]),
+                    /* [] */0
+                  ]
+                ]
+              ]
+            ]),
+        /* :: */[
+          Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
+                /* Text */Block.__(0, ["Part of "]),
+                /* :: */[
+                  Tea_html.a(/* None */0, /* None */0, /* :: */[
+                        /* RawProp */Block.__(0, [
+                            "href",
+                            "http://todomvc.com"
+                          ]),
+                        /* [] */0
+                      ], /* :: */[
+                        /* Text */Block.__(0, ["TodoMVC"]),
+                        /* [] */0
+                      ]),
+                  /* [] */0
+                ]
+              ]),
+          /* [] */0
+        ]
+      ]
+    ]);
+
+function view(model) {
+  return Tea_html.div(/* None */0, /* None */0, /* :: */[
+              /* RawProp */Block.__(0, [
+                  "className",
+                  "todomvc-wrapper"
+                ]),
+              /* :: */[
+                Vdom.style("visibility", "hidden"),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_html.section(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "className",
+                        "todoapp"
+                      ]),
+                    /* [] */0
+                  ], /* :: */[
+                    viewInput(model[/* field */1]),
+                    /* :: */[
+                      viewEntries(model[/* visibility */3], model[/* entries */0]),
+                      /* :: */[
+                        viewControls(model[/* visibility */3], model[/* entries */0]),
+                        /* [] */0
+                      ]
+                    ]
+                  ]),
+              /* :: */[
+                infoFooter,
+                /* [] */0
+              ]
+            ]);
+}
+
+var viewNew = view
+
+function partial_arg_003() {
+  return /* NoSub */0;
+}
+
+var partial_arg = /* record */[
+  /* init */init,
+  /* update */update,
+  /* view */viewNew,
+  partial_arg_003
+];
+
+function main(param, param$1) {
+  return Tea_app.standardProgram(partial_arg, param, param$1);
+}
+
+exports.emptyModel          = emptyModel;
+exports.newEntry            = newEntry;
+exports.init                = init;
+exports.update              = update;
+exports.onEnter             = onEnter;
+exports.viewEntry           = viewEntry;
+exports.viewEntries         = viewEntries;
+exports.viewInput           = viewInput;
+exports.viewControlsCount   = viewControlsCount;
+exports.visibilitySwap      = visibilitySwap;
+exports.viewControlsFilters = viewControlsFilters;
+exports.viewControlsClear   = viewControlsClear;
+exports.viewControls        = viewControls;
+exports.infoFooter          = infoFooter;
+exports.view                = view;
+exports.viewNew             = viewNew;
+exports.main                = main;
+/* infoFooter Not a pure module */
+
+});
+
 ;require.register("src/tea.ml", function(exports, require, module) {
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
@@ -10549,12 +12675,15 @@ var Program = 0;
 
 var Time = 0;
 
-exports.Cmd     = Cmd;
-exports.Sub     = Sub;
-exports.App     = App;
-exports.Html    = Html;
-exports.Program = Program;
-exports.Time    = Time;
+var Navigation = 0;
+
+exports.Cmd        = Cmd;
+exports.Sub        = Sub;
+exports.App        = App;
+exports.Html       = Html;
+exports.Program    = Program;
+exports.Time       = Time;
+exports.Navigation = Navigation;
 /* No side effect */
 
 });
@@ -10563,12 +12692,14 @@ exports.Time    = Time;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
-var Js_primitive = require("bs-platform/lib/js/js_primitive");
-var Web          = require("./web");
-var Curry        = require("bs-platform/lib/js/curry");
-var Vdom         = require("./vdom");
-var Tea_sub      = require("./tea_sub");
-var Tea_cmd      = require("./tea_cmd");
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Js_primitive            = require("bs-platform/lib/js/js_primitive");
+var Web                     = require("./web");
+var Curry                   = require("bs-platform/lib/js/curry");
+var Vdom                    = require("./vdom");
+var Tea_sub                 = require("./tea_sub");
+var List                    = require("bs-platform/lib/js/list");
+var Tea_cmd                 = require("./tea_cmd");
 
 function programStateWrapper(initModel, pump, shutdown) {
   var model = [initModel];
@@ -10577,10 +12708,39 @@ function programStateWrapper(initModel, pump, shutdown) {
         return /* () */0;
       }]];
   var pumperInterface = Curry._1(pump, callbacks);
+  var pending = [/* None */0];
   var handler = function (msg) {
-    var newModel = Curry._2(pumperInterface[/* handleMsg */1], model[0], msg);
-    model[0] = newModel;
-    return /* () */0;
+    var match = pending[0];
+    if (match) {
+      pending[0] = /* Some */[/* :: */[
+          msg,
+          match[0]
+        ]];
+      return /* () */0;
+    }
+    else {
+      pending[0] = /* Some */[/* [] */0];
+      var newModel = Curry._2(pumperInterface[/* handleMsg */1], model[0], msg);
+      model[0] = newModel;
+      var match$1 = pending[0];
+      if (match$1) {
+        var msgs = match$1[0];
+        if (msgs) {
+          pending[0] = /* None */0;
+          return List.iter(handler, List.rev(msgs));
+        }
+        else {
+          pending[0] = /* None */0;
+          return /* () */0;
+        }
+      }
+      else {
+        throw [
+              Caml_builtin_exceptions.failure,
+              "INVALID message queue state, should never be None during message processing!"
+            ];
+      }
+    }
   };
   var finalizedCBs = /* record */[/* enqueue */handler];
   callbacks[0] = finalizedCBs;
@@ -10614,8 +12774,8 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
             newVdom_000,
             /* [] */0
           ];
-          Vdom.patchVNodesIntoElement(callbacks, parentNode, priorRenderedVdom[0], newVdom);
-          priorRenderedVdom[0] = newVdom;
+          var justRenderedVdom = Vdom.patchVNodesIntoElement(callbacks, parentNode, priorRenderedVdom[0], newVdom);
+          priorRenderedVdom[0] = justRenderedVdom;
           nextFrameID[0] = /* None */0;
           return /* () */0;
         }
@@ -10629,9 +12789,8 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
           return /* () */0;
         }
         else {
-          var id = window.requestAnimationFrame(doRender);
-          nextFrameID[0] = /* Some */[id];
-          return /* () */0;
+          nextFrameID[0] = /* Some */[-1];
+          return doRender(16);
         }
       };
       var clearPnode = function () {
@@ -10661,8 +12820,8 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
       var handler = function (model, msg) {
         var match = Curry._2(update, model, msg);
         var newModel = match[0];
-        Tea_cmd.run(callbacks, match[1]);
         latestModel[0] = newModel;
+        Tea_cmd.run(callbacks, match[1]);
         scheduleRender(/* () */0);
         handleSubscriptionChange(newModel);
         return newModel;
@@ -10757,11 +12916,14 @@ function beginnerProgram(param, pnode, _) {
             ], pnode, /* () */0);
 }
 
+var map = Vdom.map
+
 exports.programStateWrapper = programStateWrapper;
 exports.programLoop         = programLoop;
 exports.program             = program;
 exports.standardProgram     = standardProgram;
 exports.beginnerProgram     = beginnerProgram;
+exports.map                 = map;
 /* No side effect */
 
 });
@@ -10772,24 +12934,25 @@ exports.beginnerProgram     = beginnerProgram;
 
 var Block = require("bs-platform/lib/js/block");
 var Curry = require("bs-platform/lib/js/curry");
+var Vdom  = require("./vdom");
 var List  = require("bs-platform/lib/js/list");
 
 function batch(cmds) {
-  return /* Batch */Block.__(0, [cmds]);
+  return /* Batch */Block.__(1, [cmds]);
 }
 
 function call(call$1) {
-  return /* EnqueueCall */Block.__(1, [call$1]);
+  return /* EnqueueCall */Block.__(2, [call$1]);
 }
 
 function fnMsg(fnMsg$1) {
-  return /* EnqueueCall */Block.__(1, [function (enqueue) {
+  return /* EnqueueCall */Block.__(2, [function (enqueue) {
               return Curry._1(enqueue, Curry._1(fnMsg$1, /* () */0));
             }]);
 }
 
 function msg(msg$1) {
-  return /* EnqueueCall */Block.__(1, [function (enqueue) {
+  return /* EnqueueCall */Block.__(2, [function (enqueue) {
               return Curry._1(enqueue, msg$1);
             }]);
 }
@@ -10798,24 +12961,43 @@ function run(callbacks, param) {
   if (typeof param === "number") {
     return /* () */0;
   }
-  else if (param.tag) {
-    return Curry._1(param[0], callbacks[0][/* enqueue */0]);
-  }
   else {
-    return List.fold_left(function (_, cmd) {
-                return run(callbacks, cmd);
-              }, /* () */0, param[0]);
+    switch (param.tag | 0) {
+      case 0 : 
+          return Curry._1(param[0], callbacks);
+      case 1 : 
+          return List.fold_left(function (_, cmd) {
+                      return run(callbacks, cmd);
+                    }, /* () */0, param[0]);
+      case 2 : 
+          return Curry._1(param[0], callbacks[0][/* enqueue */0]);
+      
+    }
   }
+}
+
+function wrapCallbacks(func, callbacks) {
+  return [/* record */[/* enqueue */function (msg) {
+              return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
+            }]];
+}
+
+function map(func, cmd) {
+  return /* Tagger */Block.__(0, [function (callbacks) {
+              return run(Vdom.wrapCallbacks(func, callbacks), cmd);
+            }]);
 }
 
 var none = /* NoCmd */0;
 
-exports.none  = none;
-exports.batch = batch;
-exports.call  = call;
-exports.fnMsg = fnMsg;
-exports.msg   = msg;
-exports.run   = run;
+exports.none          = none;
+exports.batch         = batch;
+exports.call          = call;
+exports.fnMsg         = fnMsg;
+exports.msg           = msg;
+exports.run           = run;
+exports.wrapCallbacks = wrapCallbacks;
+exports.map           = map;
 /* No side effect */
 
 });
@@ -11188,7 +13370,7 @@ var Js_primitive = require("bs-platform/lib/js/js_primitive");
 var Block        = require("bs-platform/lib/js/block");
 
 function focus(id) {
-  return /* EnqueueCall */Block.__(1, [function () {
+  return /* EnqueueCall */Block.__(2, [function () {
               var match = document.getElementById(id);
               if (Js_primitive.js_is_nil_undef(match)) {
                 console.log(/* tuple */[
@@ -11212,6 +13394,157 @@ function focus(id) {
 }
 
 exports.focus = focus;
+/* No side effect */
+
+});
+
+;require.register("src/tea_navigation.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_app            = require("./tea_app");
+var Web_window_history = require("./web_window_history");
+var Block              = require("bs-platform/lib/js/block");
+var Curry              = require("bs-platform/lib/js/curry");
+var Web_location       = require("./web_location");
+var Vdom               = require("./vdom");
+var Tea_sub            = require("./tea_sub");
+var Web_window         = require("./web_window");
+var Tea_cmd            = require("./tea_cmd");
+
+function getLocation() {
+  return Web_location.asRecord(document.location);
+}
+
+var notifier = [/* None */0];
+
+function notifyUrlChange() {
+  var match = notifier[0];
+  if (match) {
+    var $$location = Web_location.asRecord(document.location);
+    Curry._1(match[0], $$location);
+    return /* () */0;
+  }
+  else {
+    return /* () */0;
+  }
+}
+
+function subscribe(tagger) {
+  var enableCall = function (callbacks) {
+    var notifyHandler = function ($$location) {
+      return Curry._1(callbacks[/* enqueue */0], Curry._1(tagger, $$location));
+    };
+    notifier[0] = /* Some */[notifyHandler];
+    var handler = function () {
+      return notifyUrlChange(/* () */0);
+    };
+    Web_window.addEventListener("popstate", handler, /* false */0);
+    return function () {
+      return Web_window.removeEventListener("popstate", handler, /* false */0);
+    };
+  };
+  return Tea_sub.registration("navigation", enableCall);
+}
+
+function replaceState(url) {
+  return Web_window_history.replaceState(window, JSON.parse("{}"), "", url);
+}
+
+function pushState(url) {
+  return Web_window_history.pushState(window, JSON.parse("{}"), "", url);
+}
+
+function modifyUrl(url) {
+  return /* EnqueueCall */Block.__(2, [function () {
+              replaceState(url);
+              notifyUrlChange(/* () */0);
+              return /* () */0;
+            }]);
+}
+
+function newUrl(url) {
+  return /* EnqueueCall */Block.__(2, [function () {
+              pushState(url);
+              notifyUrlChange(/* () */0);
+              return /* () */0;
+            }]);
+}
+
+function navigationProgram(parser, param) {
+  var shutdown = param[/* shutdown */5];
+  var subscriptions = param[/* subscriptions */4];
+  var view = param[/* view */3];
+  var update = param[/* update */2];
+  var init = param[/* init */1];
+  var urlUpdate = param[/* urlUpdate */0];
+  var init$prime = function (flag) {
+    var initLocation = Web_location.asRecord(document.location);
+    var match = Curry._2(init, flag, Curry._1(parser, initLocation));
+    return /* tuple */[
+            match[0],
+            Tea_cmd.map(function (msg) {
+                  return /* UserMsg */Block.__(1, [msg]);
+                }, match[1])
+          ];
+  };
+  var update$prime = function (model, msg) {
+    var match;
+    match = msg.tag ? Curry._2(update, model, msg[0]) : Curry._2(urlUpdate, model, Curry._1(parser, msg[0]));
+    return /* tuple */[
+            match[0],
+            Tea_cmd.map(function (msg) {
+                  return /* UserMsg */Block.__(1, [msg]);
+                }, match[1])
+          ];
+  };
+  var wrapUserMsg = function (userMsg) {
+    return /* UserMsg */Block.__(1, [userMsg]);
+  };
+  var view$prime = function (model) {
+    var vdom = Curry._1(view, model);
+    return Vdom.map(wrapUserMsg, vdom);
+  };
+  var subscriptions$prime = function (model) {
+    return /* Batch */Block.__(0, [/* :: */[
+                subscribe(function ($$location) {
+                      return /* Change */Block.__(0, [$$location]);
+                    }),
+                /* :: */[
+                  Tea_sub.map(function (userMsg) {
+                        return /* UserMsg */Block.__(1, [userMsg]);
+                      }, Curry._1(subscriptions, model)),
+                  /* [] */0
+                ]
+              ]]);
+  };
+  var shutdown$prime = function (model) {
+    var cmd = Curry._1(shutdown, model);
+    return Tea_cmd.map(function (msg) {
+                return /* UserMsg */Block.__(1, [msg]);
+              }, cmd);
+  };
+  var partial_arg = /* record */[
+    /* init */init$prime,
+    /* update */update$prime,
+    /* view */view$prime,
+    /* subscriptions */subscriptions$prime,
+    /* shutdown */shutdown$prime
+  ];
+  return function (param, param$1) {
+    return Tea_app.program(partial_arg, param, param$1);
+  };
+}
+
+exports.getLocation       = getLocation;
+exports.notifier          = notifier;
+exports.notifyUrlChange   = notifyUrlChange;
+exports.subscribe         = subscribe;
+exports.replaceState      = replaceState;
+exports.pushState         = pushState;
+exports.modifyUrl         = modifyUrl;
+exports.newUrl            = newUrl;
+exports.navigationProgram = navigationProgram;
 /* No side effect */
 
 });
@@ -11274,68 +13607,81 @@ function registration(key, enableCall) {
           ]);
 }
 
-function run(callbacks, oldSub, newSub) {
-  var enable = function (param) {
-    if (typeof param === "number") {
-      return /* () */0;
-    }
-    else if (param.tag) {
-      param[2][0] = /* Some */[Curry._1(param[1], callbacks)];
-      return /* () */0;
-    }
-    else {
-      var subs = param[0];
-      if (subs) {
-        return List.fold_left(function (_, sub) {
-                    return enable(sub);
-                  }, /* () */0, subs);
-      }
-      else {
-        return /* () */0;
-      }
-    }
-  };
-  var disable = function (param) {
-    if (typeof param === "number") {
-      return /* () */0;
-    }
-    else if (param.tag) {
-      var match = param[2][0];
-      if (match) {
-        return Curry._1(match[0], /* () */0);
-      }
-      else {
-        return /* () */0;
-      }
-    }
-    else {
-      var subs = param[0];
-      if (subs) {
-        return List.fold_left(function (_, sub) {
-                    return disable(sub);
-                  }, /* () */0, subs);
-      }
-      else {
-        return /* () */0;
-      }
-    }
-  };
-  var exit = 0;
-  if (typeof oldSub === "number") {
-    if (typeof newSub === "number") {
-      return newSub;
-    }
-    else {
-      exit = 1;
-    }
-  }
-  else if (oldSub.tag) {
-    if (typeof newSub === "number") {
-      exit = 1;
-    }
-    else if (newSub.tag) {
-      if (oldSub[0] === newSub[0]) {
-        newSub[2][0] = oldSub[2][0];
+function run(_callbacks, _oldSub, _newSub) {
+  while(true) {
+    var newSub = _newSub;
+    var oldSub = _oldSub;
+    var callbacks = _callbacks;
+    var enable = function (_callbacks, _param) {
+      while(true) {
+        var param = _param;
+        var callbacks = _callbacks;
+        if (typeof param === "number") {
+          return /* () */0;
+        }
+        else {
+          switch (param.tag | 0) {
+            case 0 : 
+                var subs = param[0];
+                if (subs) {
+                  return List.fold_left((function(callbacks){
+                            return function (_, sub) {
+                              return enable(callbacks, sub);
+                            }
+                            }(callbacks)), /* () */0, subs);
+                }
+                else {
+                  return /* () */0;
+                }
+            case 1 : 
+                param[2][0] = /* Some */[Curry._1(param[1], callbacks)];
+                return /* () */0;
+            case 2 : 
+                _param = param[1];
+                _callbacks = Curry._1(param[0], callbacks);
+                continue ;
+                
+          }
+        }
+      };
+    };
+    var disable = function (_param) {
+      while(true) {
+        var param = _param;
+        if (typeof param === "number") {
+          return /* () */0;
+        }
+        else {
+          switch (param.tag | 0) {
+            case 0 : 
+                var subs = param[0];
+                if (subs) {
+                  return List.fold_left(function (_, sub) {
+                              return disable(sub);
+                            }, /* () */0, subs);
+                }
+                else {
+                  return /* () */0;
+                }
+            case 1 : 
+                var match = param[2][0];
+                if (match) {
+                  return Curry._1(match[0], /* () */0);
+                }
+                else {
+                  return /* () */0;
+                }
+            case 2 : 
+                _param = param[1];
+                continue ;
+                
+          }
+        }
+      };
+    };
+    var exit = 0;
+    if (typeof oldSub === "number") {
+      if (typeof newSub === "number") {
         return newSub;
       }
       else {
@@ -11343,66 +13689,124 @@ function run(callbacks, oldSub, newSub) {
       }
     }
     else {
-      exit = 1;
+      switch (oldSub.tag | 0) {
+        case 0 : 
+            if (typeof newSub === "number") {
+              exit = 1;
+            }
+            else if (newSub.tag) {
+              exit = 1;
+            }
+            else {
+              var aux = (function(callbacks){
+              return function (_idx, _oldList, _newList) {
+                while(true) {
+                  var newList = _newList;
+                  var oldList = _oldList;
+                  var idx = _idx;
+                  if (oldList) {
+                    var oldS = oldList[0];
+                    if (newList) {
+                      run(callbacks, oldS, newList[0]);
+                      return /* () */0;
+                    }
+                    else {
+                      disable(oldS);
+                      _newList = oldList[1];
+                      _oldList = /* [] */0;
+                      _idx = idx + 1 | 0;
+                      continue ;
+                      
+                    }
+                  }
+                  else if (newList) {
+                    enable(callbacks, newList[0]);
+                    _newList = newList[1];
+                    _oldList = /* [] */0;
+                    _idx = idx + 1 | 0;
+                    continue ;
+                    
+                  }
+                  else {
+                    return /* () */0;
+                  }
+                };
+              }
+              }(callbacks));
+              aux(0, oldSub[0], newSub[0]);
+              return newSub;
+            }
+            break;
+        case 1 : 
+            if (typeof newSub === "number") {
+              exit = 1;
+            }
+            else if (newSub.tag === 1) {
+              if (oldSub[0] === newSub[0]) {
+                newSub[2][0] = oldSub[2][0];
+                return newSub;
+              }
+              else {
+                exit = 1;
+              }
+            }
+            else {
+              exit = 1;
+            }
+            break;
+        case 2 : 
+            if (typeof newSub === "number") {
+              exit = 1;
+            }
+            else if (newSub.tag === 2) {
+              _newSub = newSub[1];
+              _oldSub = oldSub[1];
+              _callbacks = Curry._1(newSub[0], callbacks);
+              continue ;
+              
+            }
+            else {
+              exit = 1;
+            }
+            break;
+        
+      }
     }
-  }
-  else if (typeof newSub === "number") {
-    exit = 1;
-  }
-  else if (newSub.tag) {
-    exit = 1;
-  }
-  else {
-    var aux = function (_idx, _oldList, _newList) {
-      while(true) {
-        var newList = _newList;
-        var oldList = _oldList;
-        var idx = _idx;
-        if (oldList) {
-          var oldS = oldList[0];
-          if (newList) {
-            run(callbacks, oldS, newList[0]);
-            return /* () */0;
-          }
-          else {
-            disable(oldS);
-            _newList = oldList[1];
-            _oldList = /* [] */0;
-            _idx = idx + 1 | 0;
-            continue ;
-            
-          }
-        }
-        else if (newList) {
-          enable(newList[0]);
-          _newList = newList[1];
-          _oldList = /* [] */0;
-          _idx = idx + 1 | 0;
-          continue ;
-          
-        }
-        else {
-          return /* () */0;
-        }
-      };
-    };
-    aux(0, oldSub[0], newSub[0]);
-    return newSub;
-  }
-  if (exit === 1) {
-    disable(oldSub);
-    enable(newSub);
-    return newSub;
-  }
-  
+    if (exit === 1) {
+      disable(oldSub);
+      enable(callbacks, newSub);
+      return newSub;
+    }
+    
+  };
+}
+
+function wrapCallbacks(func, callbacks) {
+  return [/* record */[/* enqueue */function (msg) {
+              return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
+            }]];
+}
+
+function map(func, vdom) {
+  var tagger = function (callbacks) {
+    return [/* record */[/* enqueue */function (msg) {
+                return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
+              }]];
+  };
+  return /* Tagger */Block.__(2, [
+            tagger,
+            vdom
+          ]);
 }
 
 var none = /* NoSub */0;
 
-exports.none         = none;
-exports.batch        = batch;
-exports.registration = registration;
-exports.run          = run;
+exports.none          = none;
+exports.batch         = batch;
+exports.registration  = registration;
+exports.run           = run;
+exports.wrapCallbacks = wrapCallbacks;
+exports.map           = map;
 /* No side effect */
 
 });
@@ -11461,22 +13865,7 @@ function every(interval, tagger) {
     var id = Web_window.setInterval(function () {
           return Curry._1(callbacks[/* enqueue */0], Curry._1(tagger, Date.now()));
         }, interval);
-    console.log(/* tuple */[
-          "Time.every",
-          "enable",
-          interval,
-          tagger,
-          callbacks
-        ]);
     return function () {
-      console.log(/* tuple */[
-            "Time.every",
-            "disable",
-            id,
-            interval,
-            tagger,
-            callbacks
-          ]);
       return window.clearTimeout(id);
     };
   };
@@ -11484,7 +13873,7 @@ function every(interval, tagger) {
 }
 
 function delay(msTime, msg) {
-  return /* EnqueueCall */Block.__(1, [function (enqueue) {
+  return /* EnqueueCall */Block.__(2, [function (enqueue) {
               Web_window.setTimeout(function () {
                     return Curry._1(enqueue, msg);
                   }, msTime);
@@ -11735,6 +14124,9 @@ function renderToHtmlString(_param) {
                       ]);
         case 2 : 
             _param = Curry._1(param[1], /* () */0);
+            continue ;
+            case 3 : 
+            _param = param[1];
             continue ;
             
       }
@@ -12151,9 +14543,10 @@ function patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, param) {
   }
 }
 
-function patchVNodesOnElems_CreateElement(callbacks, _param) {
+function patchVNodesOnElems_CreateElement(_callbacks, _param) {
   while(true) {
     var param = _param;
+    var callbacks = _callbacks;
     if (typeof param === "number") {
       return document.createComment("");
     }
@@ -12173,6 +14566,10 @@ function patchVNodesOnElems_CreateElement(callbacks, _param) {
             param[2][0] = vdom;
             _param = vdom;
             continue ;
+            case 3 : 
+            _param = param[1];
+            _callbacks = Curry._1(param[0], callbacks);
+            continue ;
             
       }
     }
@@ -12184,14 +14581,12 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
     var newVNodes = _newVNodes;
     var oldVNodes = _oldVNodes;
     var idx = _idx;
-    var exit = 0;
     if (oldVNodes) {
-      var oldVnode = oldVNodes[0];
-      var exit$1 = 0;
-      if (newVNodes) {
-        if (typeof oldVnode === "number") {
-          var $js = newVNodes[0];
-          if (typeof $js === "number") {
+      var oldNode = oldVNodes[0];
+      var exit = 0;
+      if (typeof oldNode === "number") {
+        if (newVNodes) {
+          if (typeof newVNodes[0] === "number") {
             _newVNodes = newVNodes[1];
             _oldVNodes = oldVNodes[1];
             _idx = idx + 1 | 0;
@@ -12199,188 +14594,180 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
             
           }
           else {
-            switch ($js.tag | 0) {
-              case 0 : 
-              case 1 : 
-                  exit$1 = 2;
-                  break;
-              case 2 : 
-                  exit = 1;
-                  break;
-              
-            }
+            exit = 1;
           }
         }
         else {
-          switch (oldVnode.tag | 0) {
-            case 0 : 
+          exit = 1;
+        }
+      }
+      else {
+        switch (oldNode.tag | 0) {
+          case 0 : 
+              if (newVNodes) {
                 var match = newVNodes[0];
                 if (typeof match === "number") {
-                  exit$1 = 2;
+                  exit = 1;
+                }
+                else if (match.tag) {
+                  exit = 1;
                 }
                 else {
-                  switch (match.tag | 0) {
-                    case 0 : 
-                        var newText = match[0];
-                        if (oldVnode[0] !== newText) {
-                          var child = elems[idx];
-                          child.nodeValue = newText;
-                        }
-                        _newVNodes = newVNodes[1];
-                        _oldVNodes = oldVNodes[1];
-                        _idx = idx + 1 | 0;
-                        continue ;
-                        case 1 : 
-                        exit$1 = 2;
-                        break;
-                    case 2 : 
-                        exit = 1;
-                        break;
+                  var newText = match[0];
+                  if (oldNode[0] !== newText) {
+                    var child = elems[idx];
+                    child.nodeValue = newText;
+                  }
+                  _newVNodes = newVNodes[1];
+                  _oldVNodes = oldVNodes[1];
+                  _idx = idx + 1 | 0;
+                  continue ;
+                  
+                }
+              }
+              else {
+                exit = 1;
+              }
+              break;
+          case 1 : 
+              if (newVNodes) {
+                var newNode = newVNodes[0];
+                if (typeof newNode === "number") {
+                  exit = 1;
+                }
+                else if (newNode.tag === 1) {
+                  var newRest = newVNodes[1];
+                  var newChildren = newNode[5];
+                  var newProperties = newNode[4];
+                  var newUnique = newNode[3];
+                  var newKey = newNode[2];
+                  var oldRest = oldVNodes[1];
+                  var oldChildren = oldNode[5];
+                  var oldProperties = oldNode[4];
+                  var oldUnique = oldNode[3];
+                  var oldKey = oldNode[2];
+                  if (newKey === "" || oldKey === "") {
+                    if (oldUnique === newUnique) {
+                      var child$1 = elems[idx];
+                      var childChildren = child$1.childNodes;
+                      patchVNodesOnElems_Properties(callbacks, child$1, oldProperties, newProperties);
+                      patchVNodesOnElems(callbacks, child$1, childChildren, 0, oldChildren, newChildren);
+                      _newVNodes = newRest;
+                      _oldVNodes = oldRest;
+                      _idx = idx + 1 | 0;
+                      continue ;
+                      
+                    }
+                    else {
+                      patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, newNode);
+                      _newVNodes = newRest;
+                      _oldVNodes = oldRest;
+                      _idx = idx + 1 | 0;
+                      continue ;
+                      
+                    }
+                  }
+                  else if (oldKey === newKey) {
+                    _newVNodes = newRest;
+                    _oldVNodes = oldRest;
+                    _idx = idx + 1 | 0;
+                    continue ;
                     
                   }
-                }
-                break;
-            case 1 : 
-                var newNode = newVNodes[0];
-                var oldRest = oldVNodes[1];
-                var oldChildren = oldVnode[5];
-                var oldProperties = oldVnode[4];
-                var oldUnique = oldVnode[3];
-                var oldKey = oldVnode[2];
-                if (typeof newNode === "number") {
-                  exit$1 = 2;
-                }
-                else {
-                  switch (newNode.tag | 0) {
-                    case 0 : 
-                        exit$1 = 2;
-                        break;
-                    case 1 : 
-                        var newRest = newVNodes[1];
-                        var newChildren = newNode[5];
-                        var newProperties = newNode[4];
-                        var newUnique = newNode[3];
-                        var newKey = newNode[2];
-                        if (newKey === "" || oldKey === "") {
-                          if (oldUnique === newUnique) {
-                            var child$1 = elems[idx];
-                            var childChildren = child$1.childNodes;
-                            patchVNodesOnElems_Properties(callbacks, child$1, oldProperties, newProperties);
-                            patchVNodesOnElems(callbacks, child$1, childChildren, 0, oldChildren, newChildren);
-                            _newVNodes = newRest;
-                            _oldVNodes = oldRest;
-                            _idx = idx + 1 | 0;
-                            continue ;
-                            
-                          }
-                          else {
-                            patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, newNode);
-                            _newVNodes = newRest;
-                            _oldVNodes = oldRest;
-                            _idx = idx + 1 | 0;
-                            continue ;
-                            
-                          }
-                        }
-                        else if (oldKey === newKey) {
+                  else {
+                    var exit$1 = 0;
+                    var exit$2 = 0;
+                    if (oldRest) {
+                      var match$1 = oldRest[0];
+                      if (typeof match$1 === "number") {
+                        exit$2 = 3;
+                      }
+                      else if (match$1.tag === 1) {
+                        if (match$1[0] === newNode[0] && match$1[1] === newNode[1] && match$1[2] === newKey) {
+                          var oldChild = elems[idx];
+                          elem.removeChild(oldChild);
                           _newVNodes = newRest;
-                          _oldVNodes = oldRest;
+                          _oldVNodes = oldRest[1];
                           _idx = idx + 1 | 0;
                           continue ;
                           
                         }
                         else {
-                          var exit$2 = 0;
-                          var exit$3 = 0;
-                          if (oldRest) {
-                            var match$1 = oldRest[0];
-                            if (typeof match$1 === "number") {
-                              exit$3 = 4;
-                            }
-                            else if (match$1.tag === 1) {
-                              if (match$1[0] === newNode[0] && match$1[1] === newNode[1] && match$1[2] === newKey) {
-                                var oldChild = elems[idx];
-                                elem.removeChild(oldChild);
-                                _newVNodes = newRest;
-                                _oldVNodes = oldRest[1];
-                                _idx = idx + 1 | 0;
-                                continue ;
-                                
-                              }
-                              else {
-                                exit$3 = 4;
-                              }
-                            }
-                            else {
-                              exit$3 = 4;
-                            }
+                          exit$2 = 3;
+                        }
+                      }
+                      else {
+                        exit$2 = 3;
+                      }
+                    }
+                    else {
+                      exit$2 = 3;
+                    }
+                    if (exit$2 === 3) {
+                      if (newRest) {
+                        var match$2 = newRest[0];
+                        if (typeof match$2 === "number") {
+                          exit$1 = 2;
+                        }
+                        else if (match$2.tag === 1) {
+                          if (oldNode[0] === match$2[0] && oldNode[1] === match$2[1] && oldKey === match$2[2]) {
+                            var oldChild$1 = elems[idx];
+                            var newChild = patchVNodesOnElems_CreateElement(callbacks, newNode);
+                            Web_node.insertBefore(elem, newChild, oldChild$1);
+                            _newVNodes = newRest;
+                            _idx = idx + 1 | 0;
+                            continue ;
+                            
                           }
                           else {
-                            exit$3 = 4;
+                            exit$1 = 2;
                           }
-                          if (exit$3 === 4) {
-                            if (newRest) {
-                              var match$2 = newRest[0];
-                              if (typeof match$2 === "number") {
-                                exit$2 = 3;
-                              }
-                              else if (match$2.tag === 1) {
-                                if (oldVnode[0] === match$2[0] && oldVnode[1] === match$2[1] && oldKey === match$2[2]) {
-                                  var oldChild$1 = elems[idx];
-                                  var newChild = patchVNodesOnElems_CreateElement(callbacks, newNode);
-                                  Web_node.insertBefore(elem, newChild, oldChild$1);
-                                  _newVNodes = newRest;
-                                  _idx = idx + 1 | 0;
-                                  continue ;
-                                  
-                                }
-                                else {
-                                  exit$2 = 3;
-                                }
-                              }
-                              else {
-                                exit$2 = 3;
-                              }
-                            }
-                            else {
-                              exit$2 = 3;
-                            }
-                          }
-                          if (exit$2 === 3) {
-                            if (oldUnique === newUnique) {
-                              var child$2 = elems[idx];
-                              var childChildren$1 = child$2.childNodes;
-                              patchVNodesOnElems_Properties(callbacks, child$2, oldProperties, newProperties);
-                              patchVNodesOnElems(callbacks, child$2, childChildren$1, 0, oldChildren, newChildren);
-                              _newVNodes = newRest;
-                              _oldVNodes = oldRest;
-                              _idx = idx + 1 | 0;
-                              continue ;
-                              
-                            }
-                            else {
-                              patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, newNode);
-                              _newVNodes = newRest;
-                              _oldVNodes = oldRest;
-                              _idx = idx + 1 | 0;
-                              continue ;
-                              
-                            }
-                          }
-                          
                         }
-                        break;
-                    case 2 : 
-                        exit = 1;
-                        break;
+                        else {
+                          exit$1 = 2;
+                        }
+                      }
+                      else {
+                        exit$1 = 2;
+                      }
+                    }
+                    if (exit$1 === 2) {
+                      if (oldUnique === newUnique) {
+                        var child$2 = elems[idx];
+                        var childChildren$1 = child$2.childNodes;
+                        patchVNodesOnElems_Properties(callbacks, child$2, oldProperties, newProperties);
+                        patchVNodesOnElems(callbacks, child$2, childChildren$1, 0, oldChildren, newChildren);
+                        _newVNodes = newRest;
+                        _oldVNodes = oldRest;
+                        _idx = idx + 1 | 0;
+                        continue ;
+                        
+                      }
+                      else {
+                        patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, newNode);
+                        _newVNodes = newRest;
+                        _oldVNodes = oldRest;
+                        _idx = idx + 1 | 0;
+                        continue ;
+                        
+                      }
+                    }
                     
                   }
                 }
-                break;
-            case 2 : 
+                else {
+                  exit = 1;
+                }
+              }
+              else {
+                exit = 1;
+              }
+              break;
+          case 2 : 
+              if (newVNodes) {
                 var match$3 = newVNodes[0];
                 if (typeof match$3 === "number") {
-                  exit$1 = 2;
+                  exit = 1;
                 }
                 else if (match$3.tag === 2) {
                   var newRest$1 = newVNodes[1];
@@ -12388,8 +14775,8 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                   var newGen = match$3[1];
                   var newKey$1 = match$3[0];
                   var oldRest$1 = oldVNodes[1];
-                  var oldCache = oldVnode[2];
-                  var oldKey$1 = oldVnode[0];
+                  var oldCache = oldNode[2];
+                  var oldKey$1 = oldNode[0];
                   if (oldKey$1 === newKey$1) {
                     newCache[0] = oldCache[0];
                     _newVNodes = newRest$1;
@@ -12399,12 +14786,12 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                     
                   }
                   else {
+                    var exit$3 = 0;
                     var exit$4 = 0;
-                    var exit$5 = 0;
                     if (oldRest$1) {
                       var match$4 = oldRest$1[0];
                       if (typeof match$4 === "number") {
-                        exit$5 = 4;
+                        exit$4 = 3;
                       }
                       else if (match$4.tag === 2) {
                         if (match$4[0] === newKey$1) {
@@ -12419,21 +14806,21 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                           
                         }
                         else {
-                          exit$5 = 4;
+                          exit$4 = 3;
                         }
                       }
                       else {
-                        exit$5 = 4;
+                        exit$4 = 3;
                       }
                     }
                     else {
-                      exit$5 = 4;
+                      exit$4 = 3;
                     }
-                    if (exit$5 === 4) {
+                    if (exit$4 === 3) {
                       if (newRest$1) {
                         var match$5 = newRest$1[0];
                         if (typeof match$5 === "number") {
-                          exit$4 = 3;
+                          exit$3 = 2;
                         }
                         else if (match$5.tag === 2) {
                           if (match$5[0] === oldKey$1) {
@@ -12448,18 +14835,18 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                             
                           }
                           else {
-                            exit$4 = 3;
+                            exit$3 = 2;
                           }
                         }
                         else {
-                          exit$4 = 3;
+                          exit$3 = 2;
                         }
                       }
                       else {
-                        exit$4 = 3;
+                        exit$3 = 2;
                       }
                     }
-                    if (exit$4 === 3) {
+                    if (exit$3 === 2) {
                       var oldVdom$1 = oldCache[0];
                       var newVdom$1 = Curry._1(newGen, /* () */0);
                       newCache[0] = newVdom$1;
@@ -12478,57 +14865,65 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                   }
                 }
                 else {
-                  exit$1 = 2;
+                  exit = 1;
                 }
-                break;
+              }
+              else {
+                exit = 1;
+              }
+              break;
+          case 3 : 
+              _oldVNodes = /* :: */[
+                oldNode[1],
+                oldVNodes[1]
+              ];
+              continue ;
+              
+        }
+      }
+      if (exit === 1) {
+        var oldRest$2 = oldVNodes[1];
+        if (newVNodes) {
+          var newNode$1 = newVNodes[0];
+          var exit$5 = 0;
+          if (typeof newNode$1 === "number") {
+            exit$5 = 2;
+          }
+          else if (newNode$1.tag === 3) {
+            patchVNodesOnElems(Curry._1(newNode$1[0], callbacks), elem, elems, idx, /* :: */[
+                  oldNode,
+                  /* [] */0
+                ], /* :: */[
+                  newNode$1[1],
+                  /* [] */0
+                ]);
+            _newVNodes = newVNodes[1];
+            _oldVNodes = oldRest$2;
+            _idx = idx + 1 | 0;
+            continue ;
             
           }
-        }
-      }
-      else {
-        var child$3 = elems[idx];
-        elem.removeChild(child$3);
-        _newVNodes = /* [] */0;
-        _oldVNodes = oldVNodes[1];
-        continue ;
-        
-      }
-      if (exit$1 === 2) {
-        var match$6 = newVNodes[0];
-        var oldRest$2 = oldVNodes[1];
-        if (typeof match$6 === "number") {
-          var child$4 = elems[idx];
-          var newChild$2 = document.createComment("");
-          Web_node.insertBefore(elem, newChild$2, child$4);
-          elem.removeChild(child$4);
-          _newVNodes = newVNodes[1];
-          _oldVNodes = oldRest$2;
-          _idx = idx + 1 | 0;
-          continue ;
-          
-        }
-        else if (match$6.tag) {
-          var oldChild$4 = elems[idx];
-          var newChild$3 = Web_document.createElementNsOptional(match$6[0], match$6[1]);
-          patchVNodesOnElems_Properties(callbacks, newChild$3, /* [] */0, match$6[4]);
-          var childChildren$2 = newChild$3.childNodes;
-          patchVNodesOnElems(callbacks, newChild$3, childChildren$2, 0, /* [] */0, match$6[5]);
-          Web_node.insertBefore(elem, newChild$3, oldChild$4);
-          elem.removeChild(oldChild$4);
-          _newVNodes = newVNodes[1];
-          _oldVNodes = oldRest$2;
-          _idx = idx + 1 | 0;
-          continue ;
+          else {
+            exit$5 = 2;
+          }
+          if (exit$5 === 2) {
+            var oldChild$4 = elems[idx];
+            var newChild$2 = patchVNodesOnElems_CreateElement(callbacks, newNode$1);
+            Web_node.insertBefore(elem, newChild$2, oldChild$4);
+            elem.removeChild(oldChild$4);
+            _newVNodes = newVNodes[1];
+            _oldVNodes = oldRest$2;
+            _idx = idx + 1 | 0;
+            continue ;
+            
+          }
           
         }
         else {
-          var child$5 = elems[idx];
-          var newChild$4 = document.createTextNode(match$6[0]);
-          Web_node.insertBefore(elem, newChild$4, child$5);
-          elem.removeChild(child$5);
-          _newVNodes = newVNodes[1];
+          var child$3 = elems[idx];
+          elem.removeChild(child$3);
+          _newVNodes = /* [] */0;
           _oldVNodes = oldRest$2;
-          _idx = idx + 1 | 0;
           continue ;
           
         }
@@ -12536,8 +14931,8 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
       
     }
     else if (newVNodes) {
-      var newChild$5 = patchVNodesOnElems_CreateElement(callbacks, newVNodes[0]);
-      elem.appendChild(newChild$5);
+      var newChild$3 = patchVNodesOnElems_CreateElement(callbacks, newVNodes[0]);
+      elem.appendChild(newChild$3);
       _newVNodes = newVNodes[1];
       _oldVNodes = /* [] */0;
       _idx = idx + 1 | 0;
@@ -12547,24 +14942,13 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
     else {
       return /* () */0;
     }
-    if (exit === 1) {
-      var match$7 = newVNodes[0];
-      var vdom = Curry._1(match$7[1], /* () */0);
-      match$7[2][0] = vdom;
-      _newVNodes = /* :: */[
-        vdom,
-        newVNodes[1]
-      ];
-      continue ;
-      
-    }
-    
   };
 }
 
 function patchVNodesIntoElement(callbacks, elem, oldVNodes, newVNodes) {
   var elems = elem.childNodes;
-  return patchVNodesOnElems(callbacks, elem, elems, 0, oldVNodes, newVNodes);
+  patchVNodesOnElems(callbacks, elem, elems, 0, oldVNodes, newVNodes);
+  return newVNodes;
 }
 
 function patchVNodeIntoElement(callbacks, elem, oldVNode, newVNode) {
@@ -12575,6 +14959,24 @@ function patchVNodeIntoElement(callbacks, elem, oldVNode, newVNode) {
               newVNode,
               /* [] */0
             ]);
+}
+
+function wrapCallbacks(func, callbacks) {
+  return [/* record */[/* enqueue */function (msg) {
+              return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
+            }]];
+}
+
+function map(func, vdom) {
+  var tagger = function (callbacks) {
+    return [/* record */[/* enqueue */function (msg) {
+                return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
+              }]];
+  };
+  return /* Tagger */Block.__(3, [
+            tagger,
+            vdom
+          ]);
 }
 
 var noNode = /* NoVNode */0;
@@ -12608,6 +15010,8 @@ exports.patchVNodesOnElems_CreateElement             = patchVNodesOnElems_Create
 exports.patchVNodesOnElems                           = patchVNodesOnElems;
 exports.patchVNodesIntoElement                       = patchVNodesIntoElement;
 exports.patchVNodeIntoElement                        = patchVNodeIntoElement;
+exports.wrapCallbacks                                = wrapCallbacks;
+exports.map                                          = map;
 /* No side effect */
 
 });
@@ -12670,11 +15074,14 @@ var $$Date = 0;
 
 var Window = 0;
 
+var Location = 0;
+
 exports.Event     = Event;
 exports.Node      = Node;
 exports.Document  = Document;
 exports.$$Date    = $$Date;
 exports.Window    = Window;
+exports.Location  = Location;
 exports.polyfills = polyfills;
 /* No side effect */
 
@@ -12732,6 +15139,10 @@ function createElementNsOptional(namespace, tagName) {
   }
 }
 
+function $$location() {
+  return document.location;
+}
+
 exports.body                    = body;
 exports.createElement           = createElement;
 exports.createElementNS         = createElementNS;
@@ -12739,6 +15150,7 @@ exports.createComment           = createComment;
 exports.createTextNode          = createTextNode;
 exports.getElementById          = getElementById;
 exports.createElementNsOptional = createElementNsOptional;
+exports.$$location              = $$location;
 /* No side effect */
 
 });
@@ -12749,6 +15161,137 @@ exports.createElementNsOptional = createElementNsOptional;
 
 
 
+/* No side effect */
+
+});
+
+;require.register("src/web_location.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+
+function getHref($$location) {
+  return $$location.href;
+}
+
+function setHref($$location, value) {
+  return $$location.href = value;
+}
+
+function getProtocol($$location) {
+  return $$location.protocol;
+}
+
+function setProtocol($$location, value) {
+  return $$location.protocol = value;
+}
+
+function getHost($$location) {
+  return $$location.host;
+}
+
+function setHost($$location, value) {
+  return $$location.host = value;
+}
+
+function getHostname($$location) {
+  return $$location.hostname;
+}
+
+function setHostname($$location, value) {
+  return $$location.hostname = value;
+}
+
+function getPort($$location) {
+  return $$location.port;
+}
+
+function setPort($$location, value) {
+  return $$location.port = value;
+}
+
+function getPathname($$location) {
+  return $$location.pathname;
+}
+
+function setPathname($$location, value) {
+  return $$location.pathname = value;
+}
+
+function getSearch($$location) {
+  return $$location.search;
+}
+
+function setSearch($$location, value) {
+  return $$location.search = value;
+}
+
+function getHash($$location) {
+  return $$location.hash;
+}
+
+function setHash($$location, value) {
+  return $$location.hash = value;
+}
+
+function getUsername($$location) {
+  return $$location.username;
+}
+
+function setUsername($$location, value) {
+  return $$location.username = value;
+}
+
+function getPassword($$location) {
+  return $$location.password;
+}
+
+function setPassword($$location, value) {
+  return $$location.password = value;
+}
+
+function getOrigin($$location) {
+  return $$location.origin;
+}
+
+function asRecord($$location) {
+  return /* record */[
+          /* href */$$location.href,
+          /* protocol */$$location.protocol,
+          /* host */$$location.host,
+          /* hostname */$$location.hostname,
+          /* port */$$location.port,
+          /* pathname */$$location.pathname,
+          /* search */$$location.search,
+          /* hash */$$location.hash,
+          /* username */$$location.username,
+          /* password */$$location.password,
+          /* origin */$$location.origin
+        ];
+}
+
+exports.getHref     = getHref;
+exports.setHref     = setHref;
+exports.getProtocol = getProtocol;
+exports.setProtocol = setProtocol;
+exports.getHost     = getHost;
+exports.setHost     = setHost;
+exports.getHostname = getHostname;
+exports.setHostname = setHostname;
+exports.getPort     = getPort;
+exports.setPort     = setPort;
+exports.getPathname = getPathname;
+exports.setPathname = setPathname;
+exports.getSearch   = getSearch;
+exports.setSearch   = setSearch;
+exports.getHash     = getHash;
+exports.setHash     = setHash;
+exports.getUsername = getUsername;
+exports.setUsername = setUsername;
+exports.getPassword = getPassword;
+exports.setPassword = setPassword;
+exports.getOrigin   = getOrigin;
+exports.asRecord    = asRecord;
 /* No side effect */
 
 });
@@ -12873,6 +15416,14 @@ exports.remove_polyfill     = remove_polyfill;
 'use strict';
 
 
+function history() {
+  return window.history;
+}
+
+function $$location() {
+  return window.location;
+}
+
 function requestAnimationFrame(callback) {
   return window.requestAnimationFrame(callback);
 }
@@ -12887,6 +15438,14 @@ function setInterval(cb, msTime) {
 
 function setTimeout(cb, msTime) {
   return window.setTimeout(cb, msTime);
+}
+
+function addEventListener(typ, listener, options) {
+  return window.addEventListener(typ, listener, options);
+}
+
+function removeEventListener(typ, listener, options) {
+  return window.removeEventListener(typ, listener, options);
 }
 
 function requestAnimationFrame_polyfill() {
@@ -12919,11 +15478,62 @@ function requestAnimationFrame_polyfill() {
   );
 }
 
+var History = 0;
+
+exports.History                        = History;
+exports.history                        = history;
+exports.$$location                     = $$location;
 exports.requestAnimationFrame          = requestAnimationFrame;
 exports.clearTimeout                   = clearTimeout;
 exports.setInterval                    = setInterval;
 exports.setTimeout                     = setTimeout;
+exports.addEventListener               = addEventListener;
+exports.removeEventListener            = removeEventListener;
 exports.requestAnimationFrame_polyfill = requestAnimationFrame_polyfill;
+/* No side effect */
+
+});
+
+;require.register("src/web_window_history.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+
+function length($$window) {
+  return $$window.history.length;
+}
+
+function back($$window) {
+  return $$window.history.back;
+}
+
+function forward($$window) {
+  return $$window.history.forward;
+}
+
+function go($$window, to$prime) {
+  return $$window.history.go(to$prime);
+}
+
+function pushState($$window, state, title, url) {
+  return $$window.history.pushState(state, title, url);
+}
+
+function replaceState($$window, state, title, url) {
+  return $$window.history.replaceState(state, title, url);
+}
+
+function state($$window) {
+  return $$window.history.state;
+}
+
+exports.length       = length;
+exports.back         = back;
+exports.forward      = forward;
+exports.go           = go;
+exports.pushState    = pushState;
+exports.replaceState = replaceState;
+exports.state        = state;
 /* No side effect */
 
 });
