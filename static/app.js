@@ -3057,6 +3057,179 @@ exports.caml_ml_out_channels_list   = caml_ml_out_channels_list;
   })();
 });
 
+require.register("bs-platform/lib/js/caml_md5.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+
+function cmn(q, a, b, x, s, t) {
+  var a$1 = ((a + q | 0) + x | 0) + t | 0;
+  return ((a$1 << s) | (a$1 >>> (32 - s | 0)) | 0) + b | 0;
+}
+
+function f(a, b, c, d, x, s, t) {
+  return cmn(b & c | (b ^ -1) & d, a, b, x, s, t);
+}
+
+function g(a, b, c, d, x, s, t) {
+  return cmn(b & d | c & (d ^ -1), a, b, x, s, t);
+}
+
+function h(a, b, c, d, x, s, t) {
+  return cmn(b ^ c ^ d, a, b, x, s, t);
+}
+
+function i(a, b, c, d, x, s, t) {
+  return cmn(c ^ (b | d ^ -1), a, b, x, s, t);
+}
+
+function cycle(x, k) {
+  var a = x[0];
+  var b = x[1];
+  var c = x[2];
+  var d = x[3];
+  a = f(a, b, c, d, k[0], 7, -680876936);
+  d = f(d, a, b, c, k[1], 12, -389564586);
+  c = f(c, d, a, b, k[2], 17, 606105819);
+  b = f(b, c, d, a, k[3], 22, -1044525330);
+  a = f(a, b, c, d, k[4], 7, -176418897);
+  d = f(d, a, b, c, k[5], 12, 1200080426);
+  c = f(c, d, a, b, k[6], 17, -1473231341);
+  b = f(b, c, d, a, k[7], 22, -45705983);
+  a = f(a, b, c, d, k[8], 7, 1770035416);
+  d = f(d, a, b, c, k[9], 12, -1958414417);
+  c = f(c, d, a, b, k[10], 17, -42063);
+  b = f(b, c, d, a, k[11], 22, -1990404162);
+  a = f(a, b, c, d, k[12], 7, 1804603682);
+  d = f(d, a, b, c, k[13], 12, -40341101);
+  c = f(c, d, a, b, k[14], 17, -1502002290);
+  b = f(b, c, d, a, k[15], 22, 1236535329);
+  a = g(a, b, c, d, k[1], 5, -165796510);
+  d = g(d, a, b, c, k[6], 9, -1069501632);
+  c = g(c, d, a, b, k[11], 14, 643717713);
+  b = g(b, c, d, a, k[0], 20, -373897302);
+  a = g(a, b, c, d, k[5], 5, -701558691);
+  d = g(d, a, b, c, k[10], 9, 38016083);
+  c = g(c, d, a, b, k[15], 14, -660478335);
+  b = g(b, c, d, a, k[4], 20, -405537848);
+  a = g(a, b, c, d, k[9], 5, 568446438);
+  d = g(d, a, b, c, k[14], 9, -1019803690);
+  c = g(c, d, a, b, k[3], 14, -187363961);
+  b = g(b, c, d, a, k[8], 20, 1163531501);
+  a = g(a, b, c, d, k[13], 5, -1444681467);
+  d = g(d, a, b, c, k[2], 9, -51403784);
+  c = g(c, d, a, b, k[7], 14, 1735328473);
+  b = g(b, c, d, a, k[12], 20, -1926607734);
+  a = h(a, b, c, d, k[5], 4, -378558);
+  d = h(d, a, b, c, k[8], 11, -2022574463);
+  c = h(c, d, a, b, k[11], 16, 1839030562);
+  b = h(b, c, d, a, k[14], 23, -35309556);
+  a = h(a, b, c, d, k[1], 4, -1530992060);
+  d = h(d, a, b, c, k[4], 11, 1272893353);
+  c = h(c, d, a, b, k[7], 16, -155497632);
+  b = h(b, c, d, a, k[10], 23, -1094730640);
+  a = h(a, b, c, d, k[13], 4, 681279174);
+  d = h(d, a, b, c, k[0], 11, -358537222);
+  c = h(c, d, a, b, k[3], 16, -722521979);
+  b = h(b, c, d, a, k[6], 23, 76029189);
+  a = h(a, b, c, d, k[9], 4, -640364487);
+  d = h(d, a, b, c, k[12], 11, -421815835);
+  c = h(c, d, a, b, k[15], 16, 530742520);
+  b = h(b, c, d, a, k[2], 23, -995338651);
+  a = i(a, b, c, d, k[0], 6, -198630844);
+  d = i(d, a, b, c, k[7], 10, 1126891415);
+  c = i(c, d, a, b, k[14], 15, -1416354905);
+  b = i(b, c, d, a, k[5], 21, -57434055);
+  a = i(a, b, c, d, k[12], 6, 1700485571);
+  d = i(d, a, b, c, k[3], 10, -1894986606);
+  c = i(c, d, a, b, k[10], 15, -1051523);
+  b = i(b, c, d, a, k[1], 21, -2054922799);
+  a = i(a, b, c, d, k[8], 6, 1873313359);
+  d = i(d, a, b, c, k[15], 10, -30611744);
+  c = i(c, d, a, b, k[6], 15, -1560198380);
+  b = i(b, c, d, a, k[13], 21, 1309151649);
+  a = i(a, b, c, d, k[4], 6, -145523070);
+  d = i(d, a, b, c, k[11], 10, -1120210379);
+  c = i(c, d, a, b, k[2], 15, 718787259);
+  b = i(b, c, d, a, k[9], 21, -343485551);
+  x[0] = a + x[0] | 0;
+  x[1] = b + x[1] | 0;
+  x[2] = c + x[2] | 0;
+  x[3] = d + x[3] | 0;
+  return /* () */0;
+}
+
+var state = /* array */[
+  1732584193,
+  -271733879,
+  -1732584194,
+  271733878
+];
+
+var md5blk = /* array */[
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0,
+  0
+];
+
+function caml_md5_string(s, start, len) {
+  var s$1 = s.slice(start, len);
+  var n = s$1.length;
+  state[0] = 1732584193;
+  state[1] = -271733879;
+  state[2] = -1732584194;
+  state[3] = 271733878;
+  for(var i = 0; i <= 15; ++i){
+    md5blk[i] = 0;
+  }
+  var i_end = n / 64 | 0;
+  for(var i$1 = 1; i$1 <= i_end; ++i$1){
+    for(var j = 0; j <= 15; ++j){
+      var k = ((i$1 << 6) - 64 | 0) + (j << 2) | 0;
+      md5blk[j] = ((s$1.charCodeAt(k) + (s$1.charCodeAt(k + 1 | 0) << 8) | 0) + (s$1.charCodeAt(k + 2 | 0) << 16) | 0) + (s$1.charCodeAt(k + 3 | 0) << 24) | 0;
+    }
+    cycle(state, md5blk);
+  }
+  var s_tail = s$1.slice((i_end << 6));
+  for(var kk = 0; kk <= 15; ++kk){
+    md5blk[kk] = 0;
+  }
+  var i_end$1 = s_tail.length - 1 | 0;
+  for(var i$2 = 0; i$2 <= i_end$1; ++i$2){
+    md5blk[i$2 / 4 | 0] = md5blk[i$2 / 4 | 0] | (s_tail.charCodeAt(i$2) << (i$2 % 4 << 3));
+  }
+  var i$3 = i_end$1 + 1 | 0;
+  md5blk[i$3 / 4 | 0] = md5blk[i$3 / 4 | 0] | (128 << (i$3 % 4 << 3));
+  if (i$3 > 55) {
+    cycle(state, md5blk);
+    for(var i$4 = 0; i$4 <= 15; ++i$4){
+      md5blk[i$4] = 0;
+    }
+  }
+  md5blk[14] = (n << 3);
+  cycle(state, md5blk);
+  return String.fromCharCode(state[0] & 255, (state[0] >> 8) & 255, (state[0] >> 16) & 255, (state[0] >> 24) & 255, state[1] & 255, (state[1] >> 8) & 255, (state[1] >> 16) & 255, (state[1] >> 24) & 255, state[2] & 255, (state[2] >> 8) & 255, (state[2] >> 16) & 255, (state[2] >> 24) & 255, state[3] & 255, (state[3] >> 8) & 255, (state[3] >> 16) & 255, (state[3] >> 24) & 255);
+}
+
+exports.caml_md5_string = caml_md5_string;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/caml_obj.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -3639,6 +3812,88 @@ exports.caml_string_get32         = caml_string_get32;
 exports.js_string_of_char         = js_string_of_char;
 exports.get                       = get;
 /* No side effect */
+  })();
+});
+
+require.register("bs-platform/lib/js/caml_sys.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+
+function caml_raise_not_found() {
+  throw Caml_builtin_exceptions.not_found;
+}
+
+
+function $$caml_sys_getenv(n) {
+    //nodejs env
+    if (typeof process !== 'undefined'
+        && process.env
+        && process.env[n] != undefined){
+        return process.env[n]
+    }
+    else{
+     caml_raise_not_found()
+    };
+  }
+
+;
+
+
+function $$date(){
+  return (+new Date())
+};
+
+
+;
+
+var caml_initial_time = $$date() * 0.001;
+
+function caml_sys_time() {
+  return ($$date() - caml_initial_time) * 0.001;
+}
+
+function caml_sys_random_seed() {
+  return /* array */[(($$date() | 0) ^ 4294967295) * Math.random() | 0];
+}
+
+function caml_sys_system_command() {
+  return 127;
+}
+
+function caml_sys_getcwd() {
+  return "/";
+}
+
+function caml_sys_is_directory() {
+  throw [
+        Caml_builtin_exceptions.failure,
+        "caml_sys_is_directory not implemented"
+      ];
+}
+
+function caml_sys_file_exists() {
+  throw [
+        Caml_builtin_exceptions.failure,
+        "caml_sys_file_exists not implemented"
+      ];
+}
+
+function caml_sys_getenv(prim) {
+  return $$caml_sys_getenv(prim);
+}
+
+exports.caml_raise_not_found    = caml_raise_not_found;
+exports.caml_sys_getenv         = caml_sys_getenv;
+exports.caml_sys_time           = caml_sys_time;
+exports.caml_sys_random_seed    = caml_sys_random_seed;
+exports.caml_sys_system_command = caml_sys_system_command;
+exports.caml_sys_getcwd         = caml_sys_getcwd;
+exports.caml_sys_is_directory   = caml_sys_is_directory;
+exports.caml_sys_file_exists    = caml_sys_file_exists;
+/*  Not a pure module */
   })();
 });
 
@@ -4703,6 +4958,302 @@ exports.curry_8 = curry_8;
 exports._8      = _8;
 exports.js8     = js8;
 exports.__8     = __8;
+/* No side effect */
+  })();
+});
+
+require.register("bs-platform/lib/js/digest.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Pervasives              = require("bs-platform/lib/js/pervasives");
+var Char                    = require("bs-platform/lib/js/char");
+var Caml_md5                = require("bs-platform/lib/js/caml_md5");
+var $$String                = require("bs-platform/lib/js/string");
+var Caml_string             = require("bs-platform/lib/js/caml_string");
+
+function string(str) {
+  return Caml_md5.caml_md5_string(str, 0, str.length);
+}
+
+function bytes(b) {
+  return string(Caml_string.bytes_to_string(b));
+}
+
+function substring(str, ofs, len) {
+  if (ofs < 0 || len < 0 || ofs > (str.length - len | 0)) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Digest.substring"
+        ];
+  }
+  else {
+    return Caml_md5.caml_md5_string(str, ofs, len);
+  }
+}
+
+function subbytes(b, ofs, len) {
+  return substring(Caml_string.bytes_to_string(b), ofs, len);
+}
+
+function file(filename) {
+  Pervasives.open_in_bin(filename);
+  var exit = 0;
+  var d;
+  try {
+    d = function () {
+        throw "caml_md5_chan not implemented by bucklescript yet\n";
+      }();
+    exit = 1;
+  }
+  catch (e){
+    (function () {
+          throw "caml_ml_close_channel not implemented by bucklescript yet\n";
+        }());
+    throw e;
+  }
+  if (exit === 1) {
+    (function () {
+          throw "caml_ml_close_channel not implemented by bucklescript yet\n";
+        }());
+    return d;
+  }
+  
+}
+
+var output = Pervasives.output_string
+
+function input(chan) {
+  return Pervasives.really_input_string(chan, 16);
+}
+
+function char_hex(n) {
+  return n + (
+          n < 10 ? /* "0" */48 : 87
+        ) | 0;
+}
+
+function to_hex(d) {
+  var result = new Array(32);
+  for(var i = 0; i <= 15; ++i){
+    var x = Caml_string.get(d, i);
+    result[(i << 1)] = char_hex((x >>> 4));
+    result[(i << 1) + 1 | 0] = char_hex(x & 15);
+  }
+  return Caml_string.bytes_to_string(result);
+}
+
+function from_hex(s) {
+  if (s.length !== 32) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Digest.from_hex"
+        ];
+  }
+  var digit = function (c) {
+    if (c >= 65) {
+      if (c >= 97) {
+        if (c >= 103) {
+          throw [
+                Caml_builtin_exceptions.invalid_argument,
+                "Digest.from_hex"
+              ];
+        }
+        else {
+          return (c - /* "a" */97 | 0) + 10 | 0;
+        }
+      }
+      else if (c >= 71) {
+        throw [
+              Caml_builtin_exceptions.invalid_argument,
+              "Digest.from_hex"
+            ];
+      }
+      else {
+        return (c - /* "A" */65 | 0) + 10 | 0;
+      }
+    }
+    else if (c > 57 || c < 48) {
+      throw [
+            Caml_builtin_exceptions.invalid_argument,
+            "Digest.from_hex"
+          ];
+    }
+    else {
+      return c - /* "0" */48 | 0;
+    }
+  };
+  var $$byte = function (i) {
+    return (digit(Caml_string.get(s, i)) << 4) + digit(Caml_string.get(s, i + 1 | 0)) | 0;
+  };
+  var result = new Array(16);
+  for(var i = 0; i <= 15; ++i){
+    result[i] = Char.chr($$byte((i << 1)));
+  }
+  return Caml_string.bytes_to_string(result);
+}
+
+var compare = $$String.compare;
+
+exports.compare   = compare;
+exports.string    = string;
+exports.bytes     = bytes;
+exports.substring = substring;
+exports.subbytes  = subbytes;
+exports.file      = file;
+exports.output    = output;
+exports.input     = input;
+exports.to_hex    = to_hex;
+exports.from_hex  = from_hex;
+/* No side effect */
+  })();
+});
+
+require.register("bs-platform/lib/js/int32.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_obj    = require("/bs-platform/lib/js/caml_obj");
+var Caml_format = require("/bs-platform/lib/js/caml_format");
+
+function succ(n) {
+  return n + 1 | 0;
+}
+
+function pred(n) {
+  return n - 1 | 0;
+}
+
+function abs(n) {
+  if (n >= 0) {
+    return n;
+  }
+  else {
+    return -n | 0;
+  }
+}
+
+function lognot(n) {
+  return n ^ -1;
+}
+
+function to_string(n) {
+  return Caml_format.caml_int32_format("%d", n);
+}
+
+var compare = Caml_obj.caml_int32_compare
+
+var zero = 0;
+
+var one = 1;
+
+var minus_one = -1;
+
+var max_int = 2147483647;
+
+var min_int = -2147483648;
+
+exports.zero      = zero;
+exports.one       = one;
+exports.minus_one = minus_one;
+exports.succ      = succ;
+exports.pred      = pred;
+exports.abs       = abs;
+exports.max_int   = max_int;
+exports.min_int   = min_int;
+exports.lognot    = lognot;
+exports.to_string = to_string;
+exports.compare   = compare;
+/* No side effect */
+  })();
+});
+
+require.register("bs-platform/lib/js/int64.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_int64  = require("/bs-platform/lib/js/caml_int64");
+var Caml_format = require("/bs-platform/lib/js/caml_format");
+
+function succ(n) {
+  return Caml_int64.add(n, /* int64 */[
+              /* hi */0,
+              /* lo */1
+            ]);
+}
+
+function pred(n) {
+  return Caml_int64.sub(n, /* int64 */[
+              /* hi */0,
+              /* lo */1
+            ]);
+}
+
+function abs(n) {
+  if (Caml_int64.ge(n, /* int64 */[
+          /* hi */0,
+          /* lo */0
+        ])) {
+    return n;
+  }
+  else {
+    return Caml_int64.neg(n);
+  }
+}
+
+function lognot(n) {
+  return /* int64 */[
+          /* hi */n[0] ^ /* hi */-1,
+          /* lo */((n[1] ^ /* lo */4294967295) >>> 0)
+        ];
+}
+
+function to_string(n) {
+  return Caml_format.caml_int64_format("%d", n);
+}
+
+var compare = Caml_int64.compare
+
+var zero = /* int64 */[
+  /* hi */0,
+  /* lo */0
+];
+
+var one = /* int64 */[
+  /* hi */0,
+  /* lo */1
+];
+
+var minus_one = /* int64 */[
+  /* hi */-1,
+  /* lo */4294967295
+];
+
+var max_int = /* int64 */[
+  /* hi */2147483647,
+  /* lo */4294967295
+];
+
+var min_int = /* int64 */[
+  /* hi */-2147483648,
+  /* lo */0
+];
+
+exports.zero      = zero;
+exports.one       = one;
+exports.minus_one = minus_one;
+exports.succ      = succ;
+exports.pred      = pred;
+exports.abs       = abs;
+exports.max_int   = max_int;
+exports.min_int   = min_int;
+exports.lognot    = lognot;
+exports.to_string = to_string;
+exports.compare   = compare;
 /* No side effect */
   })();
 });
@@ -6601,6 +7152,70 @@ exports.merge        = merge;
   })();
 });
 
+require.register("bs-platform/lib/js/nativeint.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_obj    = require("bs-platform/lib/js/caml_obj");
+var Caml_format = require("bs-platform/lib/js/caml_format");
+var Sys         = require("bs-platform/lib/js/sys");
+
+function succ(n) {
+  return n + 1;
+}
+
+function pred(n) {
+  return n - 1;
+}
+
+function abs(n) {
+  if (n >= 0) {
+    return n;
+  }
+  else {
+    return -n;
+  }
+}
+
+var min_int = -9007199254740991;
+
+var max_int = 9007199254740991;
+
+function lognot(n) {
+  return n ^ -1;
+}
+
+function to_string(n) {
+  return Caml_format.caml_nativeint_format("%d", n);
+}
+
+var compare = Caml_obj.caml_nativeint_compare
+
+var zero = 0;
+
+var one = 1;
+
+var minus_one = -1;
+
+var size = Sys.word_size;
+
+exports.zero      = zero;
+exports.one       = one;
+exports.minus_one = minus_one;
+exports.succ      = succ;
+exports.pred      = pred;
+exports.abs       = abs;
+exports.size      = size;
+exports.max_int   = max_int;
+exports.min_int   = min_int;
+exports.lognot    = lognot;
+exports.to_string = to_string;
+exports.compare   = compare;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/pervasives.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -7381,6 +7996,329 @@ exports.do_at_exit          = do_at_exit;
   })();
 });
 
+require.register("bs-platform/lib/js/random.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_int64              = require("bs-platform/lib/js/caml_int64");
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Caml_sys                = require("bs-platform/lib/js/caml_sys");
+var Pervasives              = require("bs-platform/lib/js/pervasives");
+var Nativeint               = require("bs-platform/lib/js/nativeint");
+var Int32                   = require("bs-platform/lib/js/int32");
+var Digest                  = require("bs-platform/lib/js/digest");
+var Curry                   = require("bs-platform/lib/js/curry");
+var Int64                   = require("bs-platform/lib/js/int64");
+var Caml_array              = require("bs-platform/lib/js/caml_array");
+var $$Array                 = require("bs-platform/lib/js/array");
+var Caml_string             = require("bs-platform/lib/js/caml_string");
+
+function assign(st1, st2) {
+  $$Array.blit(st2[/* st */0], 0, st1[/* st */0], 0, 55);
+  st1[/* idx */1] = st2[/* idx */1];
+  return /* () */0;
+}
+
+function full_init(s, seed) {
+  var combine = function (accu, x) {
+    return Digest.string(accu + x);
+  };
+  var extract = function (d) {
+    return ((Caml_string.get(d, 0) + (Caml_string.get(d, 1) << 8) | 0) + (Caml_string.get(d, 2) << 16) | 0) + (Caml_string.get(d, 3) << 24) | 0;
+  };
+  var seed$1 = seed.length ? seed : /* int array */[0];
+  var l = seed$1.length;
+  for(var i = 0; i <= 54; ++i){
+    s[/* st */0][i] = i;
+  }
+  var accu = "x";
+  for(var i$1 = 0 ,i_finish = 54 + Pervasives.max(55, l) | 0; i$1 <= i_finish; ++i$1){
+    var j = i$1 % 55;
+    var k = i$1 % l;
+    accu = combine(accu, seed$1[k]);
+    s[/* st */0][j] = (s[/* st */0][j] ^ extract(accu)) & 1073741823;
+  }
+  s[/* idx */1] = 0;
+  return /* () */0;
+}
+
+function make(seed) {
+  var result = /* record */[
+    /* st */Caml_array.caml_make_vect(55, 0),
+    /* idx */0
+  ];
+  full_init(result, seed);
+  return result;
+}
+
+function make_self_init() {
+  return make(Caml_sys.caml_sys_random_seed(/* () */0));
+}
+
+function copy(s) {
+  var result = /* record */[
+    /* st */Caml_array.caml_make_vect(55, 0),
+    /* idx */0
+  ];
+  assign(result, s);
+  return result;
+}
+
+function bits(s) {
+  s[/* idx */1] = (s[/* idx */1] + 1 | 0) % 55;
+  var curval = s[/* st */0][s[/* idx */1]];
+  var newval = s[/* st */0][(s[/* idx */1] + 24 | 0) % 55] + (curval ^ (curval >>> 25) & 31) | 0;
+  var newval30 = newval & 1073741823;
+  s[/* st */0][s[/* idx */1]] = newval30;
+  return newval30;
+}
+
+function $$int(s, bound) {
+  if (bound > 1073741823 || bound <= 0) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Random.int"
+        ];
+  }
+  else {
+    var s$1 = s;
+    var n = bound;
+    while(true) {
+      var r = bits(s$1);
+      var v = r % n;
+      if ((r - v | 0) > ((1073741823 - n | 0) + 1 | 0)) {
+        continue ;
+        
+      }
+      else {
+        return v;
+      }
+    };
+  }
+}
+
+function int32(s, bound) {
+  if (bound <= 0) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Random.int32"
+        ];
+  }
+  else {
+    var s$1 = s;
+    var n = bound;
+    while(true) {
+      var b1 = bits(s$1);
+      var b2 = ((bits(s$1) & 1) << 30);
+      var r = b1 | b2;
+      var v = r % n;
+      if ((r - v | 0) > ((Int32.max_int - n | 0) + 1 | 0)) {
+        continue ;
+        
+      }
+      else {
+        return v;
+      }
+    };
+  }
+}
+
+function int64(s, bound) {
+  if (Caml_int64.le(bound, /* int64 */[
+          /* hi */0,
+          /* lo */0
+        ])) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Random.int64"
+        ];
+  }
+  else {
+    var s$1 = s;
+    var n = bound;
+    while(true) {
+      var b1 = Caml_int64.of_int32(bits(s$1));
+      var b2 = Caml_int64.lsl_(Caml_int64.of_int32(bits(s$1)), 30);
+      var b3 = Caml_int64.lsl_(Caml_int64.of_int32(bits(s$1) & 7), 60);
+      var r_000 = /* hi */b1[0] | /* hi */b2[0] | b3[0];
+      var r_001 = /* lo */((b1[1] | b2[1] | b3[1]) >>> 0);
+      var r = /* int64 */[
+        r_000,
+        r_001
+      ];
+      var v = Caml_int64.mod_(r, n);
+      if (Caml_int64.gt(Caml_int64.sub(r, v), Caml_int64.add(Caml_int64.sub(Int64.max_int, n), /* int64 */[
+                  /* hi */0,
+                  /* lo */1
+                ]))) {
+        continue ;
+        
+      }
+      else {
+        return v;
+      }
+    };
+  }
+}
+
+var nativeint = Nativeint.size === 32 ? int32 : function (s, bound) {
+    return int64(s, Caml_int64.of_int32(bound))[1] | 0;
+  };
+
+function rawfloat(s) {
+  var r1 = bits(s);
+  var r2 = bits(s);
+  return (r1 / 1073741824.0 + r2) / 1073741824.0;
+}
+
+function $$float(s, bound) {
+  return rawfloat(s) * bound;
+}
+
+function bool(s) {
+  return +((bits(s) & 1) === 0);
+}
+
+var $$default = /* record */[
+  /* st : array */[
+    987910699,
+    495797812,
+    364182224,
+    414272206,
+    318284740,
+    990407751,
+    383018966,
+    270373319,
+    840823159,
+    24560019,
+    536292337,
+    512266505,
+    189156120,
+    730249596,
+    143776328,
+    51606627,
+    140166561,
+    366354223,
+    1003410265,
+    700563762,
+    981890670,
+    913149062,
+    526082594,
+    1021425055,
+    784300257,
+    667753350,
+    630144451,
+    949649812,
+    48546892,
+    415514493,
+    258888527,
+    511570777,
+    89983870,
+    283659902,
+    308386020,
+    242688715,
+    482270760,
+    865188196,
+    1027664170,
+    207196989,
+    193777847,
+    619708188,
+    671350186,
+    149669678,
+    257044018,
+    87658204,
+    558145612,
+    183450813,
+    28133145,
+    901332182,
+    710253903,
+    510646120,
+    652377910,
+    409934019,
+    801085050
+  ],
+  /* idx */0
+];
+
+function bits$1() {
+  return bits($$default);
+}
+
+function $$int$1(bound) {
+  return $$int($$default, bound);
+}
+
+function int32$1(bound) {
+  return int32($$default, bound);
+}
+
+function nativeint$1(bound) {
+  return Curry._2(nativeint, $$default, bound);
+}
+
+function int64$1(bound) {
+  return int64($$default, bound);
+}
+
+function $$float$1(scale) {
+  return rawfloat($$default) * scale;
+}
+
+function bool$1() {
+  return bool($$default);
+}
+
+function full_init$1(seed) {
+  return full_init($$default, seed);
+}
+
+function init(seed) {
+  return full_init($$default, /* int array */[seed]);
+}
+
+function self_init() {
+  return full_init$1(Caml_sys.caml_sys_random_seed(/* () */0));
+}
+
+function get_state() {
+  return copy($$default);
+}
+
+function set_state(s) {
+  return assign($$default, s);
+}
+
+var State = [
+  make,
+  make_self_init,
+  copy,
+  bits,
+  $$int,
+  int32,
+  nativeint,
+  int64,
+  $$float,
+  bool
+];
+
+exports.init      = init;
+exports.full_init = full_init$1;
+exports.self_init = self_init;
+exports.bits      = bits$1;
+exports.$$int     = $$int$1;
+exports.int32     = int32$1;
+exports.nativeint = nativeint$1;
+exports.int64     = int64$1;
+exports.$$float   = $$float$1;
+exports.bool      = bool$1;
+exports.State     = State;
+exports.get_state = get_state;
+exports.set_state = set_state;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/string.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -7600,6 +8538,134 @@ exports.compare        = compare;
   })();
 });
 
+require.register("bs-platform/lib/js/sys.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_exceptions = require("/bs-platform/lib/js/caml_exceptions");
+
+var is_js = /* true */1;
+
+var match_001 = /* array */[];
+
+var big_endian = /* false */0;
+
+var unix = /* false */0;
+
+var win32 = /* true */1;
+
+var cygwin = /* false */0;
+
+var max_array_length = 2147483647;
+
+var max_string_length = 2147483647;
+
+var interactive = [/* false */0];
+
+function set_signal(_, _$1) {
+  return /* () */0;
+}
+
+var Break = Caml_exceptions.create("Sys.Break");
+
+function catch_break() {
+  return /* () */0;
+}
+
+var argv = match_001;
+
+var executable_name = "cmd";
+
+var os_type = "Win32";
+
+var word_size = 32;
+
+var sigabrt = -1;
+
+var sigalrm = -2;
+
+var sigfpe = -3;
+
+var sighup = -4;
+
+var sigill = -5;
+
+var sigint = -6;
+
+var sigkill = -7;
+
+var sigpipe = -8;
+
+var sigquit = -9;
+
+var sigsegv = -10;
+
+var sigterm = -11;
+
+var sigusr1 = -12;
+
+var sigusr2 = -13;
+
+var sigchld = -14;
+
+var sigcont = -15;
+
+var sigstop = -16;
+
+var sigtstp = -17;
+
+var sigttin = -18;
+
+var sigttou = -19;
+
+var sigvtalrm = -20;
+
+var sigprof = -21;
+
+var ocaml_version = "4.02.3+dev1-2015-07-10";
+
+exports.argv              = argv;
+exports.executable_name   = executable_name;
+exports.interactive       = interactive;
+exports.os_type           = os_type;
+exports.unix              = unix;
+exports.win32             = win32;
+exports.cygwin            = cygwin;
+exports.word_size         = word_size;
+exports.big_endian        = big_endian;
+exports.is_js             = is_js;
+exports.max_string_length = max_string_length;
+exports.max_array_length  = max_array_length;
+exports.set_signal        = set_signal;
+exports.sigabrt           = sigabrt;
+exports.sigalrm           = sigalrm;
+exports.sigfpe            = sigfpe;
+exports.sighup            = sighup;
+exports.sigill            = sigill;
+exports.sigint            = sigint;
+exports.sigkill           = sigkill;
+exports.sigpipe           = sigpipe;
+exports.sigquit           = sigquit;
+exports.sigsegv           = sigsegv;
+exports.sigterm           = sigterm;
+exports.sigusr1           = sigusr1;
+exports.sigusr2           = sigusr2;
+exports.sigchld           = sigchld;
+exports.sigcont           = sigcont;
+exports.sigstop           = sigstop;
+exports.sigtstp           = sigtstp;
+exports.sigttin           = sigttin;
+exports.sigttou           = sigttou;
+exports.sigvtalrm         = sigvtalrm;
+exports.sigprof           = sigprof;
+exports.Break             = Break;
+exports.catch_break       = catch_break;
+exports.ocaml_version     = ocaml_version;
+/* No side effect */
+  })();
+});
+
 require.register("process/browser.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "process");
   (function() {
@@ -7792,6 +8858,7 @@ require.register("src/counter.ml", function(exports, require, module) {
 var Tea_html = require("./tea_html");
 var Block    = require("bs-platform/lib/js/block");
 var Curry    = require("bs-platform/lib/js/curry");
+var Tea      = require("./tea");
 var Vdom     = require("./vdom");
 
 function init() {
@@ -7882,7 +8949,7 @@ exports.init        = init;
 exports.update      = update;
 exports.view_button = view_button;
 exports.view        = view;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -7895,6 +8962,7 @@ var Caml_obj                = require("bs-platform/lib/js/caml_obj");
 var Tea_html                = require("./tea_html");
 var Block                   = require("bs-platform/lib/js/block");
 var Curry                   = require("bs-platform/lib/js/curry");
+var Tea                     = require("./tea");
 var Vdom                    = require("./vdom");
 
 function height(param) {
@@ -8790,7 +9858,7 @@ exports.update       = update;
 exports.shutdown     = shutdown;
 exports.view_button  = view_button;
 exports.view         = view;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -8800,6 +9868,7 @@ exports.view         = view;
 
 var Block      = require("bs-platform/lib/js/block");
 var Curry      = require("bs-platform/lib/js/curry");
+var Tea        = require("./tea");
 var Web_window = require("./web_window");
 
 function every(interval, tagger) {
@@ -8820,7 +9889,7 @@ function delay(msTime, msg) {
 
 exports.every = every;
 exports.delay = delay;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -8863,6 +9932,7 @@ var Tea_app  = require("./tea_app");
 var Tea_html = require("./tea_html");
 var Block    = require("bs-platform/lib/js/block");
 var Tea_time = require("./tea_time");
+var Tea      = require("./tea");
 
 function init() {
   return /* tuple */[
@@ -8922,7 +9992,159 @@ exports.update        = update;
 exports.subscriptions = subscriptions;
 exports.view          = view;
 exports.main          = main;
-/* No side effect */
+/* Tea Not a pure module */
+
+});
+
+;require.register("src/main_clock_svg.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_app    = require("./tea_app");
+var Pervasives = require("bs-platform/lib/js/pervasives");
+var Tea_svg    = require("./tea_svg");
+var Block      = require("bs-platform/lib/js/block");
+var Tea_time   = require("./tea_time");
+var Tea        = require("./tea");
+
+function init() {
+  return /* tuple */[
+          Date.now(),
+          /* NoCmd */0
+        ];
+}
+
+function update(model, param) {
+  if (param) {
+    return /* tuple */[
+            param[0],
+            /* NoCmd */0
+          ];
+  }
+  else {
+    return /* tuple */[
+            model,
+            /* NoCmd */0
+          ];
+  }
+}
+
+function subscriptions() {
+  return Tea_time.every(16, function (t) {
+              return /* Time */[t];
+            });
+}
+
+var tau = 8.0 * Math.atan(1.0);
+
+function view(model) {
+  var angle = tau * Tea_time.inMinutes(model);
+  var handX = Pervasives.string_of_float(50.0 + 40.0 * Math.cos(angle));
+  var handY = Pervasives.string_of_float(50.0 + 40.0 * Math.sin(angle));
+  return Tea_svg.svg(/* None */0, /* None */0, /* :: */[
+              /* Attribute */Block.__(1, [
+                  "",
+                  "viewBox",
+                  "0 0 100 100"
+                ]),
+              /* :: */[
+                /* Attribute */Block.__(1, [
+                    "",
+                    "width",
+                    "300px"
+                  ]),
+                /* [] */0
+              ]
+            ], /* :: */[
+              Tea_svg.circle(/* None */0, /* None */0, /* :: */[
+                    /* Attribute */Block.__(1, [
+                        "",
+                        "cx",
+                        "50"
+                      ]),
+                    /* :: */[
+                      /* Attribute */Block.__(1, [
+                          "",
+                          "cy",
+                          "50"
+                        ]),
+                      /* :: */[
+                        /* Attribute */Block.__(1, [
+                            "",
+                            "r",
+                            "45"
+                          ]),
+                        /* :: */[
+                          /* Attribute */Block.__(1, [
+                              "",
+                              "fill",
+                              "#0B79CE"
+                            ]),
+                          /* [] */0
+                        ]
+                      ]
+                    ]
+                  ], /* [] */0),
+              /* :: */[
+                Tea_svg.line(/* None */0, /* None */0, /* :: */[
+                      /* Attribute */Block.__(1, [
+                          "",
+                          "x1",
+                          "50"
+                        ]),
+                      /* :: */[
+                        /* Attribute */Block.__(1, [
+                            "",
+                            "y1",
+                            "50"
+                          ]),
+                        /* :: */[
+                          /* Attribute */Block.__(1, [
+                              "",
+                              "x2",
+                              handX
+                            ]),
+                          /* :: */[
+                            /* Attribute */Block.__(1, [
+                                "",
+                                "y2",
+                                handY
+                              ]),
+                            /* :: */[
+                              /* Attribute */Block.__(1, [
+                                  "",
+                                  "stroke",
+                                  "#023963"
+                                ]),
+                              /* [] */0
+                            ]
+                          ]
+                        ]
+                      ]
+                    ], /* [] */0),
+                /* [] */0
+              ]
+            ]);
+}
+
+var partial_arg = /* record */[
+  /* init */init,
+  /* update */update,
+  /* view */view,
+  /* subscriptions */subscriptions
+];
+
+function main(param, param$1) {
+  return Tea_app.standardProgram(partial_arg, param, param$1);
+}
+
+exports.init          = init;
+exports.update        = update;
+exports.subscriptions = subscriptions;
+exports.tau           = tau;
+exports.view          = view;
+exports.main          = main;
+/* tau Not a pure module */
 
 });
 
@@ -8933,6 +10155,7 @@ exports.main          = main;
 var Tea_app  = require("./tea_app");
 var Tea_html = require("./tea_html");
 var Block    = require("bs-platform/lib/js/block");
+var Tea      = require("./tea");
 var Vdom     = require("./vdom");
 
 function update(model, param) {
@@ -9013,7 +10236,7 @@ exports.update      = update;
 exports.view_button = view_button;
 exports.view        = view;
 exports.main        = main;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -9025,6 +10248,7 @@ var Tea_navigation = require("./tea_navigation");
 var Tea_html       = require("./tea_html");
 var Caml_format    = require("bs-platform/lib/js/caml_format");
 var Block          = require("bs-platform/lib/js/block");
+var Tea            = require("./tea");
 var Vdom           = require("./vdom");
 var $$String       = require("bs-platform/lib/js/string");
 
@@ -9169,6 +10393,7 @@ exports.main        = main;
 var Tea_app  = require("./tea_app");
 var Tea_html = require("./tea_html");
 var Block    = require("bs-platform/lib/js/block");
+var Tea      = require("./tea");
 var List     = require("bs-platform/lib/js/list");
 var Counter  = require("./counter");
 
@@ -9262,7 +10487,7 @@ exports.update      = update;
 exports.view_button = view_button;
 exports.view        = view;
 exports.main        = main;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -9273,6 +10498,7 @@ exports.main        = main;
 var Tea_app      = require("./tea_app");
 var Tea_html     = require("./tea_html");
 var Block        = require("bs-platform/lib/js/block");
+var Tea          = require("./tea");
 var CounterParts = require("./counterParts");
 
 function init() {
@@ -9405,7 +10631,7 @@ exports.update      = update;
 exports.view_button = view_button;
 exports.view        = view;
 exports.main        = main;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -9427,6 +10653,7 @@ var Bytes       = require("bs-platform/lib/js/bytes");
 var Tea_app     = require("./tea_app");
 var Tea_html    = require("./tea_html");
 var Block       = require("bs-platform/lib/js/block");
+var Tea         = require("./tea");
 var Caml_string = require("bs-platform/lib/js/caml_string");
 
 function update(_, param) {
@@ -9516,7 +10743,7 @@ exports.update  = update;
 exports.myStyle = myStyle;
 exports.view    = view;
 exports.main    = main;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -9527,6 +10754,7 @@ exports.main    = main;
 var Tea_app  = require("./tea_app");
 var Tea_html = require("./tea_html");
 var Block    = require("bs-platform/lib/js/block");
+var Tea      = require("./tea");
 
 var model = /* record */[
   /* name */"",
@@ -9663,7 +10891,192 @@ exports.update         = update;
 exports.viewValidation = viewValidation;
 exports.view           = view;
 exports.main           = main;
-/* No side effect */
+/* Tea Not a pure module */
+
+});
+
+;require.register("src/main_random.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_app    = require("./tea_app");
+var Tea_html   = require("./tea_html");
+var Block      = require("bs-platform/lib/js/block");
+var Tea        = require("./tea");
+var Tea_random = require("./tea_random");
+
+function init() {
+  return /* tuple */[
+          /* record */[/* dieFace */1],
+          /* NoCmd */0
+        ];
+}
+
+function update(model, param) {
+  if (param) {
+    return /* tuple */[
+            /* record */[/* dieFace */param[0]],
+            /* NoCmd */0
+          ];
+  }
+  else {
+    return /* tuple */[
+            model,
+            Tea_random.generate(function (v) {
+                  return /* NewFace */[v];
+                }, Tea_random.$$int(1, 6))
+          ];
+  }
+}
+
+function subscriptions() {
+  return /* NoSub */0;
+}
+
+function view(model) {
+  return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
+              Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(0, ["" + model[/* dieFace */0]]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                Tea_html.button(/* None */0, /* None */0, /* :: */[
+                      Tea_html.onClick(/* None */0, /* Roll */0),
+                      /* [] */0
+                    ], /* :: */[
+                      /* Text */Block.__(0, ["Roll"]),
+                      /* [] */0
+                    ]),
+                /* [] */0
+              ]
+            ]);
+}
+
+var partial_arg = /* record */[
+  /* init */init,
+  /* update */update,
+  /* view */view,
+  /* subscriptions */subscriptions
+];
+
+function main(param, param$1) {
+  return Tea_app.standardProgram(partial_arg, param, param$1);
+}
+
+exports.init          = init;
+exports.update        = update;
+exports.subscriptions = subscriptions;
+exports.view          = view;
+exports.main          = main;
+/* Tea Not a pure module */
+
+});
+
+;require.register("src/main_random_color.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Tea_app    = require("./tea_app");
+var Tea_html   = require("./tea_html");
+var Block      = require("bs-platform/lib/js/block");
+var Tea        = require("./tea");
+var Vdom       = require("./vdom");
+var Tea_random = require("./tea_random");
+
+function init() {
+  return /* tuple */[
+          /* record */[
+            /* r */255,
+            /* g */255,
+            /* b */255
+          ],
+          /* NoCmd */0
+        ];
+}
+
+function update(model, param) {
+  if (param) {
+    return /* tuple */[
+            /* record */[
+              /* r */param[0],
+              /* g */param[1],
+              /* b */param[2]
+            ],
+            /* NoCmd */0
+          ];
+  }
+  else {
+    var genInt = Tea_random.$$int(1, 255);
+    var genTuple3 = Tea_random.map3(function (r, g, b) {
+          return /* NewColor */[
+                  r,
+                  g,
+                  b
+                ];
+        }, genInt, genInt, genInt);
+    return /* tuple */[
+            model,
+            Tea_random.generate(function (v) {
+                  return v;
+                }, genTuple3)
+          ];
+  }
+}
+
+function subscriptions() {
+  return /* NoSub */0;
+}
+
+function view(model) {
+  var r = "" + model[/* r */0];
+  var g = "" + model[/* g */1];
+  var b = "" + model[/* b */2];
+  var isDark = +((((model[/* r */0] + model[/* g */1] | 0) + model[/* b */2] | 0) / 3 | 0) > 128);
+  var rgb = "(" + (r + ("," + (g + ("," + (b + ")")))));
+  var altRgb = isDark ? "(0,0,0)" : "(255,255,255)";
+  var value = "rgb" + rgb;
+  var value$1 = "rgb" + altRgb;
+  return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
+              Tea_html.h1(/* None */0, /* None */0, /* :: */[
+                    Vdom.style("background-color", value),
+                    /* :: */[
+                      Vdom.style("color", value$1),
+                      /* [] */0
+                    ]
+                  ], /* :: */[
+                    /* Text */Block.__(0, [rgb]),
+                    /* [] */0
+                  ]),
+              /* :: */[
+                Tea_html.button(/* None */0, /* None */0, /* :: */[
+                      Tea_html.onClick(/* None */0, /* Roll */0),
+                      /* [] */0
+                    ], /* :: */[
+                      /* Text */Block.__(0, ["Roll"]),
+                      /* [] */0
+                    ]),
+                /* [] */0
+              ]
+            ]);
+}
+
+var partial_arg = /* record */[
+  /* init */init,
+  /* update */update,
+  /* view */view,
+  /* subscriptions */subscriptions
+];
+
+function main(param, param$1) {
+  return Tea_app.standardProgram(partial_arg, param, param$1);
+}
+
+exports.init          = init;
+exports.update        = update;
+exports.subscriptions = subscriptions;
+exports.view          = view;
+exports.main          = main;
+/* Tea Not a pure module */
 
 });
 
@@ -9675,6 +11088,7 @@ var Tea_app       = require("./tea_app");
 var Tea_html      = require("./tea_html");
 var Pervasives    = require("bs-platform/lib/js/pervasives");
 var Block         = require("bs-platform/lib/js/block");
+var Tea           = require("./tea");
 var Vdom          = require("./vdom");
 var List          = require("bs-platform/lib/js/list");
 var Tea_html_cmds = require("./tea_html_cmds");
@@ -10403,6 +11817,7 @@ exports.main                = main;
 var Tea_app       = require("./tea_app");
 var Tea_html      = require("./tea_html");
 var Block         = require("bs-platform/lib/js/block");
+var Tea           = require("./tea");
 var Vdom          = require("./vdom");
 var List          = require("bs-platform/lib/js/list");
 var Tea_html_cmds = require("./tea_html_cmds");
@@ -11138,7 +12553,7 @@ exports.viewControls        = viewControls;
 exports.infoFooter          = infoFooter;
 exports.view                = view;
 exports.main                = main;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -11150,6 +12565,7 @@ var Tea_app       = require("./tea_app");
 var Tea_html      = require("./tea_html");
 var Block         = require("bs-platform/lib/js/block");
 var Caml_array    = require("bs-platform/lib/js/caml_array");
+var Tea           = require("./tea");
 var $$Array       = require("bs-platform/lib/js/array");
 var Vdom          = require("./vdom");
 var List          = require("bs-platform/lib/js/list");
@@ -11906,7 +13322,7 @@ exports.viewControls        = viewControls;
 exports.infoFooter          = infoFooter;
 exports.view                = view;
 exports.main                = main;
-/* No side effect */
+/* Tea Not a pure module */
 
 });
 
@@ -11918,6 +13334,7 @@ var Tea_app       = require("./tea_app");
 var Tea_html      = require("./tea_html");
 var Block         = require("bs-platform/lib/js/block");
 var Caml_array    = require("bs-platform/lib/js/caml_array");
+var Tea           = require("./tea");
 var $$Array       = require("bs-platform/lib/js/array");
 var Vdom          = require("./vdom");
 var List          = require("bs-platform/lib/js/list");
@@ -12662,6 +14079,7 @@ exports.main                = main;
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
 
+var Tea_random = require("./tea_random");
 
 var Cmd = 0;
 
@@ -12671,20 +14089,26 @@ var App = 0;
 
 var Html = 0;
 
+var Svg = 0;
+
 var Program = 0;
 
 var Time = 0;
 
 var Navigation = 0;
 
+var Random = 0;
+
 exports.Cmd        = Cmd;
 exports.Sub        = Sub;
 exports.App        = App;
 exports.Html       = Html;
+exports.Svg        = Svg;
 exports.Program    = Program;
 exports.Time       = Time;
 exports.Navigation = Navigation;
-/* No side effect */
+exports.Random     = Random;
+/* Tea_random Not a pure module */
 
 });
 
@@ -13018,6 +14442,13 @@ function text(str) {
 
 var lazy1 = Vdom.lazyGen
 
+function node($staropt$star, tagName, $staropt$star$1, $staropt$star$2, props, nodes) {
+  var namespace = $staropt$star ? $staropt$star[0] : "";
+  var key = $staropt$star$1 ? $staropt$star$1[0] : "";
+  var unique = $staropt$star$2 ? $staropt$star$2[0] : "";
+  return Vdom.fullnode(namespace, tagName, key, unique, props, nodes);
+}
+
 function br(props) {
   return Vdom.fullnode("", "br", "br", "br", props, /* [] */0);
 }
@@ -13320,6 +14751,7 @@ exports.Cmds          = Cmds;
 exports.noNode        = noNode;
 exports.text          = text;
 exports.lazy1         = lazy1;
+exports.node          = node;
 exports.br            = br;
 exports.br$prime      = br$prime;
 exports.div           = div;
@@ -13585,6 +15017,179 @@ exports.testing1 = testing1;
 
 });
 
+;require.register("src/tea_random.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Pervasives = require("bs-platform/lib/js/pervasives");
+var Block      = require("bs-platform/lib/js/block");
+var Curry      = require("bs-platform/lib/js/curry");
+var Random     = require("bs-platform/lib/js/random");
+
+Random.self_init(/* () */0);
+
+var bool = /* Generator */[function (state) {
+    return Curry._1(Random.State[/* bool */9], state);
+  }];
+
+function $$int(min, max) {
+  return /* Generator */[function (state) {
+            return min + Curry._2(Random.State[/* int */4], state, max) | 0;
+          }];
+}
+
+function $$float(min, max) {
+  return /* Generator */[function (state) {
+            return min + Curry._2(Random.State[/* float */8], state, max);
+          }];
+}
+
+function list(count, param) {
+  var genCmd = param[0];
+  var buildList = function (state, i) {
+    if (i > 0) {
+      return /* :: */[
+              Curry._1(genCmd, state),
+              buildList(state, i - 1 | 0)
+            ];
+    }
+    else {
+      return /* [] */0;
+    }
+  };
+  return /* Generator */[function (state) {
+            return buildList(state, count);
+          }];
+}
+
+function map(func, param) {
+  var genCmd = param[0];
+  return /* Generator */[function (state) {
+            return Curry._1(func, Curry._1(genCmd, state));
+          }];
+}
+
+function map2(func, param, param$1) {
+  var genCmd2 = param$1[0];
+  var genCmd1 = param[0];
+  return /* Generator */[function (state) {
+            var res1 = Curry._1(genCmd1, state);
+            var res2 = Curry._1(genCmd2, state);
+            return Curry._2(func, res1, res2);
+          }];
+}
+
+function map3(func, param, param$1, param$2) {
+  var genCmd3 = param$2[0];
+  var genCmd2 = param$1[0];
+  var genCmd1 = param[0];
+  return /* Generator */[function (state) {
+            var res1 = Curry._1(genCmd1, state);
+            var res2 = Curry._1(genCmd2, state);
+            var res3 = Curry._1(genCmd3, state);
+            return Curry._3(func, res1, res2, res3);
+          }];
+}
+
+function map4(func, param, param$1, param$2, param$3) {
+  var genCmd4 = param$3[0];
+  var genCmd3 = param$2[0];
+  var genCmd2 = param$1[0];
+  var genCmd1 = param[0];
+  return /* Generator */[function (state) {
+            var res1 = Curry._1(genCmd1, state);
+            var res2 = Curry._1(genCmd2, state);
+            var res3 = Curry._1(genCmd3, state);
+            var res4 = Curry._1(genCmd4, state);
+            return Curry._4(func, res1, res2, res3, res4);
+          }];
+}
+
+function map5(func, param, param$1, param$2, param$3, param$4) {
+  var genCmd5 = param$4[0];
+  var genCmd4 = param$3[0];
+  var genCmd3 = param$2[0];
+  var genCmd2 = param$1[0];
+  var genCmd1 = param[0];
+  return /* Generator */[function (state) {
+            var res1 = Curry._1(genCmd1, state);
+            var res2 = Curry._1(genCmd2, state);
+            var res3 = Curry._1(genCmd3, state);
+            var res4 = Curry._1(genCmd4, state);
+            var res5 = Curry._1(genCmd5, state);
+            return Curry._5(func, res1, res2, res3, res4, res5);
+          }];
+}
+
+function andThen(func, param) {
+  var genCmd = param[0];
+  return /* Generator */[function (state) {
+            var res = Curry._1(genCmd, state);
+            var match = Curry._1(func, res);
+            return Curry._1(match[0], state);
+          }];
+}
+
+function pair(gen1, gen2) {
+  return map2(function (a, b) {
+              return /* tuple */[
+                      a,
+                      b
+                    ];
+            }, gen1, gen2);
+}
+
+function generate(tagger, param) {
+  var genCmd = param[0];
+  return /* EnqueueCall */Block.__(2, [function (enqueue) {
+              var state = Random.get_state(/* () */0);
+              var genValue = Curry._1(genCmd, state);
+              return Curry._1(enqueue, Curry._1(tagger, genValue));
+            }]);
+}
+
+function step(param, param$1) {
+  var newState = Curry._1(Random.State[/* copy */2], param$1[0]);
+  return /* tuple */[
+          Curry._1(param[0], newState),
+          /* Seed */[newState]
+        ];
+}
+
+function initialSeed(seed) {
+  return /* Seed */[Curry._1(Random.State[/* make */0], /* int array */[seed])];
+}
+
+var minInt = Pervasives.min_int;
+
+var maxInt = Pervasives.max_int;
+
+var minFloat = Pervasives.min_float;
+
+var maxFloat = Pervasives.max_float;
+
+exports.minInt      = minInt;
+exports.maxInt      = maxInt;
+exports.minFloat    = minFloat;
+exports.maxFloat    = maxFloat;
+exports.bool        = bool;
+exports.$$int       = $$int;
+exports.$$float     = $$float;
+exports.list        = list;
+exports.map         = map;
+exports.map2        = map2;
+exports.map3        = map3;
+exports.map4        = map4;
+exports.map5        = map5;
+exports.andThen     = andThen;
+exports.pair        = pair;
+exports.generate    = generate;
+exports.step        = step;
+exports.initialSeed = initialSeed;
+/*  Not a pure module */
+
+});
+
 ;require.register("src/tea_sub.ml", function(exports, require, module) {
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
@@ -13811,6 +15416,2904 @@ exports.map           = map;
 
 });
 
+;require.register("src/tea_svg.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Block = require("bs-platform/lib/js/block");
+var Vdom  = require("./vdom");
+
+var svgNamespace = "http://www.w3.org/2000/svg";
+
+function text(str) {
+  return /* Text */Block.__(0, [str]);
+}
+
+var lazy1 = Vdom.lazyGen
+
+function node(tagName, $staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, tagName, key, unique, props, nodes);
+}
+
+function svg($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "svg", key, unique, props, nodes);
+}
+
+function foreignObject($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "foreignObject", key, unique, props, nodes);
+}
+
+function animate($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "animate", key, unique, props, nodes);
+}
+
+function animateColor($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "animateColor", key, unique, props, nodes);
+}
+
+function animateMotion($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "animateMotion", key, unique, props, nodes);
+}
+
+function animateTransform($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "animateTransform", key, unique, props, nodes);
+}
+
+function mpath($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "mpath", key, unique, props, nodes);
+}
+
+function set($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "set", key, unique, props, nodes);
+}
+
+function a($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "a", key, unique, props, nodes);
+}
+
+function defs($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "defs", key, unique, props, nodes);
+}
+
+function g($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "g", key, unique, props, nodes);
+}
+
+function marker($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "marker", key, unique, props, nodes);
+}
+
+function mask($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "mask", key, unique, props, nodes);
+}
+
+function missingGlyph($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "missingGlyph", key, unique, props, nodes);
+}
+
+function pattern($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "pattern", key, unique, props, nodes);
+}
+
+function $$switch($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "switch", key, unique, props, nodes);
+}
+
+function symbol($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "symbol", key, unique, props, nodes);
+}
+
+function desc($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "desc", key, unique, props, nodes);
+}
+
+function metadata($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "metadata", key, unique, props, nodes);
+}
+
+function title($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "title", key, unique, props, nodes);
+}
+
+function feBlend($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feBlend", key, unique, props, nodes);
+}
+
+function feColorMatrix($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feColorMatrix", key, unique, props, nodes);
+}
+
+function feComponentTransfer($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feComponentTransfer", key, unique, props, nodes);
+}
+
+function feComposite($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feComposite", key, unique, props, nodes);
+}
+
+function feConvolveMatrix($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feConvolveMatrix", key, unique, props, nodes);
+}
+
+function feDiffuseLighting($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feDiffuseLighting", key, unique, props, nodes);
+}
+
+function feDisplacementMap($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feDisplacementMap", key, unique, props, nodes);
+}
+
+function feFlood($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feFlood", key, unique, props, nodes);
+}
+
+function feFuncA($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feFuncA", key, unique, props, nodes);
+}
+
+function feFuncB($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feFuncB", key, unique, props, nodes);
+}
+
+function feFuncG($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feFuncG", key, unique, props, nodes);
+}
+
+function feFuncR($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feFuncR", key, unique, props, nodes);
+}
+
+function feGaussianBlur($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feGaussianBlur", key, unique, props, nodes);
+}
+
+function feImage($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feImage", key, unique, props, nodes);
+}
+
+function feMerge($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feMerge", key, unique, props, nodes);
+}
+
+function feMergeNode($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feMergeNode", key, unique, props, nodes);
+}
+
+function feMorphology($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feMorphology", key, unique, props, nodes);
+}
+
+function feOffset($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feOffset", key, unique, props, nodes);
+}
+
+function feSpecularLighting($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feSpecularLighting", key, unique, props, nodes);
+}
+
+function feTile($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feTile", key, unique, props, nodes);
+}
+
+function feTurbulence($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feTurbulence", key, unique, props, nodes);
+}
+
+function font($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "font", key, unique, props, nodes);
+}
+
+function fontFace($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "fontFace", key, unique, props, nodes);
+}
+
+function fontFaceFormat($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "fontFaceFormat", key, unique, props, nodes);
+}
+
+function fontFaceName($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "fontFaceName", key, unique, props, nodes);
+}
+
+function fontFaceSrc($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "fontFaceSrc", key, unique, props, nodes);
+}
+
+function fontFaceUri($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "fontFaceUri", key, unique, props, nodes);
+}
+
+function hkern($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "hkern", key, unique, props, nodes);
+}
+
+function vkern($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "vkern", key, unique, props, nodes);
+}
+
+function linearGradient($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "linearGradient", key, unique, props, nodes);
+}
+
+function radialGradient($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "radialGradient", key, unique, props, nodes);
+}
+
+function stop($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "stop", key, unique, props, nodes);
+}
+
+function circle($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "circle", key, unique, props, nodes);
+}
+
+function ellipse($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "ellipse", key, unique, props, nodes);
+}
+
+function svgimage($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "image", key, unique, props, nodes);
+}
+
+function line($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "line", key, unique, props, nodes);
+}
+
+function path($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "path", key, unique, props, nodes);
+}
+
+function polygon($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "polygon", key, unique, props, nodes);
+}
+
+function polyline($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "polyline", key, unique, props, nodes);
+}
+
+function rect($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "rect", key, unique, props, nodes);
+}
+
+function use($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "use", key, unique, props, nodes);
+}
+
+function feDistantLight($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feDistantLight", key, unique, props, nodes);
+}
+
+function fePointLight($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "fePointLight", key, unique, props, nodes);
+}
+
+function feSpotLight($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "feSpotLight", key, unique, props, nodes);
+}
+
+function altGlyph($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "altGlyph", key, unique, props, nodes);
+}
+
+function altGlyphDef($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "altGlyphDef", key, unique, props, nodes);
+}
+
+function altGlyphItem($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "altGlyphItem", key, unique, props, nodes);
+}
+
+function glyph($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "glyph", key, unique, props, nodes);
+}
+
+function glyphRef($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "glyphRef", key, unique, props, nodes);
+}
+
+function textPath($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "textPath", key, unique, props, nodes);
+}
+
+function text$prime($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "text", key, unique, props, nodes);
+}
+
+function tref($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "tref", key, unique, props, nodes);
+}
+
+function tspan($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "tspan", key, unique, props, nodes);
+}
+
+function clipPath($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "clipPath", key, unique, props, nodes);
+}
+
+function svgcolorProfile($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "colorProfile", key, unique, props, nodes);
+}
+
+function cursor($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "cursor", key, unique, props, nodes);
+}
+
+function filter($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "filter", key, unique, props, nodes);
+}
+
+function script($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "script", key, unique, props, nodes);
+}
+
+function style($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "style", key, unique, props, nodes);
+}
+
+function view($staropt$star, $staropt$star$1, props, nodes) {
+  var key = $staropt$star ? $staropt$star[0] : "";
+  var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
+  return Vdom.fullnode(svgNamespace, "view", key, unique, props, nodes);
+}
+
+var Cmds = 0;
+
+var Attributes = 0;
+
+var Events = 0;
+
+var noNode = /* NoVNode */0;
+
+exports.Cmds                = Cmds;
+exports.Attributes          = Attributes;
+exports.Events              = Events;
+exports.svgNamespace        = svgNamespace;
+exports.noNode              = noNode;
+exports.text                = text;
+exports.lazy1               = lazy1;
+exports.node                = node;
+exports.svg                 = svg;
+exports.foreignObject       = foreignObject;
+exports.animate             = animate;
+exports.animateColor        = animateColor;
+exports.animateMotion       = animateMotion;
+exports.animateTransform    = animateTransform;
+exports.mpath               = mpath;
+exports.set                 = set;
+exports.a                   = a;
+exports.defs                = defs;
+exports.g                   = g;
+exports.marker              = marker;
+exports.mask                = mask;
+exports.missingGlyph        = missingGlyph;
+exports.pattern             = pattern;
+exports.$$switch            = $$switch;
+exports.symbol              = symbol;
+exports.desc                = desc;
+exports.metadata            = metadata;
+exports.title               = title;
+exports.feBlend             = feBlend;
+exports.feColorMatrix       = feColorMatrix;
+exports.feComponentTransfer = feComponentTransfer;
+exports.feComposite         = feComposite;
+exports.feConvolveMatrix    = feConvolveMatrix;
+exports.feDiffuseLighting   = feDiffuseLighting;
+exports.feDisplacementMap   = feDisplacementMap;
+exports.feFlood             = feFlood;
+exports.feFuncA             = feFuncA;
+exports.feFuncB             = feFuncB;
+exports.feFuncG             = feFuncG;
+exports.feFuncR             = feFuncR;
+exports.feGaussianBlur      = feGaussianBlur;
+exports.feImage             = feImage;
+exports.feMerge             = feMerge;
+exports.feMergeNode         = feMergeNode;
+exports.feMorphology        = feMorphology;
+exports.feOffset            = feOffset;
+exports.feSpecularLighting  = feSpecularLighting;
+exports.feTile              = feTile;
+exports.feTurbulence        = feTurbulence;
+exports.font                = font;
+exports.fontFace            = fontFace;
+exports.fontFaceFormat      = fontFaceFormat;
+exports.fontFaceName        = fontFaceName;
+exports.fontFaceSrc         = fontFaceSrc;
+exports.fontFaceUri         = fontFaceUri;
+exports.hkern               = hkern;
+exports.vkern               = vkern;
+exports.linearGradient      = linearGradient;
+exports.radialGradient      = radialGradient;
+exports.stop                = stop;
+exports.circle              = circle;
+exports.ellipse             = ellipse;
+exports.svgimage            = svgimage;
+exports.line                = line;
+exports.path                = path;
+exports.polygon             = polygon;
+exports.polyline            = polyline;
+exports.rect                = rect;
+exports.use                 = use;
+exports.feDistantLight      = feDistantLight;
+exports.fePointLight        = fePointLight;
+exports.feSpotLight         = feSpotLight;
+exports.altGlyph            = altGlyph;
+exports.altGlyphDef         = altGlyphDef;
+exports.altGlyphItem        = altGlyphItem;
+exports.glyph               = glyph;
+exports.glyphRef            = glyphRef;
+exports.textPath            = textPath;
+exports.text$prime          = text$prime;
+exports.tref                = tref;
+exports.tspan               = tspan;
+exports.clipPath            = clipPath;
+exports.svgcolorProfile     = svgcolorProfile;
+exports.cursor              = cursor;
+exports.filter              = filter;
+exports.script              = script;
+exports.style               = style;
+exports.view                = view;
+/* No side effect */
+
+});
+
+;require.register("src/tea_svg_attributes.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Block = require("bs-platform/lib/js/block");
+
+function accentHeight(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "accent-height",
+            param
+          ]);
+}
+
+function accelerate(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "accelerate",
+            param
+          ]);
+}
+
+function accumulate(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "accumulate",
+            param
+          ]);
+}
+
+function additive(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "additive",
+            param
+          ]);
+}
+
+function alphabetic(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "alphabetic",
+            param
+          ]);
+}
+
+function allowReorder(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "allowReorder",
+            param
+          ]);
+}
+
+function amplitude(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "amplitude",
+            param
+          ]);
+}
+
+function arabicForm(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "arabic-form",
+            param
+          ]);
+}
+
+function ascent(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "ascent",
+            param
+          ]);
+}
+
+function attributeName(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "attributeName",
+            param
+          ]);
+}
+
+function attributeType(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "attributeType",
+            param
+          ]);
+}
+
+function autoReverse(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "autoReverse",
+            param
+          ]);
+}
+
+function azimuth(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "azimuth",
+            param
+          ]);
+}
+
+function baseFrequency(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "baseFrequency",
+            param
+          ]);
+}
+
+function baseProfile(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "baseProfile",
+            param
+          ]);
+}
+
+function bbox(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "bbox",
+            param
+          ]);
+}
+
+function begin$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "begin",
+            param
+          ]);
+}
+
+function bias(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "bias",
+            param
+          ]);
+}
+
+function by(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "by",
+            param
+          ]);
+}
+
+function calcMode(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "calcMode",
+            param
+          ]);
+}
+
+function capHeight(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "cap-height",
+            param
+          ]);
+}
+
+function class$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "class",
+            param
+          ]);
+}
+
+function clipPathUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "clipPathUnits",
+            param
+          ]);
+}
+
+function contentScriptType(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "contentScriptType",
+            param
+          ]);
+}
+
+function contentStyleType(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "contentStyleType",
+            param
+          ]);
+}
+
+function cx(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "cx",
+            param
+          ]);
+}
+
+function cy(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "cy",
+            param
+          ]);
+}
+
+function d(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "d",
+            param
+          ]);
+}
+
+function decelerate(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "decelerate",
+            param
+          ]);
+}
+
+function descent(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "descent",
+            param
+          ]);
+}
+
+function diffuseConstant(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "diffuseConstant",
+            param
+          ]);
+}
+
+function divisor(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "divisor",
+            param
+          ]);
+}
+
+function dur(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "dur",
+            param
+          ]);
+}
+
+function dx(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "dx",
+            param
+          ]);
+}
+
+function dy(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "dy",
+            param
+          ]);
+}
+
+function edgeMode(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "edgeMode",
+            param
+          ]);
+}
+
+function elevation(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "elevation",
+            param
+          ]);
+}
+
+function end$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "end",
+            param
+          ]);
+}
+
+function exponent(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "exponent",
+            param
+          ]);
+}
+
+function externalResourcesRequired(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "externalResourcesRequired",
+            param
+          ]);
+}
+
+function filterRes(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "filterRes",
+            param
+          ]);
+}
+
+function filterUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "filterUnits",
+            param
+          ]);
+}
+
+function format(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "format",
+            param
+          ]);
+}
+
+function from(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "from",
+            param
+          ]);
+}
+
+function fx(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "fx",
+            param
+          ]);
+}
+
+function fy(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "fy",
+            param
+          ]);
+}
+
+function g1(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "g1",
+            param
+          ]);
+}
+
+function g2(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "g2",
+            param
+          ]);
+}
+
+function glyphName(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "glyph-name",
+            param
+          ]);
+}
+
+function glyphRef(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "glyphRef",
+            param
+          ]);
+}
+
+function gradientTransform(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "gradientTransform",
+            param
+          ]);
+}
+
+function gradientUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "gradientUnits",
+            param
+          ]);
+}
+
+function hanging(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "hanging",
+            param
+          ]);
+}
+
+function height(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "height",
+            param
+          ]);
+}
+
+function horizAdvX(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "horiz-adv-x",
+            param
+          ]);
+}
+
+function horizOriginX(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "horiz-origin-x",
+            param
+          ]);
+}
+
+function horizOriginY(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "horiz-origin-y",
+            param
+          ]);
+}
+
+function id(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "id",
+            param
+          ]);
+}
+
+function ideographic(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "ideographic",
+            param
+          ]);
+}
+
+function in$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "in",
+            param
+          ]);
+}
+
+function in2(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "in2",
+            param
+          ]);
+}
+
+function intercept(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "intercept",
+            param
+          ]);
+}
+
+function k(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "k",
+            param
+          ]);
+}
+
+function k1(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "k1",
+            param
+          ]);
+}
+
+function k2(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "k2",
+            param
+          ]);
+}
+
+function k3(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "k3",
+            param
+          ]);
+}
+
+function k4(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "k4",
+            param
+          ]);
+}
+
+function kernelMatrix(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "kernelMatrix",
+            param
+          ]);
+}
+
+function kernelUnitLength(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "kernelUnitLength",
+            param
+          ]);
+}
+
+function keyPoints(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "keyPoints",
+            param
+          ]);
+}
+
+function keySplines(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "keySplines",
+            param
+          ]);
+}
+
+function keyTimes(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "keyTimes",
+            param
+          ]);
+}
+
+function lang(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "lang",
+            param
+          ]);
+}
+
+function lengthAdjust(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "lengthAdjust",
+            param
+          ]);
+}
+
+function limitingConeAngle(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "limitingConeAngle",
+            param
+          ]);
+}
+
+function local(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "local",
+            param
+          ]);
+}
+
+function markerHeight(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "markerHeight",
+            param
+          ]);
+}
+
+function markerUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "markerUnits",
+            param
+          ]);
+}
+
+function markerWidth(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "markerWidth",
+            param
+          ]);
+}
+
+function maskContentUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "maskContentUnits",
+            param
+          ]);
+}
+
+function maskUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "maskUnits",
+            param
+          ]);
+}
+
+function mathematical(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "mathematical",
+            param
+          ]);
+}
+
+function max(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "max",
+            param
+          ]);
+}
+
+function media(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "media",
+            param
+          ]);
+}
+
+function method$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "method",
+            param
+          ]);
+}
+
+function min(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "min",
+            param
+          ]);
+}
+
+function mode(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "mode",
+            param
+          ]);
+}
+
+function name(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "name",
+            param
+          ]);
+}
+
+function numOctaves(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "numOctaves",
+            param
+          ]);
+}
+
+function offset(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "offset",
+            param
+          ]);
+}
+
+function operator(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "operator",
+            param
+          ]);
+}
+
+function order(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "order",
+            param
+          ]);
+}
+
+function orient(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "orient",
+            param
+          ]);
+}
+
+function orientation(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "orientation",
+            param
+          ]);
+}
+
+function origin(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "origin",
+            param
+          ]);
+}
+
+function overlinePosition(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "overline-position",
+            param
+          ]);
+}
+
+function overlineThickness(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "overline-thickness",
+            param
+          ]);
+}
+
+function panose1(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "panose-1",
+            param
+          ]);
+}
+
+function path(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "path",
+            param
+          ]);
+}
+
+function pathLength(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "pathLength",
+            param
+          ]);
+}
+
+function patternContentUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "patternContentUnits",
+            param
+          ]);
+}
+
+function patternTransform(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "patternTransform",
+            param
+          ]);
+}
+
+function patternUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "patternUnits",
+            param
+          ]);
+}
+
+function pointOrder(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "point-order",
+            param
+          ]);
+}
+
+function points(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "points",
+            param
+          ]);
+}
+
+function pointsAtX(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "pointsAtX",
+            param
+          ]);
+}
+
+function pointsAtY(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "pointsAtY",
+            param
+          ]);
+}
+
+function pointsAtZ(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "pointsAtZ",
+            param
+          ]);
+}
+
+function preserveAlpha(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "preserveAlpha",
+            param
+          ]);
+}
+
+function preserveAspectRatio(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "preserveAspectRatio",
+            param
+          ]);
+}
+
+function primitiveUnits(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "primitiveUnits",
+            param
+          ]);
+}
+
+function r(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "r",
+            param
+          ]);
+}
+
+function radius(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "radius",
+            param
+          ]);
+}
+
+function refX(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "refX",
+            param
+          ]);
+}
+
+function refY(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "refY",
+            param
+          ]);
+}
+
+function renderingIntent(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "rendering-intent",
+            param
+          ]);
+}
+
+function repeatCount(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "repeatCount",
+            param
+          ]);
+}
+
+function repeatDur(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "repeatDur",
+            param
+          ]);
+}
+
+function requiredExtensions(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "requiredExtensions",
+            param
+          ]);
+}
+
+function requiredFeatures(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "requiredFeatures",
+            param
+          ]);
+}
+
+function restart(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "restart",
+            param
+          ]);
+}
+
+function result(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "result",
+            param
+          ]);
+}
+
+function rotate(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "rotate",
+            param
+          ]);
+}
+
+function rx(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "rx",
+            param
+          ]);
+}
+
+function ry(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "ry",
+            param
+          ]);
+}
+
+function scale(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "scale",
+            param
+          ]);
+}
+
+function seed(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "seed",
+            param
+          ]);
+}
+
+function slope(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "slope",
+            param
+          ]);
+}
+
+function spacing(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "spacing",
+            param
+          ]);
+}
+
+function specularConstant(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "specularConstant",
+            param
+          ]);
+}
+
+function specularExponent(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "specularExponent",
+            param
+          ]);
+}
+
+function speed(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "speed",
+            param
+          ]);
+}
+
+function spreadMethod(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "spreadMethod",
+            param
+          ]);
+}
+
+function startOffset(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "startOffset",
+            param
+          ]);
+}
+
+function stdDeviation(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stdDeviation",
+            param
+          ]);
+}
+
+function stemh(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stemh",
+            param
+          ]);
+}
+
+function stemv(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stemv",
+            param
+          ]);
+}
+
+function stitchTiles(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stitchTiles",
+            param
+          ]);
+}
+
+function strikethroughPosition(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "strikethrough-position",
+            param
+          ]);
+}
+
+function strikethroughThickness(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "strikethrough-thickness",
+            param
+          ]);
+}
+
+function string(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "string",
+            param
+          ]);
+}
+
+function style(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "style",
+            param
+          ]);
+}
+
+function surfaceScale(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "surfaceScale",
+            param
+          ]);
+}
+
+function systemLanguage(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "systemLanguage",
+            param
+          ]);
+}
+
+function tableValues(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "tableValues",
+            param
+          ]);
+}
+
+function target(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "target",
+            param
+          ]);
+}
+
+function targetX(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "targetX",
+            param
+          ]);
+}
+
+function targetY(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "targetY",
+            param
+          ]);
+}
+
+function textLength(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "textLength",
+            param
+          ]);
+}
+
+function title(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "title",
+            param
+          ]);
+}
+
+function to$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "to",
+            param
+          ]);
+}
+
+function transform(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "transform",
+            param
+          ]);
+}
+
+function type$prime(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "type",
+            param
+          ]);
+}
+
+function u1(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "u1",
+            param
+          ]);
+}
+
+function u2(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "u2",
+            param
+          ]);
+}
+
+function underlinePosition(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "underline-position",
+            param
+          ]);
+}
+
+function underlineThickness(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "underline-thickness",
+            param
+          ]);
+}
+
+function unicode(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "unicode",
+            param
+          ]);
+}
+
+function unicodeRange(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "unicode-range",
+            param
+          ]);
+}
+
+function unitsPerEm(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "units-per-em",
+            param
+          ]);
+}
+
+function vAlphabetic(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "v-alphabetic",
+            param
+          ]);
+}
+
+function vHanging(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "v-hanging",
+            param
+          ]);
+}
+
+function vIdeographic(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "v-ideographic",
+            param
+          ]);
+}
+
+function vMathematical(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "v-mathematical",
+            param
+          ]);
+}
+
+function values(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "values",
+            param
+          ]);
+}
+
+function version(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "version",
+            param
+          ]);
+}
+
+function vertAdvY(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "vert-adv-y",
+            param
+          ]);
+}
+
+function vertOriginX(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "vert-origin-x",
+            param
+          ]);
+}
+
+function vertOriginY(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "vert-origin-y",
+            param
+          ]);
+}
+
+function viewBox(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "viewBox",
+            param
+          ]);
+}
+
+function viewTarget(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "viewTarget",
+            param
+          ]);
+}
+
+function width(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "width",
+            param
+          ]);
+}
+
+function widths(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "widths",
+            param
+          ]);
+}
+
+function x(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "x",
+            param
+          ]);
+}
+
+function xHeight(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "x-height",
+            param
+          ]);
+}
+
+function x1(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "x1",
+            param
+          ]);
+}
+
+function x2(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "x2",
+            param
+          ]);
+}
+
+function xChannelSelector(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "xChannelSelector",
+            param
+          ]);
+}
+
+function xlinkActuate(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:actuate",
+            param
+          ]);
+}
+
+function xlinkArcrole(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:arcrole",
+            param
+          ]);
+}
+
+function xlinkHref(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:href",
+            param
+          ]);
+}
+
+function xlinkRole(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:role",
+            param
+          ]);
+}
+
+function xlinkShow(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:show",
+            param
+          ]);
+}
+
+function xlinkTitle(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:title",
+            param
+          ]);
+}
+
+function xlinkType(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/1999/xlink",
+            "xlink:type",
+            param
+          ]);
+}
+
+function xmlBase(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/XML/1998/namespace",
+            "xml:base",
+            param
+          ]);
+}
+
+function xmlLang(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/XML/1998/namespace",
+            "xml:lang",
+            param
+          ]);
+}
+
+function xmlSpace(param) {
+  return /* Attribute */Block.__(1, [
+            "http://www.w3.org/XML/1998/namespace",
+            "xml:space",
+            param
+          ]);
+}
+
+function y(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "y",
+            param
+          ]);
+}
+
+function y1(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "y1",
+            param
+          ]);
+}
+
+function y2(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "y2",
+            param
+          ]);
+}
+
+function yChannelSelector(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "yChannelSelector",
+            param
+          ]);
+}
+
+function z(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "z",
+            param
+          ]);
+}
+
+function zoomAndPan(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "zoomAndPan",
+            param
+          ]);
+}
+
+function alignmentBaseline(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "alignment-baseline",
+            param
+          ]);
+}
+
+function baselineShift(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "baseline-shift",
+            param
+          ]);
+}
+
+function clipPath(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "clip-path",
+            param
+          ]);
+}
+
+function clipRule(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "clip-rule",
+            param
+          ]);
+}
+
+function clip(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "clip",
+            param
+          ]);
+}
+
+function colorInterpolationFilters(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "color-interpolation-filters",
+            param
+          ]);
+}
+
+function colorInterpolation(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "color-interpolation",
+            param
+          ]);
+}
+
+function colorProfile(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "color-profile",
+            param
+          ]);
+}
+
+function colorRendering(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "color-rendering",
+            param
+          ]);
+}
+
+function color(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "color",
+            param
+          ]);
+}
+
+function cursor(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "cursor",
+            param
+          ]);
+}
+
+function direction(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "direction",
+            param
+          ]);
+}
+
+function display(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "display",
+            param
+          ]);
+}
+
+function dominantBaseline(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "dominant-baseline",
+            param
+          ]);
+}
+
+function enableBackground(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "enable-background",
+            param
+          ]);
+}
+
+function fillOpacity(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "fill-opacity",
+            param
+          ]);
+}
+
+function fillRule(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "fill-rule",
+            param
+          ]);
+}
+
+function fill(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "fill",
+            param
+          ]);
+}
+
+function filter(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "filter",
+            param
+          ]);
+}
+
+function floodColor(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "flood-color",
+            param
+          ]);
+}
+
+function floodOpacity(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "flood-opacity",
+            param
+          ]);
+}
+
+function fontFamily(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-family",
+            param
+          ]);
+}
+
+function fontSizeAdjust(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-size-adjust",
+            param
+          ]);
+}
+
+function fontSize(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-size",
+            param
+          ]);
+}
+
+function fontStretch(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-stretch",
+            param
+          ]);
+}
+
+function fontStyle(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-style",
+            param
+          ]);
+}
+
+function fontVariant(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-variant",
+            param
+          ]);
+}
+
+function fontWeight(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "font-weight",
+            param
+          ]);
+}
+
+function glyphOrientationHorizontal(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "glyph-orientation-horizontal",
+            param
+          ]);
+}
+
+function glyphOrientationVertical(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "glyph-orientation-vertical",
+            param
+          ]);
+}
+
+function imageRendering(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "image-rendering",
+            param
+          ]);
+}
+
+function kerning(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "kerning",
+            param
+          ]);
+}
+
+function letterSpacing(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "letter-spacing",
+            param
+          ]);
+}
+
+function lightingColor(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "lighting-color",
+            param
+          ]);
+}
+
+function markerEnd(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "marker-end",
+            param
+          ]);
+}
+
+function markerMid(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "marker-mid",
+            param
+          ]);
+}
+
+function markerStart(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "marker-start",
+            param
+          ]);
+}
+
+function mask(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "mask",
+            param
+          ]);
+}
+
+function opacity(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "opacity",
+            param
+          ]);
+}
+
+function overflow(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "overflow",
+            param
+          ]);
+}
+
+function pointerEvents(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "pointer-events",
+            param
+          ]);
+}
+
+function shapeRendering(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "shape-rendering",
+            param
+          ]);
+}
+
+function stopColor(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stop-color",
+            param
+          ]);
+}
+
+function stopOpacity(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stop-opacity",
+            param
+          ]);
+}
+
+function strokeDasharray(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-dasharray",
+            param
+          ]);
+}
+
+function strokeDashoffset(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-dashoffset",
+            param
+          ]);
+}
+
+function strokeLinecap(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-linecap",
+            param
+          ]);
+}
+
+function strokeLinejoin(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-linejoin",
+            param
+          ]);
+}
+
+function strokeMiterlimit(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-miterlimit",
+            param
+          ]);
+}
+
+function strokeOpacity(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-opacity",
+            param
+          ]);
+}
+
+function strokeWidth(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke-width",
+            param
+          ]);
+}
+
+function stroke(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "stroke",
+            param
+          ]);
+}
+
+function textAnchor(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "text-anchor",
+            param
+          ]);
+}
+
+function textDecoration(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "text-decoration",
+            param
+          ]);
+}
+
+function textRendering(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "text-rendering",
+            param
+          ]);
+}
+
+function unicodeBidi(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "unicode-bidi",
+            param
+          ]);
+}
+
+function visibility(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "visibility",
+            param
+          ]);
+}
+
+function wordSpacing(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "word-spacing",
+            param
+          ]);
+}
+
+function writingMode(param) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "writing-mode",
+            param
+          ]);
+}
+
+exports.accentHeight               = accentHeight;
+exports.accelerate                 = accelerate;
+exports.accumulate                 = accumulate;
+exports.additive                   = additive;
+exports.alphabetic                 = alphabetic;
+exports.allowReorder               = allowReorder;
+exports.amplitude                  = amplitude;
+exports.arabicForm                 = arabicForm;
+exports.ascent                     = ascent;
+exports.attributeName              = attributeName;
+exports.attributeType              = attributeType;
+exports.autoReverse                = autoReverse;
+exports.azimuth                    = azimuth;
+exports.baseFrequency              = baseFrequency;
+exports.baseProfile                = baseProfile;
+exports.bbox                       = bbox;
+exports.begin$prime                = begin$prime;
+exports.bias                       = bias;
+exports.by                         = by;
+exports.calcMode                   = calcMode;
+exports.capHeight                  = capHeight;
+exports.class$prime                = class$prime;
+exports.clipPathUnits              = clipPathUnits;
+exports.contentScriptType          = contentScriptType;
+exports.contentStyleType           = contentStyleType;
+exports.cx                         = cx;
+exports.cy                         = cy;
+exports.d                          = d;
+exports.decelerate                 = decelerate;
+exports.descent                    = descent;
+exports.diffuseConstant            = diffuseConstant;
+exports.divisor                    = divisor;
+exports.dur                        = dur;
+exports.dx                         = dx;
+exports.dy                         = dy;
+exports.edgeMode                   = edgeMode;
+exports.elevation                  = elevation;
+exports.end$prime                  = end$prime;
+exports.exponent                   = exponent;
+exports.externalResourcesRequired  = externalResourcesRequired;
+exports.filterRes                  = filterRes;
+exports.filterUnits                = filterUnits;
+exports.format                     = format;
+exports.from                       = from;
+exports.fx                         = fx;
+exports.fy                         = fy;
+exports.g1                         = g1;
+exports.g2                         = g2;
+exports.glyphName                  = glyphName;
+exports.glyphRef                   = glyphRef;
+exports.gradientTransform          = gradientTransform;
+exports.gradientUnits              = gradientUnits;
+exports.hanging                    = hanging;
+exports.height                     = height;
+exports.horizAdvX                  = horizAdvX;
+exports.horizOriginX               = horizOriginX;
+exports.horizOriginY               = horizOriginY;
+exports.id                         = id;
+exports.ideographic                = ideographic;
+exports.in$prime                   = in$prime;
+exports.in2                        = in2;
+exports.intercept                  = intercept;
+exports.k                          = k;
+exports.k1                         = k1;
+exports.k2                         = k2;
+exports.k3                         = k3;
+exports.k4                         = k4;
+exports.kernelMatrix               = kernelMatrix;
+exports.kernelUnitLength           = kernelUnitLength;
+exports.keyPoints                  = keyPoints;
+exports.keySplines                 = keySplines;
+exports.keyTimes                   = keyTimes;
+exports.lang                       = lang;
+exports.lengthAdjust               = lengthAdjust;
+exports.limitingConeAngle          = limitingConeAngle;
+exports.local                      = local;
+exports.markerHeight               = markerHeight;
+exports.markerUnits                = markerUnits;
+exports.markerWidth                = markerWidth;
+exports.maskContentUnits           = maskContentUnits;
+exports.maskUnits                  = maskUnits;
+exports.mathematical               = mathematical;
+exports.max                        = max;
+exports.media                      = media;
+exports.method$prime               = method$prime;
+exports.min                        = min;
+exports.mode                       = mode;
+exports.name                       = name;
+exports.numOctaves                 = numOctaves;
+exports.offset                     = offset;
+exports.operator                   = operator;
+exports.order                      = order;
+exports.orient                     = orient;
+exports.orientation                = orientation;
+exports.origin                     = origin;
+exports.overlinePosition           = overlinePosition;
+exports.overlineThickness          = overlineThickness;
+exports.panose1                    = panose1;
+exports.path                       = path;
+exports.pathLength                 = pathLength;
+exports.patternContentUnits        = patternContentUnits;
+exports.patternTransform           = patternTransform;
+exports.patternUnits               = patternUnits;
+exports.pointOrder                 = pointOrder;
+exports.points                     = points;
+exports.pointsAtX                  = pointsAtX;
+exports.pointsAtY                  = pointsAtY;
+exports.pointsAtZ                  = pointsAtZ;
+exports.preserveAlpha              = preserveAlpha;
+exports.preserveAspectRatio        = preserveAspectRatio;
+exports.primitiveUnits             = primitiveUnits;
+exports.r                          = r;
+exports.radius                     = radius;
+exports.refX                       = refX;
+exports.refY                       = refY;
+exports.renderingIntent            = renderingIntent;
+exports.repeatCount                = repeatCount;
+exports.repeatDur                  = repeatDur;
+exports.requiredExtensions         = requiredExtensions;
+exports.requiredFeatures           = requiredFeatures;
+exports.restart                    = restart;
+exports.result                     = result;
+exports.rotate                     = rotate;
+exports.rx                         = rx;
+exports.ry                         = ry;
+exports.scale                      = scale;
+exports.seed                       = seed;
+exports.slope                      = slope;
+exports.spacing                    = spacing;
+exports.specularConstant           = specularConstant;
+exports.specularExponent           = specularExponent;
+exports.speed                      = speed;
+exports.spreadMethod               = spreadMethod;
+exports.startOffset                = startOffset;
+exports.stdDeviation               = stdDeviation;
+exports.stemh                      = stemh;
+exports.stemv                      = stemv;
+exports.stitchTiles                = stitchTiles;
+exports.strikethroughPosition      = strikethroughPosition;
+exports.strikethroughThickness     = strikethroughThickness;
+exports.string                     = string;
+exports.style                      = style;
+exports.surfaceScale               = surfaceScale;
+exports.systemLanguage             = systemLanguage;
+exports.tableValues                = tableValues;
+exports.target                     = target;
+exports.targetX                    = targetX;
+exports.targetY                    = targetY;
+exports.textLength                 = textLength;
+exports.title                      = title;
+exports.to$prime                   = to$prime;
+exports.transform                  = transform;
+exports.type$prime                 = type$prime;
+exports.u1                         = u1;
+exports.u2                         = u2;
+exports.underlinePosition          = underlinePosition;
+exports.underlineThickness         = underlineThickness;
+exports.unicode                    = unicode;
+exports.unicodeRange               = unicodeRange;
+exports.unitsPerEm                 = unitsPerEm;
+exports.vAlphabetic                = vAlphabetic;
+exports.vHanging                   = vHanging;
+exports.vIdeographic               = vIdeographic;
+exports.vMathematical              = vMathematical;
+exports.values                     = values;
+exports.version                    = version;
+exports.vertAdvY                   = vertAdvY;
+exports.vertOriginX                = vertOriginX;
+exports.vertOriginY                = vertOriginY;
+exports.viewBox                    = viewBox;
+exports.viewTarget                 = viewTarget;
+exports.width                      = width;
+exports.widths                     = widths;
+exports.x                          = x;
+exports.xHeight                    = xHeight;
+exports.x1                         = x1;
+exports.x2                         = x2;
+exports.xChannelSelector           = xChannelSelector;
+exports.xlinkActuate               = xlinkActuate;
+exports.xlinkArcrole               = xlinkArcrole;
+exports.xlinkHref                  = xlinkHref;
+exports.xlinkRole                  = xlinkRole;
+exports.xlinkShow                  = xlinkShow;
+exports.xlinkTitle                 = xlinkTitle;
+exports.xlinkType                  = xlinkType;
+exports.xmlBase                    = xmlBase;
+exports.xmlLang                    = xmlLang;
+exports.xmlSpace                   = xmlSpace;
+exports.y                          = y;
+exports.y1                         = y1;
+exports.y2                         = y2;
+exports.yChannelSelector           = yChannelSelector;
+exports.z                          = z;
+exports.zoomAndPan                 = zoomAndPan;
+exports.alignmentBaseline          = alignmentBaseline;
+exports.baselineShift              = baselineShift;
+exports.clipPath                   = clipPath;
+exports.clipRule                   = clipRule;
+exports.clip                       = clip;
+exports.colorInterpolationFilters  = colorInterpolationFilters;
+exports.colorInterpolation         = colorInterpolation;
+exports.colorProfile               = colorProfile;
+exports.colorRendering             = colorRendering;
+exports.color                      = color;
+exports.cursor                     = cursor;
+exports.direction                  = direction;
+exports.display                    = display;
+exports.dominantBaseline           = dominantBaseline;
+exports.enableBackground           = enableBackground;
+exports.fillOpacity                = fillOpacity;
+exports.fillRule                   = fillRule;
+exports.fill                       = fill;
+exports.filter                     = filter;
+exports.floodColor                 = floodColor;
+exports.floodOpacity               = floodOpacity;
+exports.fontFamily                 = fontFamily;
+exports.fontSizeAdjust             = fontSizeAdjust;
+exports.fontSize                   = fontSize;
+exports.fontStretch                = fontStretch;
+exports.fontStyle                  = fontStyle;
+exports.fontVariant                = fontVariant;
+exports.fontWeight                 = fontWeight;
+exports.glyphOrientationHorizontal = glyphOrientationHorizontal;
+exports.glyphOrientationVertical   = glyphOrientationVertical;
+exports.imageRendering             = imageRendering;
+exports.kerning                    = kerning;
+exports.letterSpacing              = letterSpacing;
+exports.lightingColor              = lightingColor;
+exports.markerEnd                  = markerEnd;
+exports.markerMid                  = markerMid;
+exports.markerStart                = markerStart;
+exports.mask                       = mask;
+exports.opacity                    = opacity;
+exports.overflow                   = overflow;
+exports.pointerEvents              = pointerEvents;
+exports.shapeRendering             = shapeRendering;
+exports.stopColor                  = stopColor;
+exports.stopOpacity                = stopOpacity;
+exports.strokeDasharray            = strokeDasharray;
+exports.strokeDashoffset           = strokeDashoffset;
+exports.strokeLinecap              = strokeLinecap;
+exports.strokeLinejoin             = strokeLinejoin;
+exports.strokeMiterlimit           = strokeMiterlimit;
+exports.strokeOpacity              = strokeOpacity;
+exports.strokeWidth                = strokeWidth;
+exports.stroke                     = stroke;
+exports.textAnchor                 = textAnchor;
+exports.textDecoration             = textDecoration;
+exports.textRendering              = textRendering;
+exports.unicodeBidi                = unicodeBidi;
+exports.visibility                 = visibility;
+exports.wordSpacing                = wordSpacing;
+exports.writingMode                = writingMode;
+/* No side effect */
+
+});
+
+;require.register("src/tea_svg_events.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
+'use strict';
+
+
+
+/* No side effect */
+
+});
+
 ;require.register("src/tea_task.ml", function(exports, require, module) {
 // Generated by BUCKLESCRIPT VERSION 1.0.3 , PLEASE EDIT WITH CARE
 'use strict';
@@ -13881,8 +18384,40 @@ function delay(msTime, msg) {
             }]);
 }
 
-exports.every = every;
-exports.delay = delay;
+var second = 1000.0 * 1.0;
+
+var minute = 60.0 * second;
+
+var hour = 60.0 * minute;
+
+function inMilliseconds(t) {
+  return t;
+}
+
+function inSeconds(t) {
+  return t / second;
+}
+
+function inMinutes(t) {
+  return t / minute;
+}
+
+function inHours(t) {
+  return t / hour;
+}
+
+var millisecond = 1.0;
+
+exports.every          = every;
+exports.delay          = delay;
+exports.millisecond    = millisecond;
+exports.second         = second;
+exports.minute         = minute;
+exports.hour           = hour;
+exports.inMilliseconds = inMilliseconds;
+exports.inSeconds      = inSeconds;
+exports.inMinutes      = inMinutes;
+exports.inHours        = inHours;
 /* No side effect */
 
 });
@@ -13945,20 +18480,12 @@ function on(name, key, cb) {
           ]);
 }
 
-function attr(key, value) {
+function attribute(namespace, key, value) {
   return /* Attribute */Block.__(1, [
-            /* None */0,
+            namespace,
             key,
             value
           ]);
-}
-
-function attrNS(namespace, key, value) {
-  return /* tuple */[
-          /* Some */[namespace],
-          key,
-          value
-        ];
 }
 
 function data(key, value) {
@@ -14157,16 +18684,7 @@ function patchVNodesOnElems_PropertiesApply_Add(callbacks, elem, idx, param) {
       case 0 : 
           return elem[param[0]] = param[1];
       case 1 : 
-          console.log(/* tuple */[
-                "TODO:  Add Attribute Unhandled",
-                param[0],
-                param[1],
-                param[2]
-              ]);
-          throw [
-                Caml_builtin_exceptions.failure,
-                "TODO:  Add Attribute Unhandled"
-              ];
+          return Web_node.setAttributeNsOptional(elem, param[0], param[1], param[2]);
       case 2 : 
           console.log(/* tuple */[
                 "TODO:  Add Data Unhandled",
@@ -14216,16 +18734,7 @@ function patchVNodesOnElems_PropertiesApply_Remove(_, elem, idx, param) {
       case 0 : 
           return elem[param[0]] = undefined;
       case 1 : 
-          console.log(/* tuple */[
-                "TODO:  Remove Attribute Unhandled",
-                param[0],
-                param[1],
-                param[2]
-              ]);
-          throw [
-                Caml_builtin_exceptions.failure,
-                "TODO:  Remove Attribute Unhandled"
-              ];
+          return Web_node.removeAttributeNsOptional(elem, param[0], param[1]);
       case 2 : 
           console.log(/* tuple */[
                 "TODO:  Remove Data Unhandled",
@@ -14279,13 +18788,7 @@ function patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp
       case 0 : 
           return elem[_newProp[0]] = _newProp[1];
       case 1 : 
-          console.log(/* tuple */[
-                "TODO:  Mutate Attribute Unhandled",
-                _newProp[0],
-                _newProp[1],
-                _newProp[2]
-              ]);
-          return /* () */0;
+          return Web_node.setAttributeNsOptional(elem, _newProp[0], _newProp[1], _newProp[2]);
       case 2 : 
           console.log(/* tuple */[
                 "TODO:  Mutate Data Unhandled",
@@ -14408,7 +18911,7 @@ function patchVNodesOnElems_PropertiesApply(callbacks, elem, _idx, _oldPropertie
                   exit = 1;
                 }
                 else if (newProp$1.tag === 1) {
-                  if (!(Caml_obj.caml_equal(oldProp[0], newProp$1[0]) && oldProp[1] === newProp$1[1] && oldProp[2] === newProp$1[2])) {
+                  if (!(oldProp[0] === newProp$1[0] && oldProp[1] === newProp$1[1] && oldProp[2] === newProp$1[2])) {
                     patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp, newProp$1);
                   }
                   _newProperties = newProperties[1];
@@ -14641,11 +19144,15 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                   var newProperties = newNode[4];
                   var newUnique = newNode[3];
                   var newKey = newNode[2];
+                  var newTagName = newNode[1];
+                  var newNamespace = newNode[0];
                   var oldRest = oldVNodes[1];
                   var oldChildren = oldNode[5];
                   var oldProperties = oldNode[4];
                   var oldUnique = oldNode[3];
                   var oldKey = oldNode[2];
+                  var oldTagName = oldNode[1];
+                  var oldNamespace = oldNode[0];
                   if (newKey === "" || oldKey === "") {
                     if (oldUnique === newUnique) {
                       var child$1 = elems[idx];
@@ -14683,18 +19190,54 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                         exit$2 = 3;
                       }
                       else if (match$1.tag === 1) {
-                        if (match$1[0] === newNode[0] && match$1[1] === newNode[1] && match$1[2] === newKey) {
-                          var oldChild = elems[idx];
-                          elem.removeChild(oldChild);
-                          _newVNodes = newRest;
-                          _oldVNodes = oldRest[1];
-                          _idx = idx + 1 | 0;
-                          continue ;
-                          
+                        var olderRest = oldRest[1];
+                        var olderKey = match$1[2];
+                        var olderTagName = match$1[1];
+                        var olderNamespace = match$1[0];
+                        var exit$3 = 0;
+                        if (newRest) {
+                          var match$2 = newRest[0];
+                          if (typeof match$2 === "number") {
+                            exit$3 = 4;
+                          }
+                          else if (match$2.tag === 1) {
+                            if (olderNamespace === newNamespace && olderTagName === newTagName && olderKey === newKey && oldNamespace === match$2[0] && oldTagName === match$2[1] && oldKey === match$2[2]) {
+                              var firstChild = elems[idx];
+                              var secondChild = elems[idx + 1 | 0];
+                              elem.removeChild(secondChild);
+                              Web_node.insertBefore(elem, secondChild, firstChild);
+                              _newVNodes = newRest[1];
+                              _oldVNodes = olderRest;
+                              _idx = idx + 2 | 0;
+                              continue ;
+                              
+                            }
+                            else {
+                              exit$3 = 4;
+                            }
+                          }
+                          else {
+                            exit$3 = 4;
+                          }
                         }
                         else {
-                          exit$2 = 3;
+                          exit$3 = 4;
                         }
+                        if (exit$3 === 4) {
+                          if (olderNamespace === newNamespace && olderTagName === newTagName && olderKey === newKey) {
+                            var oldChild = elems[idx];
+                            elem.removeChild(oldChild);
+                            _newVNodes = newRest;
+                            _oldVNodes = olderRest;
+                            _idx = idx + 1 | 0;
+                            continue ;
+                            
+                          }
+                          else {
+                            exit$2 = 3;
+                          }
+                        }
+                        
                       }
                       else {
                         exit$2 = 3;
@@ -14705,12 +19248,12 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                     }
                     if (exit$2 === 3) {
                       if (newRest) {
-                        var match$2 = newRest[0];
-                        if (typeof match$2 === "number") {
+                        var match$3 = newRest[0];
+                        if (typeof match$3 === "number") {
                           exit$1 = 2;
                         }
-                        else if (match$2.tag === 1) {
-                          if (oldNode[0] === match$2[0] && oldNode[1] === match$2[1] && oldKey === match$2[2]) {
+                        else if (match$3.tag === 1) {
+                          if (oldNamespace === match$3[0] && oldTagName === match$3[1] && oldKey === match$3[2]) {
                             var oldChild$1 = elems[idx];
                             var newChild = patchVNodesOnElems_CreateElement(callbacks, newNode);
                             Web_node.insertBefore(elem, newChild, oldChild$1);
@@ -14765,15 +19308,15 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
               break;
           case 2 : 
               if (newVNodes) {
-                var match$3 = newVNodes[0];
-                if (typeof match$3 === "number") {
+                var match$4 = newVNodes[0];
+                if (typeof match$4 === "number") {
                   exit = 1;
                 }
-                else if (match$3.tag === 2) {
+                else if (match$4.tag === 2) {
                   var newRest$1 = newVNodes[1];
-                  var newCache = match$3[2];
-                  var newGen = match$3[1];
-                  var newKey$1 = match$3[0];
+                  var newCache = match$4[2];
+                  var newGen = match$4[1];
+                  var newKey$1 = match$4[0];
                   var oldRest$1 = oldVNodes[1];
                   var oldCache = oldNode[2];
                   var oldKey$1 = oldNode[0];
@@ -14786,44 +19329,78 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                     
                   }
                   else {
-                    var exit$3 = 0;
                     var exit$4 = 0;
+                    var exit$5 = 0;
                     if (oldRest$1) {
-                      var match$4 = oldRest$1[0];
-                      if (typeof match$4 === "number") {
-                        exit$4 = 3;
+                      var match$5 = oldRest$1[0];
+                      if (typeof match$5 === "number") {
+                        exit$5 = 3;
                       }
-                      else if (match$4.tag === 2) {
-                        if (match$4[0] === newKey$1) {
-                          var oldChild$2 = elems[idx];
-                          elem.removeChild(oldChild$2);
-                          var oldVdom = match$4[2][0];
-                          newCache[0] = oldVdom;
-                          _newVNodes = newRest$1;
-                          _oldVNodes = oldRest$1[1];
-                          _idx = idx + 1 | 0;
-                          continue ;
-                          
+                      else if (match$5.tag === 2) {
+                        var olderRest$1 = oldRest$1[1];
+                        var olderKey$1 = match$5[0];
+                        var exit$6 = 0;
+                        if (newRest$1) {
+                          var match$6 = newRest$1[0];
+                          if (typeof match$6 === "number") {
+                            exit$6 = 4;
+                          }
+                          else if (match$6.tag === 2) {
+                            if (olderKey$1 === newKey$1 && oldKey$1 === match$6[0]) {
+                              var firstChild$1 = elems[idx];
+                              var secondChild$1 = elems[idx + 1 | 0];
+                              elem.removeChild(secondChild$1);
+                              Web_node.insertBefore(elem, secondChild$1, firstChild$1);
+                              _newVNodes = newRest$1[1];
+                              _oldVNodes = olderRest$1;
+                              _idx = idx + 2 | 0;
+                              continue ;
+                              
+                            }
+                            else {
+                              exit$6 = 4;
+                            }
+                          }
+                          else {
+                            exit$6 = 4;
+                          }
                         }
                         else {
-                          exit$4 = 3;
+                          exit$6 = 4;
                         }
+                        if (exit$6 === 4) {
+                          if (olderKey$1 === newKey$1) {
+                            var oldChild$2 = elems[idx];
+                            elem.removeChild(oldChild$2);
+                            var oldVdom = match$5[2][0];
+                            newCache[0] = oldVdom;
+                            _newVNodes = newRest$1;
+                            _oldVNodes = olderRest$1;
+                            _idx = idx + 1 | 0;
+                            continue ;
+                            
+                          }
+                          else {
+                            exit$5 = 3;
+                          }
+                        }
+                        
                       }
                       else {
-                        exit$4 = 3;
+                        exit$5 = 3;
                       }
                     }
                     else {
-                      exit$4 = 3;
+                      exit$5 = 3;
                     }
-                    if (exit$4 === 3) {
+                    if (exit$5 === 3) {
                       if (newRest$1) {
-                        var match$5 = newRest$1[0];
-                        if (typeof match$5 === "number") {
-                          exit$3 = 2;
+                        var match$7 = newRest$1[0];
+                        if (typeof match$7 === "number") {
+                          exit$4 = 2;
                         }
-                        else if (match$5.tag === 2) {
-                          if (match$5[0] === oldKey$1) {
+                        else if (match$7.tag === 2) {
+                          if (match$7[0] === oldKey$1) {
                             var oldChild$3 = elems[idx];
                             var newVdom = Curry._1(newGen, /* () */0);
                             newCache[0] = newVdom;
@@ -14835,18 +19412,18 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                             
                           }
                           else {
-                            exit$3 = 2;
+                            exit$4 = 2;
                           }
                         }
                         else {
-                          exit$3 = 2;
+                          exit$4 = 2;
                         }
                       }
                       else {
-                        exit$3 = 2;
+                        exit$4 = 2;
                       }
                     }
-                    if (exit$3 === 2) {
+                    if (exit$4 === 2) {
                       var oldVdom$1 = oldCache[0];
                       var newVdom$1 = Curry._1(newGen, /* () */0);
                       newCache[0] = newVdom$1;
@@ -14885,9 +19462,9 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
         var oldRest$2 = oldVNodes[1];
         if (newVNodes) {
           var newNode$1 = newVNodes[0];
-          var exit$5 = 0;
+          var exit$7 = 0;
           if (typeof newNode$1 === "number") {
-            exit$5 = 2;
+            exit$7 = 2;
           }
           else if (newNode$1.tag === 3) {
             patchVNodesOnElems(Curry._1(newNode$1[0], callbacks), elem, elems, idx, /* :: */[
@@ -14904,9 +19481,9 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
             
           }
           else {
-            exit$5 = 2;
+            exit$7 = 2;
           }
-          if (exit$5 === 2) {
+          if (exit$7 === 2) {
             var oldChild$4 = elems[idx];
             var newChild$2 = patchVNodesOnElems_CreateElement(callbacks, newNode$1);
             Web_node.insertBefore(elem, newChild$2, oldChild$4);
@@ -14991,8 +19568,7 @@ exports.lazyGen                                      = lazyGen;
 exports.noProp                                       = noProp;
 exports.prop                                         = prop;
 exports.on                                           = on;
-exports.attr                                         = attr;
-exports.attrNS                                       = attrNS;
+exports.attribute                                    = attribute;
 exports.data                                         = data;
 exports.style                                        = style;
 exports.styles                                       = styles;
@@ -15345,12 +19921,30 @@ function setAttribute(n, key, value) {
   return n.setAttribute(key, value);
 }
 
+function setAttributeNsOptional(n, namespace, key, value) {
+  if (namespace === "") {
+    return n.setAttribute(key, value);
+  }
+  else {
+    return n.setAttributeNS(namespace, key, value);
+  }
+}
+
 function removeAttributeNS(n, namespace, key) {
   return n.removeAttributeNS(namespace, key);
 }
 
 function removeAttribute(n, key) {
   return n.removeAttribute(key);
+}
+
+function removeAttributeNsOptional(n, namespace, key) {
+  if (namespace === "") {
+    return n.removeAttribute(key);
+  }
+  else {
+    return n.removeAttributeNS(namespace, key);
+  }
 }
 
 function addEventListener(n, typ, listener, options) {
@@ -15388,25 +19982,27 @@ function remove_polyfill() {
   );
 }
 
-exports.style               = style;
-exports.getStyle            = getStyle;
-exports.setStyle            = setStyle;
-exports.childNodes          = childNodes;
-exports.firstChild          = firstChild;
-exports.appendChild         = appendChild;
-exports.removeChild         = removeChild;
-exports.insertBefore        = insertBefore;
-exports.remove              = remove;
-exports.setAttributeNS      = setAttributeNS;
-exports.setAttribute        = setAttribute;
-exports.removeAttributeNS   = removeAttributeNS;
-exports.removeAttribute     = removeAttribute;
-exports.addEventListener    = addEventListener;
-exports.removeEventListener = removeEventListener;
-exports.focus               = focus;
-exports.set_nodeValue       = set_nodeValue;
-exports.get_nodeValue       = get_nodeValue;
-exports.remove_polyfill     = remove_polyfill;
+exports.style                     = style;
+exports.getStyle                  = getStyle;
+exports.setStyle                  = setStyle;
+exports.childNodes                = childNodes;
+exports.firstChild                = firstChild;
+exports.appendChild               = appendChild;
+exports.removeChild               = removeChild;
+exports.insertBefore              = insertBefore;
+exports.remove                    = remove;
+exports.setAttributeNS            = setAttributeNS;
+exports.setAttribute              = setAttribute;
+exports.setAttributeNsOptional    = setAttributeNsOptional;
+exports.removeAttributeNS         = removeAttributeNS;
+exports.removeAttribute           = removeAttribute;
+exports.removeAttributeNsOptional = removeAttributeNsOptional;
+exports.addEventListener          = addEventListener;
+exports.removeEventListener       = removeEventListener;
+exports.focus                     = focus;
+exports.set_nodeValue             = set_nodeValue;
+exports.get_nodeValue             = get_nodeValue;
+exports.remove_polyfill           = remove_polyfill;
 /* No side effect */
 
 });

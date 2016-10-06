@@ -64,9 +64,19 @@ let setAttributeNS n namespace key value = n##setAttributeNS namespace key value
 
 let setAttribute n key value = n##setAttribute key value
 
+let setAttributeNsOptional n namespace key value =
+  match namespace with
+  | "" -> n##setAttribute key value
+  | ns -> n##setAttributeNS ns key value
+
 let removeAttributeNS n namespace key = n##removeAttributeNS namespace key
 
 let removeAttribute n key = n##removeAttribute key
+
+let removeAttributeNsOptional n namespace key =
+  match namespace with
+  | "" -> n##removeAttribute key
+  | ns -> n##removeAttributeNS ns key
 
 let addEventListener n typ listener options = n##addEventListener typ listener options
 
