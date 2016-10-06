@@ -30,6 +30,7 @@ let tau = 8.0 *. atan 1.0
 let view model =
   let open Svg in
   let open Svg.Attributes in
+  (* Yes, the Elm example uses the wrong calculation here too, doing the same to match, off by 15s... *)
   let angle = tau *. (Time.inMinutes model) in
   let handX = string_of_float (50.0 +. 40.0 *. cos angle) in
   let handY = string_of_float (50.0 +. 40.0 *. sin angle) in
