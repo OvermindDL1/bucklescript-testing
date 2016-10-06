@@ -10,7 +10,7 @@ type msg =
   | Time of float
 
 
-let init () = (Web.Date.now (), Cmd.none)
+let init () = (0.0, Cmd.none)
 
 
 let update model =
