@@ -22,7 +22,7 @@ let update model =
 
 let subscriptions model =
   (* let () = Js.log ("Subscriptions", model) in *)
-  Time.every 16 (fun t -> Time t)
+  Time.every Time.second (fun t -> Time t)
 
 
 let tau = 8.0 *. atan 1.0

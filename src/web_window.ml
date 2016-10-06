@@ -8,8 +8,8 @@ type t = <
   location : Web_location.t [@bs.get];
   clearTimeout : timeoutHandlerID -> unit [@bs.meth];
   requestAnimationFrame : (float -> unit) -> int [@bs.meth];
-  setInterval : (unit -> unit) -> int -> timeoutHandlerID [@bs.meth];
-  setTimeout : (unit -> unit) -> int -> timeoutHandlerID [@bs.meth];
+  setInterval : (unit -> unit) -> float -> timeoutHandlerID [@bs.meth];
+  setTimeout : (unit -> unit) -> float -> timeoutHandlerID [@bs.meth];
   addEventListener : string -> Web_node.t Web_event.cb -> Web_event.options -> unit [@bs.meth];
   removeEventListener : string -> Web_node.t Web_event.cb -> Web_event.options -> unit [@bs.meth];
 > Js.t

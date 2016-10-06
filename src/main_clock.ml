@@ -23,7 +23,7 @@ let update model =
 
 let subscriptions model =
   (* let () = Js.log ("Subscriptions", model) in *)
-  Time.every 16 (fun t -> Time t)
+  Time.every (Time.inMilliseconds 16.0) (fun t -> Time t)
 
 
 let view model =

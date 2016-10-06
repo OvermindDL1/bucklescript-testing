@@ -13,7 +13,7 @@ type 'msg myCmd =
 
 let every interval tagger =
   let open Vdom in
-  let key = string_of_int interval in
+  let key = string_of_float interval in
   let enableCall callbacks =
     let id = (Web.Window.setInterval (fun () -> callbacks.enqueue (tagger (Web.Date.now ())) ) interval) in
     (* let () = Js.log ("Time.every", "enable", interval, tagger, callbacks) in *)
