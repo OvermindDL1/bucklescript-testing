@@ -99,6 +99,7 @@ let generate tagger (Generator genCmd) =
   Tea_cmd.call (fun enqueue ->
       let state = Random.get_state () in
       let genValue = genCmd state in
+      let () = Random.set_state state in
       enqueue (tagger genValue)
     )
 

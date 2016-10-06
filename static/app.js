@@ -15144,6 +15144,7 @@ function generate(tagger, param) {
   return /* EnqueueCall */Block.__(2, [function (enqueue) {
               var state = Random.get_state(/* () */0);
               var genValue = Curry._1(genCmd, state);
+              Random.set_state(state);
               return Curry._1(enqueue, Curry._1(tagger, genValue));
             }]);
 }
