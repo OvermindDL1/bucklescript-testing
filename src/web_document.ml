@@ -1,4 +1,6 @@
 
+(* TODO:  Polyfill document if it is missing, like on node or in native *)
+
 type t = <
   body : Web_node.t [@bs.get];
   createElement : string -> Web_node.t [@bs.meth];

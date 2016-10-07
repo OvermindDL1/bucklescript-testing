@@ -1,4 +1,6 @@
 
+(* TODO:  Polyfill window if it is missing, like on node or in native *)
+
 module History = Web_window_history
 
 type timeoutHandlerID = int
