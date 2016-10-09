@@ -22,3 +22,6 @@ module Navigation = Tea_navigation
 
 
 module Random = Tea_random
+
+
+module AnimationFrame = Tea_animationframe

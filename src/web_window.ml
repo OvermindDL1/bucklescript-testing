@@ -10,6 +10,7 @@ type t = <
   location : Web_location.t [@bs.get];
   clearTimeout : timeoutHandlerID -> unit [@bs.meth];
   requestAnimationFrame : (float -> unit) -> int [@bs.meth];
+  cancelAnimationFrame : int -> unit [@bs.meth];
   setInterval : (unit -> unit) -> float -> timeoutHandlerID [@bs.meth];
   setTimeout : (unit -> unit) -> float -> timeoutHandlerID [@bs.meth];
   addEventListener : string -> Web_node.t Web_event.cb -> Web_event.options -> unit [@bs.meth];
@@ -25,6 +26,8 @@ let location () = window##location
 
 (* requestAnimationFrame callback is a float timestamp in milliseconds *)
 let requestAnimationFrame callback = window##requestAnimationFrame callback
+
+let cancelAnimationFrame id = window##cancelAnimationFrame id
 
 let clearTimeout id = window##clearTimeout id
 

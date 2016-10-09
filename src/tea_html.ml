@@ -54,6 +54,20 @@ let ol ?(key="") ?(unique="") props nodes = fullnode "" "ol" key unique props no
 
 let li ?(key="") ?(unique="") props nodes = fullnode "" "li" key unique props nodes
 
+let table ?(key="") ?(unique="") props nodes = fullnode "" "table" key unique props nodes
+
+let thead ?(key="") ?(unique="") props nodes = fullnode "" "thead" key unique props nodes
+
+let tfoot ?(key="") ?(unique="") props nodes = fullnode "" "tfoot" key unique props nodes
+
+let tbody ?(key="") ?(unique="") props nodes = fullnode "" "tbody" key unique props nodes
+
+let th ?(key="") ?(unique="") props nodes = fullnode "" "th" key unique props nodes
+
+let tr ?(key="") ?(unique="") props nodes = fullnode "" "tr" key unique props nodes
+
+let td ?(key="") ?(unique="") props nodes = fullnode "" "td" key unique props nodes
+
 
 (* Properties *)
 
