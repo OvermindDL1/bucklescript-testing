@@ -117,7 +117,6 @@
 
 (function() {
 var global = window;
-var process;
 var __makeRelativeRequire = function(require, mappings, pref) {
   var none = {};
   var tryReq = function(name, pref) {
@@ -8552,9 +8551,9 @@ var match_001 = /* array */[];
 
 var big_endian = /* false */0;
 
-var unix = /* true */1;
+var unix = /* false */0;
 
-var win32 = /* false */0;
+var win32 = /* true */1;
 
 var cygwin = /* false */0;
 
@@ -8578,7 +8577,7 @@ var argv = match_001;
 
 var executable_name = "cmd";
 
-var os_type = "Unix";
+var os_type = "Win32";
 
 var word_size = 32;
 
@@ -10843,29 +10842,49 @@ function fromUrl(url) {
   }
 }
 
-function update(model, msg) {
-  var newModel;
-  if (typeof msg === "number") {
-    switch (msg) {
+function update(model, param) {
+  if (typeof param === "number") {
+    switch (param) {
       case 0 : 
-          newModel = model + 1 | 0;
-          break;
+          return /* tuple */[
+                  model + 1 | 0,
+                  Tea_navigation.newUrl("#/" + (model + 1 | 0))
+                ];
       case 1 : 
-          newModel = model - 1 | 0;
-          break;
+          return /* tuple */[
+                  model - 1 | 0,
+                  Tea_navigation.newUrl("#/" + (model - 1 | 0))
+                ];
       case 2 : 
-          newModel = 0;
-          break;
+          return /* tuple */[
+                  0,
+                  Tea_navigation.newUrl("#/" + 0)
+                ];
       
     }
   }
-  else {
-    newModel = msg[0];
+  else if (param.tag) {
+    var loc = param[0];
+    if (loc) {
+      return /* tuple */[
+              loc[0],
+              /* NoCmd */0
+            ];
+    }
+    else {
+      return /* tuple */[
+              0,
+              Tea_navigation.modifyUrl("#/" + 0)
+            ];
+    }
   }
-  return /* tuple */[
-          model,
-          Tea_navigation.newUrl("#/" + newModel)
-        ];
+  else {
+    var v = param[0];
+    return /* tuple */[
+            v,
+            Tea_navigation.newUrl("#/" + v)
+          ];
+  }
 }
 
 function view_button(title, msg) {
@@ -10898,7 +10917,7 @@ function view(model) {
                       /* :: */[
                         Tea_html.br(/* [] */0),
                         /* :: */[
-                          view_button("Set to 42", /* Set */[42]),
+                          view_button("Set to 42", /* Set */Block.__(0, [42])),
                           /* :: */[
                             Tea_html.br(/* [] */0),
                             /* :: */[
@@ -10915,31 +10934,27 @@ function view(model) {
             ]);
 }
 
-function urlParser($$location) {
-  return fromUrl($$location[/* hash */7]);
+function locationToMessage($$location) {
+  return /* OnUrlChange */Block.__(1, [fromUrl($$location[/* hash */7])]);
 }
 
-function urlUpdate(model, param) {
-  if (param) {
+function init(_, $$location) {
+  var match = fromUrl($$location[/* hash */7]);
+  if (match) {
     return /* tuple */[
-            param[0],
+            match[0],
             /* NoCmd */0
           ];
   }
   else {
     return /* tuple */[
-            model,
-            Tea_navigation.modifyUrl("#/" + model)
+            0,
+            Tea_navigation.modifyUrl("#/" + 0)
           ];
   }
 }
 
-function init(_, result) {
-  return urlUpdate(0, result);
-}
-
-var main = Tea_navigation.navigationProgram(urlParser, /* record */[
-      /* urlUpdate */urlUpdate,
+var main = Tea_navigation.navigationProgram(locationToMessage, /* record */[
       /* init */init,
       /* update */update,
       /* view */view,
@@ -10951,15 +10966,14 @@ var main = Tea_navigation.navigationProgram(urlParser, /* record */[
       }
     ]);
 
-exports.toUrl       = toUrl;
-exports.fromUrl     = fromUrl;
-exports.update      = update;
-exports.view_button = view_button;
-exports.view        = view;
-exports.urlParser   = urlParser;
-exports.urlUpdate   = urlUpdate;
-exports.init        = init;
-exports.main        = main;
+exports.toUrl             = toUrl;
+exports.fromUrl           = fromUrl;
+exports.update            = update;
+exports.view_button       = view_button;
+exports.view              = view;
+exports.locationToMessage = locationToMessage;
+exports.init              = init;
+exports.main              = main;
 /* main Not a pure module */
 
 });
@@ -16392,7 +16406,7 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
       var oldSub = [/* NoSub */0];
       var handleSubscriptionChange = function (model) {
         var newSub = Curry._1(subscriptions, model);
-        oldSub[0] = Tea_sub.run(callbacks, oldSub[0], newSub);
+        oldSub[0] = Tea_sub.run(callbacks, callbacks, oldSub[0], newSub);
         return /* () */0;
       };
       var handlerStartup = function () {
@@ -16415,7 +16429,7 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
       var handlerShutdown = function (cmd) {
         nextFrameID[0] = /* None */0;
         Tea_cmd.run(callbacks, cmd);
-        oldSub[0] = Tea_sub.run(callbacks, oldSub[0], /* NoSub */0);
+        oldSub[0] = Tea_sub.run(callbacks, callbacks, oldSub[0], /* NoSub */0);
         priorRenderedVdom[0] = /* [] */0;
         clearPnode(/* () */0);
         return /* () */0;
@@ -16432,7 +16446,7 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
       var oldSub = [/* NoSub */0];
       var handleSubscriptionChange = function (model) {
         var newSub = Curry._1(subscriptions, model);
-        oldSub[0] = Tea_sub.run(callbacks, oldSub[0], newSub);
+        oldSub[0] = Tea_sub.run(callbacks, callbacks, oldSub[0], newSub);
         return /* () */0;
       };
       return /* record */[
@@ -16450,7 +16464,7 @@ function programLoop(update, view, subscriptions, initModel, initCmd, param) {
               },
               /* shutdown */function (cmd) {
                 Tea_cmd.run(callbacks, cmd);
-                oldSub[0] = Tea_sub.run(callbacks, oldSub[0], /* NoSub */0);
+                oldSub[0] = Tea_sub.run(callbacks, callbacks, oldSub[0], /* NoSub */0);
                 return /* () */0;
               }
             ];
@@ -17050,10 +17064,8 @@ var Web_window_history = require("./web_window_history");
 var Block              = require("bs-platform/lib/js/block");
 var Curry              = require("bs-platform/lib/js/curry");
 var Web_location       = require("./web_location");
-var Vdom               = require("./vdom");
 var Tea_sub            = require("./tea_sub");
 var Web_window         = require("./web_window");
-var Tea_cmd            = require("./tea_cmd");
 
 function getLocation() {
   return Web_location.asRecord(document.location);
@@ -17114,65 +17126,28 @@ function newUrl(url) {
             }]);
 }
 
-function navigationProgram(parser, param) {
-  var shutdown = param[/* shutdown */5];
-  var subscriptions = param[/* subscriptions */4];
-  var view = param[/* view */3];
-  var update = param[/* update */2];
-  var init = param[/* init */1];
-  var urlUpdate = param[/* urlUpdate */0];
-  var init$prime = function (flag) {
-    var initLocation = Web_location.asRecord(document.location);
-    var match = Curry._2(init, flag, Curry._1(parser, initLocation));
-    return /* tuple */[
-            match[0],
-            Tea_cmd.map(function (msg) {
-                  return /* UserMsg */Block.__(1, [msg]);
-                }, match[1])
-          ];
+function navigationProgram(locationToMessage, stuff) {
+  var init = function (flag) {
+    return Curry._2(stuff[/* init */0], flag, Web_location.asRecord(document.location));
   };
-  var update$prime = function (model, msg) {
-    var match;
-    match = msg.tag ? Curry._2(update, model, msg[0]) : Curry._2(urlUpdate, model, Curry._1(parser, msg[0]));
-    return /* tuple */[
-            match[0],
-            Tea_cmd.map(function (msg) {
-                  return /* UserMsg */Block.__(1, [msg]);
-                }, match[1])
-          ];
-  };
-  var wrapUserMsg = function (userMsg) {
-    return /* UserMsg */Block.__(1, [userMsg]);
-  };
-  var view$prime = function (model) {
-    var vdom = Curry._1(view, model);
-    return Vdom.map(wrapUserMsg, vdom);
-  };
-  var subscriptions$prime = function (model) {
+  var subscriptions = function (model) {
     return /* Batch */Block.__(0, [/* :: */[
-                subscribe(function ($$location) {
-                      return /* Change */Block.__(0, [$$location]);
-                    }),
+                subscribe(locationToMessage),
                 /* :: */[
-                  Tea_sub.map(function (userMsg) {
-                        return /* UserMsg */Block.__(1, [userMsg]);
-                      }, Curry._1(subscriptions, model)),
+                  Curry._1(stuff[/* subscriptions */3], model),
                   /* [] */0
                 ]
               ]]);
   };
-  var shutdown$prime = function (model) {
-    var cmd = Curry._1(shutdown, model);
-    return Tea_cmd.map(function (msg) {
-                return /* UserMsg */Block.__(1, [msg]);
-              }, cmd);
-  };
+  var partial_arg_001 = /* update */stuff[/* update */1];
+  var partial_arg_002 = /* view */stuff[/* view */2];
+  var partial_arg_004 = /* shutdown */stuff[/* shutdown */4];
   var partial_arg = /* record */[
-    /* init */init$prime,
-    /* update */update$prime,
-    /* view */view$prime,
-    /* subscriptions */subscriptions$prime,
-    /* shutdown */shutdown$prime
+    /* init */init,
+    partial_arg_001,
+    partial_arg_002,
+    /* subscriptions */subscriptions,
+    partial_arg_004
   ];
   return function (param, param$1) {
     return Tea_app.program(partial_arg, param, param$1);
@@ -17424,206 +17399,195 @@ function registration(key, enableCall) {
           ]);
 }
 
-function run(_callbacks, _oldSub, _newSub) {
-  while(true) {
-    var newSub = _newSub;
-    var oldSub = _oldSub;
-    var callbacks = _callbacks;
-    var enable = function (_callbacks, _param) {
-      while(true) {
-        var param = _param;
-        var callbacks = _callbacks;
-        if (typeof param === "number") {
-          return /* () */0;
-        }
-        else {
-          switch (param.tag | 0) {
-            case 0 : 
-                var subs = param[0];
-                if (subs) {
-                  return List.fold_left((function(callbacks){
-                            return function (_, sub) {
-                              return enable(callbacks, sub);
-                            }
-                            }(callbacks)), /* () */0, subs);
-                }
-                else {
-                  return /* () */0;
-                }
-            case 1 : 
-                param[2][0] = /* Some */[Curry._1(param[1], callbacks)];
-                return /* () */0;
-            case 2 : 
-                _param = param[1];
-                _callbacks = Curry._1(param[0], callbacks);
-                continue ;
-                
-          }
-        }
-      };
-    };
-    var disable = function (_param) {
-      while(true) {
-        var param = _param;
-        if (typeof param === "number") {
-          return /* () */0;
-        }
-        else {
-          switch (param.tag | 0) {
-            case 0 : 
-                var subs = param[0];
-                if (subs) {
-                  return List.fold_left(function (_, sub) {
-                              return disable(sub);
-                            }, /* () */0, subs);
-                }
-                else {
-                  return /* () */0;
-                }
-            case 1 : 
-                var match = param[2][0];
-                if (match) {
-                  return Curry._1(match[0], /* () */0);
-                }
-                else {
-                  return /* () */0;
-                }
-            case 2 : 
-                _param = param[1];
-                continue ;
-                
-          }
-        }
-      };
-    };
-    var exit = 0;
-    if (typeof oldSub === "number") {
-      if (typeof newSub === "number") {
-        return newSub;
+function map(func, sub) {
+  return /* Mapper */Block.__(2, [
+            func,
+            sub
+          ]);
+}
+
+function run(oldCallbacks, newCallbacks, oldSub, newSub) {
+  var enable = function (_callbacks, _param) {
+    while(true) {
+      var param = _param;
+      var callbacks = _callbacks;
+      if (typeof param === "number") {
+        return /* () */0;
       }
       else {
-        exit = 1;
+        switch (param.tag | 0) {
+          case 0 : 
+              var subs = param[0];
+              if (subs) {
+                return List.iter((function(callbacks){
+                          return function (param) {
+                            return enable(callbacks, param);
+                          }
+                          }(callbacks)), subs);
+              }
+              else {
+                return /* () */0;
+              }
+          case 1 : 
+              param[2][0] = /* Some */[Curry._1(param[1], callbacks)];
+              return /* () */0;
+          case 2 : 
+              var subCallbacks = Curry._1(param[0], callbacks);
+              _param = param[1];
+              _callbacks = subCallbacks;
+              continue ;
+              
+        }
       }
+    };
+  };
+  var disable = function (_callbacks, _param) {
+    while(true) {
+      var param = _param;
+      var callbacks = _callbacks;
+      if (typeof param === "number") {
+        return /* () */0;
+      }
+      else {
+        switch (param.tag | 0) {
+          case 0 : 
+              var subs = param[0];
+              if (subs) {
+                return List.iter((function(callbacks){
+                          return function (param) {
+                            return disable(callbacks, param);
+                          }
+                          }(callbacks)), subs);
+              }
+              else {
+                return /* () */0;
+              }
+          case 1 : 
+              var diCB = param[2];
+              var match = diCB[0];
+              if (match) {
+                diCB[0] = /* None */0;
+                return Curry._1(match[0], /* () */0);
+              }
+              else {
+                return /* () */0;
+              }
+          case 2 : 
+              var subCallbacks = Curry._1(param[0], callbacks);
+              _param = param[1];
+              _callbacks = subCallbacks;
+              continue ;
+              
+        }
+      }
+    };
+  };
+  var exit = 0;
+  if (typeof oldSub === "number") {
+    if (typeof newSub === "number") {
+      return newSub;
     }
     else {
-      switch (oldSub.tag | 0) {
-        case 0 : 
-            if (typeof newSub === "number") {
-              exit = 1;
-            }
-            else if (newSub.tag) {
-              exit = 1;
-            }
-            else {
-              var aux = (function(callbacks){
-              return function (_idx, _oldList, _newList) {
-                while(true) {
-                  var newList = _newList;
-                  var oldList = _oldList;
-                  var idx = _idx;
-                  if (oldList) {
-                    var oldS = oldList[0];
-                    if (newList) {
-                      run(callbacks, oldS, newList[0]);
-                      return /* () */0;
-                    }
-                    else {
-                      disable(oldS);
-                      _newList = oldList[1];
-                      _oldList = /* [] */0;
-                      _idx = idx + 1 | 0;
-                      continue ;
-                      
-                    }
-                  }
-                  else if (newList) {
-                    enable(callbacks, newList[0]);
+      exit = 1;
+    }
+  }
+  else {
+    switch (oldSub.tag | 0) {
+      case 0 : 
+          if (typeof newSub === "number") {
+            exit = 1;
+          }
+          else if (newSub.tag) {
+            exit = 1;
+          }
+          else {
+            var aux = function (_oldList, _newList) {
+              while(true) {
+                var newList = _newList;
+                var oldList = _oldList;
+                if (oldList) {
+                  var oldRest = oldList[1];
+                  var oldSubSub = oldList[0];
+                  if (newList) {
+                    run(oldCallbacks, newCallbacks, oldSubSub, newList[0]);
                     _newList = newList[1];
-                    _oldList = /* [] */0;
-                    _idx = idx + 1 | 0;
+                    _oldList = oldRest;
                     continue ;
                     
                   }
                   else {
-                    return /* () */0;
+                    disable(oldCallbacks, oldSubSub);
+                    _newList = /* [] */0;
+                    _oldList = oldRest;
+                    continue ;
+                    
                   }
-                };
-              }
-              }(callbacks));
-              aux(0, oldSub[0], newSub[0]);
+                }
+                else if (newList) {
+                  enable(newCallbacks, newList[0]);
+                  _newList = newList[1];
+                  _oldList = /* [] */0;
+                  continue ;
+                  
+                }
+                else {
+                  return /* () */0;
+                }
+              };
+            };
+            aux(oldSub[0], newSub[0]);
+            return newSub;
+          }
+          break;
+      case 1 : 
+          if (typeof newSub === "number") {
+            exit = 1;
+          }
+          else if (newSub.tag === 1) {
+            if (oldSub[0] === newSub[0]) {
+              newSub[2][0] = oldSub[2][0];
               return newSub;
             }
-            break;
-        case 1 : 
-            if (typeof newSub === "number") {
-              exit = 1;
-            }
-            else if (newSub.tag === 1) {
-              if (oldSub[0] === newSub[0]) {
-                newSub[2][0] = oldSub[2][0];
-                return newSub;
-              }
-              else {
-                exit = 1;
-              }
-            }
             else {
               exit = 1;
             }
-            break;
-        case 2 : 
-            if (typeof newSub === "number") {
-              exit = 1;
-            }
-            else if (newSub.tag === 2) {
-              _newSub = newSub[1];
-              _oldSub = oldSub[1];
-              _callbacks = Curry._1(newSub[0], callbacks);
-              continue ;
-              
-            }
-            else {
-              exit = 1;
-            }
-            break;
-        
-      }
+          }
+          else {
+            exit = 1;
+          }
+          break;
+      case 2 : 
+          if (typeof newSub === "number") {
+            exit = 1;
+          }
+          else if (newSub.tag === 2) {
+            var olderCallbacks = Curry._1(oldSub[0], oldCallbacks);
+            var newerCallbacks = Curry._1(newSub[0], newCallbacks);
+            run(olderCallbacks, newerCallbacks, oldSub[1], newSub[1]);
+            return newSub;
+          }
+          else {
+            exit = 1;
+          }
+          break;
+      
     }
-    if (exit === 1) {
-      disable(oldSub);
-      enable(callbacks, newSub);
-      return newSub;
-    }
-    
-  };
-}
-
-function wrapCallbacks(func, callbacks) {
-  return [/* record */[/* enqueue */function (msg) {
-              return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
-            }]];
-}
-
-function map(func, vdom) {
-  var tagger = function (callbacks) {
-    return [/* record */[/* enqueue */function (msg) {
-                return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
-              }]];
-  };
-  return /* Tagger */Block.__(2, [
-            tagger,
-            vdom
-          ]);
+  }
+  if (exit === 1) {
+    disable(oldCallbacks, oldSub);
+    enable(newCallbacks, newSub);
+    return newSub;
+  }
+  
 }
 
 var none = /* NoSub */0;
 
-exports.none          = none;
-exports.batch         = batch;
-exports.registration  = registration;
-exports.run           = run;
-exports.wrapCallbacks = wrapCallbacks;
-exports.map           = map;
+exports.none         = none;
+exports.batch        = batch;
+exports.registration = registration;
+exports.map          = map;
+exports.run          = run;
 /* No side effect */
 
 });
@@ -21811,44 +21775,44 @@ exports.map                                          = map;
 
 
 function polyfills() {
-  ((
-  // remove polyfill
-  (function() {
-    if (!('remove' in Element.prototype)) {
-      Element.prototype.remove = function() {
-        if (this.parentNode) {
-          this.parentNode.removeChild(this);
-        }
-      };
-    };
-  }())
+  ((
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
   ));
-  ((
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }())
+  ((
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   ));
   return /* () */0;
 }
@@ -22181,17 +22145,17 @@ function get_nodeValue(n) {
 }
 
 function remove_polyfill() {
-  return (
-  // remove polyfill
-  (function() {
-    if (!('remove' in Element.prototype)) {
-      Element.prototype.remove = function() {
-        if (this.parentNode) {
-          this.parentNode.removeChild(this);
-        }
-      };
-    };
-  }())
+  return (
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
   );
 }
 
@@ -22262,32 +22226,32 @@ function removeEventListener(typ, listener, options) {
 }
 
 function requestAnimationFrame_polyfill() {
-  return (
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }())
+  return (
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   );
 }
 
@@ -22352,9 +22316,95 @@ exports.state        = state;
 
 });
 
-;require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
+;require.alias("process/browser.js", "process");require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 
-require('src/main_entry.ml');
+/* jshint ignore:start */
+(function() {
+  var WebSocket = window.WebSocket || window.MozWebSocket;
+  var br = window.brunch = (window.brunch || {});
+  var ar = br['auto-reload'] = (br['auto-reload'] || {});
+  if (!WebSocket || ar.disabled) return;
+  if (window._ar) return;
+  window._ar = true;
+
+  var cacheBuster = function(url){
+    var date = Math.round(Date.now() / 1000).toString();
+    url = url.replace(/(\&|\\?)cacheBuster=\d*/, '');
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
+  };
+
+  var browser = navigator.userAgent.toLowerCase();
+  var forceRepaint = ar.forceRepaint || browser.indexOf('chrome') > -1;
+
+  var reloaders = {
+    page: function(){
+      window.location.reload(true);
+    },
+
+    stylesheet: function(){
+      [].slice
+        .call(document.querySelectorAll('link[rel=stylesheet]'))
+        .filter(function(link) {
+          var val = link.getAttribute('data-autoreload');
+          return link.href && val != 'false';
+        })
+        .forEach(function(link) {
+          link.href = cacheBuster(link.href);
+        });
+
+      // Hack to force page repaint after 25ms.
+      if (forceRepaint) setTimeout(function() { document.body.offsetHeight; }, 25);
+    },
+
+    javascript: function(){
+      var scripts = [].slice.call(document.querySelectorAll('script'));
+      var textScripts = scripts.map(function(script) { return script.text }).filter(function(text) { return text.length > 0 });
+      var srcScripts = scripts.filter(function(script) { return script.src });
+
+      var loaded = 0;
+      var all = srcScripts.length;
+      var onLoad = function() {
+        loaded = loaded + 1;
+        if (loaded === all) {
+          textScripts.forEach(function(script) { eval(script); });
+        }
+      }
+
+      srcScripts
+        .forEach(function(script) {
+          var src = script.src;
+          script.remove();
+          var newScript = document.createElement('script');
+          newScript.src = cacheBuster(src);
+          newScript.async = true;
+          newScript.onload = onLoad;
+          document.head.appendChild(newScript);
+        });
+    }
+  };
+  var port = ar.port || 9485;
+  var host = br.server || window.location.hostname || 'localhost';
+
+  var connect = function(){
+    var connection = new WebSocket('ws://' + host + ':' + port);
+    connection.onmessage = function(event){
+      if (ar.disabled) return;
+      var message = event.data;
+      var reloader = reloaders[message] || reloaders.page;
+      reloader();
+    };
+    connection.onerror = function(){
+      if (connection.readyState) connection.close();
+    };
+    connection.onclose = function(){
+      window.setTimeout(connect, 1000);
+    };
+  };
+  connect();
+})();
+/* jshint ignore:end */
+
+;require('src/main_entry.ml');
 //# sourceMappingURL=app.js.map

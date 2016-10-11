@@ -7,6 +7,7 @@ type msg =
   | Decrement
   | Reset
   | Set of int
+  | OnUrlChange of int option
 
 
 
@@ -19,15 +20,14 @@ let fromUrl url =
   with _ -> None
 
 
-let update model msg =
-  let newModel = match msg with
-    | Increment -> model + 1
-    | Decrement -> model - 1
-    | Reset -> 0
-    | Set v -> v
-  in
-  (* newModel, Navigation.newUrl (toUrl newModel) *)
-  model, Navigation.newUrl (toUrl newModel)
+let update model = function
+  | Increment -> model + 1, Navigation.newUrl (toUrl (model + 1))
+  | Decrement -> model - 1, Navigation.newUrl (toUrl (model - 1))
+  | Reset -> 0, Navigation.newUrl (toUrl 0)
+  | Set v -> v, Navigation.newUrl (toUrl v)
+  | OnUrlChange loc -> match loc with
+    | None -> 0, Navigation.modifyUrl (toUrl 0)
+    | Some v -> v, Cmd.none
 
 
 let view_button title msg =
@@ -54,29 +54,22 @@ let view model =
     ]
 
 
-let urlParser location =
+let locationToMessage location =
   let open Web.Location in
-  (* let () = Js.log ("urlParser", location, location.hash, fromUrl location.hash) in *)
-  fromUrl location.hash
+  OnUrlChange (fromUrl location.hash)
 
 
-let urlUpdate model = function
-  | None ->
-    (* let () = Js.log ("urlUpdate None", model) in *)
-    model, Navigation.modifyUrl (toUrl model)
-  | Some newCount ->
-    (* let () = Js.log ("urlUpdate Some", newCount, model) in *)
-    newCount, Cmd.none
+let init () location =
+  let open Web.Location in
+  match fromUrl location.hash with
+  | None -> 0, Navigation.modifyUrl (toUrl 0)
+  | Some v -> v, Cmd.none
 
-
-let init () result =
-  urlUpdate 0 result
 
 let main =
   let open Navigation in
-  navigationProgram urlParser
-    { urlUpdate
-    ; init
+  navigationProgram locationToMessage
+    { init
     ; update
     ; view
     ; subscriptions = (fun model -> Sub.none)

@@ -1,11 +1,10 @@
 
 
 type 'msg t =
-  | NoSub
-  | Batch of 'msg t list
-  (* Registration (key, enableCall, disableCall) *)
-  | Registration of string * ('msg Vdom.applicationCallbacks ref -> (unit -> unit)) * (unit -> unit) option ref
-  | Tagger of ('msg Vdom.applicationCallbacks ref -> 'msg Vdom.applicationCallbacks ref) * 'msg t
+  | NoSub : _ t
+  | Batch : 'msg t list -> 'msg t
+  | Registration : string * ('msg Vdom.applicationCallbacks ref -> (unit -> unit)) * (unit -> unit) option ref -> 'msg t
+  | Mapper : ('msg Vdom.applicationCallbacks ref -> 'msgB Vdom.applicationCallbacks ref) * 'msgB t -> 'msg t
 
 
 type 'msg applicationCallbacks = 'msg Vdom.applicationCallbacks
@@ -22,72 +21,70 @@ let registration key enableCall =
   Registration (key, (fun callbacks -> enableCall !callbacks), ref None)
 
 
+let map msgMapper sub =
+  let open Vdom in
+  let func callbacks = ref
+    { enqueue = (fun userMsg -> !callbacks.enqueue (msgMapper userMsg))
+    }
+    in
+  Mapper (func, sub)
 
-(*
-let rec map func = function
-  | NoSub -> NoSub
-  | Batch subs -> Batch (List.map (map func) subs)
-  | Registration (key, enableCall, disableCall) -> Registration (key, (fun callbacks -> (* TODO:  Need to wrap enqueue in the callbacks... *)), disableCall)
-*)
+let mapFunc func sub =
+  Mapper (func, sub)
 
 
-
-let rec run callbacks oldSub newSub =
-  let rec enable callbacks = function
+let rec run : type msgOld msgNew . msgOld Vdom.applicationCallbacks ref -> msgNew Vdom.applicationCallbacks ref -> msgOld t -> msgNew t -> msgNew t =
+  fun oldCallbacks newCallbacks oldSub newSub ->
+    let rec enable : type msg . msg Vdom.applicationCallbacks ref -> msg t -> unit = fun callbacks -> function
       | NoSub -> ()
       | Batch [] -> ()
-      | Batch subs -> List.fold_left (fun () sub -> enable callbacks sub) () subs
-      | Tagger (tagger, sub) -> enable (tagger callbacks) sub
+      | Batch subs -> List.iter (enable callbacks) subs
+      | Mapper (mapper, sub) ->
+        let subCallbacks = mapper callbacks in
+        enable subCallbacks sub
       | Registration (_key, enCB, diCB) -> diCB := Some (enCB callbacks)
-  in let rec disable = function
+      in
+    let rec disable : type msg . msg Vdom.applicationCallbacks ref -> msg t -> unit = fun callbacks -> function
       | NoSub -> ()
       | Batch [] -> ()
-      | Batch subs -> List.fold_left (fun () sub -> disable sub) () subs
-      | Tagger (tagger, sub) -> disable sub
-      | Registration (_key, _enCB, diCB) ->
+      | Batch subs -> List.iter (disable callbacks) subs
+      | Mapper (mapper, sub) ->
+        let subCallbacks = mapper callbacks in
+        disable subCallbacks sub
+      | Registration (_key, enCB, diCB) ->
         match !diCB with
         | None -> ()
-        | Some cb -> cb ()
-  in match oldSub, newSub with
-  | NoSub, NoSub -> newSub
-  | Batch oldSubs, Batch newSubs ->
-    let rec aux idx oldList newList =
-      ( match oldList, newList with
-        | [], [] -> ()
-        | [], newS :: newRest -> let () = enable callbacks newS in aux (idx + 1) [] newRest
-        | oldS :: oldRest, [] -> let () = disable oldS in aux (idx + 1) [] oldRest
-        | oldS :: oldRest, newS :: newRest -> let _res = run callbacks oldS newS in ()
-      ) in
-    let () = aux 0 oldSubs newSubs in
-    newSub
-  | Registration (oldKey, oldEnCB, oldDiCB), Registration (newKey, newEnCB, newDiCB) when oldKey = newKey ->
-    let () = newDiCB := !oldDiCB in (* Don't forget to pass along the cache! *)
-    newSub
-  | Tagger (oldTagger, oldSub), Tagger (newTagger, newSub) ->
-    run (newTagger callbacks) oldSub newSub
-  | oldS, newS ->
-    let () = disable oldS in
-    let () = enable callbacks newS in
-    newSub
-
-
-let wrapCallbacks func callbacks =
-  let open Vdom in
-  ref
-    { enqueue = (fun msg -> !callbacks.enqueue (func msg))
-    }
-
-let map : ('a -> 'b) -> 'a t -> 'b t = fun func vdom ->
-  let tagger callbacks =
-    let open Vdom in
-    ref
-      { enqueue = (fun msg -> !callbacks.enqueue (func msg))
-      } in
-  Tagger (Obj.magic tagger, Obj.magic vdom) (* Perhaps an explicit polymorphic type in a record might help here, unsure if it would on the vdom part... *)
-
-(* let map : ('a -> 'b) -> 'a t -> 'b t = fun func cmd ->
-  let open Vdom in
-  Tagger
-    ( fun callbacks ->
-        run (Tea_cmd.wrapCallbacks func callbacks) cmd
-    ) *)
+        | Some cb ->
+          let () = diCB := None in
+          cb ()
+      in
+    match oldSub, newSub with
+    | NoSub, NoSub -> newSub
+    | Registration (oldKey, oldEnCB, oldDiCB), Registration (newKey, newEnCB, newDiCB) when oldKey = newKey ->
+      let () = newDiCB := !oldDiCB in
+      newSub
+    | Mapper (oldMapper, oldSubSub), Mapper (newMapper, newSubSub) ->
+      let olderCallbacks = oldMapper oldCallbacks in (* Resolve the type checker *)
+      let newerCallbacks = newMapper newCallbacks in
+      let _newerSubSub = run olderCallbacks newerCallbacks oldSubSub newSubSub in
+      newSub
+    | Batch oldSubs, Batch newSubs ->
+      let rec aux oldList newList =
+        ( match oldList, newList with
+          | [], [] -> ()
+          | [], newSubSub :: newRest ->
+            let () = enable newCallbacks newSubSub in
+            aux [] newRest
+          | oldSubSub :: oldRest, [] ->
+            let () = disable oldCallbacks oldSubSub in
+            aux oldRest []
+          | oldSubSub :: oldRest, newSubSub :: newRest ->
+            let _newerSubSub = run oldCallbacks newCallbacks oldSubSub newSubSub in
+            aux oldRest newRest
+        ) in
+      let () = aux oldSubs newSubs in
+      newSub
+    | oldS, newS ->
+      let () = disable oldCallbacks oldS in
+      let () = enable newCallbacks newS in
+      newSub

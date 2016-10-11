@@ -129,7 +129,7 @@ let programLoop update view subscriptions initModel initCmd = function
     let handleSubscriptionChange model =
       let open Vdom in
       let newSub = subscriptions model in
-      oldSub := (Tea_sub.run callbacks !oldSub newSub) in
+      oldSub := (Tea_sub.run callbacks callbacks !oldSub newSub) in
     { startup =
         ( fun () ->
             let () = Tea_cmd.run callbacks initCmd in
@@ -146,7 +146,7 @@ let programLoop update view subscriptions initModel initCmd = function
         )
     ; shutdown = (fun cmd ->
           let () = Tea_cmd.run callbacks cmd in
-          let () = oldSub := (Tea_sub.run callbacks !oldSub Tea_sub.none) in
+          let () = oldSub := (Tea_sub.run callbacks callbacks !oldSub Tea_sub.none) in
           ()
         )
     }
@@ -191,7 +191,7 @@ let programLoop update view subscriptions initModel initCmd = function
     let handleSubscriptionChange model =
       let open Vdom in
       let newSub = subscriptions model in
-      oldSub := (Tea_sub.run callbacks !oldSub newSub) in
+      oldSub := (Tea_sub.run callbacks callbacks !oldSub newSub) in
     let handlerStartup () =
       let () = clearPnode () in
       let () = Tea_cmd.run callbacks initCmd in
@@ -222,7 +222,7 @@ let programLoop update view subscriptions initModel initCmd = function
       let open Vdom in
       let () = nextFrameID := None in
       let () = Tea_cmd.run callbacks cmd in
-      let () = oldSub := (Tea_sub.run callbacks !oldSub Tea_sub.none) in
+      let () = oldSub := (Tea_sub.run callbacks callbacks !oldSub Tea_sub.none) in
       let () = priorRenderedVdom := [] in
       let () = clearPnode () in
       () in
