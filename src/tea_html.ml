@@ -46,6 +46,8 @@ let button ?(key="") ?(unique="") props nodes = fullnode "" "button" key unique 
 
 let input' ?(key="") ?(unique="") props nodes = fullnode "" "input" key unique props nodes
 
+let textarea ?(key="") ?(unique="") props nodes = fullnode "" "textarea" key unique props nodes
+
 let label ?(key="") ?(unique="") props nodes = fullnode "" "label" key unique props nodes
 
 let ul ?(key="") ?(unique="") props nodes = fullnode "" "ul" key unique props nodes
@@ -67,6 +69,8 @@ let th ?(key="") ?(unique="") props nodes = fullnode "" "th" key unique props no
 let tr ?(key="") ?(unique="") props nodes = fullnode "" "tr" key unique props nodes
 
 let td ?(key="") ?(unique="") props nodes = fullnode "" "td" key unique props nodes
+
+let progress ?(key="") ?(unique="") props nodes = fullnode "" "progress" key unique props nodes
 
 
 (* Properties *)
@@ -104,6 +108,8 @@ let for' str = prop "htmlFor" str
 
 let hidden b = if b then prop "hidden" "hidden" else noProp
 
+let target t = prop "target" t
+
 
 (* Events *)
 
@@ -111,19 +117,21 @@ let onKeyed typ key cb = on typ key cb
 
 let on typ ?(key="") cb = on typ key cb
 
-let onInput ?(key="") msg =
+let onInputOpt ?(key="") msg =
   onKeyed "input" key
     (fun ev ->
        match Js.Undefined.to_opt ev##target with
        | None -> None
        | Some target -> match Js.Undefined.to_opt target##value with
          | None -> None
-         | Some value -> Some (msg value)
+         | Some value -> msg value
     )
     (* (fun ev -> match _eventGetTargetValue ev with
        | None -> failwith "onInput is not attached to something with a target.value on its event"
        | Some value -> msg value
        ) *)
+
+let onInput ?(key="") msg = onInputOpt ~key:key (fun ev -> Some (msg ev))
 
 let onClick ?(key="") msg =
   onKeyed "click" key (fun _ev -> Some msg)
@@ -136,3 +144,26 @@ let onBlur ?(key="") msg =
 
 let onFocus ?(key="") msg =
   onKeyed "focus" key (fun _ev -> Some msg)
+
+let onCheckOpt ?(key="") msg =
+  onKeyed "change" key
+    (fun ev ->
+       match Js.Undefined.to_opt ev##target with
+       | None -> None
+       | Some target -> match Js.Undefined.to_opt target##checked with
+         | None -> None
+         | Some value -> msg value
+    )
+
+let onCheck ?(key="") msg = onCheckOpt ~key:key (fun ev -> Some (msg ev))
+
+
+module Attributes = struct
+
+  let max value = attribute "" "max" value
+
+  let min value = attribute "" "min" value
+
+  let disabled b = if b then attribute "" "disabled" "true" else noProp
+
+end

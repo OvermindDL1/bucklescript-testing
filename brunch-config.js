@@ -27,7 +27,7 @@ module.exports = {
       compileAllAtOnce: process.platform == 'win32',
       bscParameters: [
         "-bs-cross-module-opt",
-        "-w", "+a-29-42"
+        "-w", "+a-4-29-42"
       ],
       verbosity: 1
     }

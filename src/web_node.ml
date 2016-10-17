@@ -12,6 +12,7 @@ external setStyle : style -> string -> string Js.null -> unit = "" [@@bs.set_ind
 type t = <
   style : style [@bs.get];
   value : string Js.undefined [@bs.set] [@bs.get];
+  checked : bool Js.undefined [@bs.set] [@bs.get];
   childNodes : t Js.Array.t [@bs.get];
   firstChild : t Js.Null.t [@bs.get];
   appendChild : t -> t [@bs.meth];
