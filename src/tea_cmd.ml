@@ -41,11 +41,11 @@ let rec run callbacks =
 
 
 
-let wrapCallbacks func callbacks =
-  let open Vdom in
-  ref
-    { enqueue = (fun msg -> !callbacks.enqueue (func msg))
-    }
+(* let wrapCallbacks func callbacks = *)
+(*   let open Vdom in *)
+(*   ref *)
+(*     { enqueue = (fun msg -> !callbacks.enqueue (func msg)) *)
+(*     } *)
 
 let map : ('a -> 'b) -> 'a t -> 'b t = fun func cmd ->
   let open Vdom in

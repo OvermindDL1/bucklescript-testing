@@ -21,7 +21,7 @@ let update model = function
   | NewFace dieFace -> { dieFace }, Cmd.none
 
 
-let subscriptions model =
+let subscriptions _model =
   Sub.none
 
 

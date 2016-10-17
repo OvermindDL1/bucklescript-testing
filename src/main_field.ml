@@ -7,7 +7,7 @@ type msg =
   | NewContent of string
 
 
-let update oldContent (NewContent content) =
+let update _oldContent (NewContent content) =
   content
 
 
@@ -25,7 +25,7 @@ let view content =
     let len = String.length s in
     String.init len (fun i -> s.[len - 1 - i]) in
   div []
-    [ input [ placeholder "Text to reverse"; onInput (fun s -> NewContent s); myStyle ] []
+    [ input' [ placeholder "Text to reverse"; onInput (fun s -> NewContent s); myStyle ] []
     ; div [ myStyle ] [ text (string_rev content) ]
     ]
 

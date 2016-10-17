@@ -117,7 +117,7 @@ let applyUpgrade name model =
   let rec aux model untouched = function
     | [] -> { model with upgradesRemaining = List.rev untouched }
     | upgrade :: rest when upgrade.name <> name -> aux model (upgrade :: untouched) rest
-    | upgrade :: rest when upgrade.cost > model.credits -> model
+    | upgrade :: _rest when upgrade.cost > model.credits -> model
     | upgrade :: rest ->
       (* let () = Js.log ("Upgrading", upgrade) in *)
       let newModel = match upgrade.math with

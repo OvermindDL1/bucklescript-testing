@@ -14,8 +14,8 @@ let fail value =
   Fail value
 
 
-let andThen fn task =
-  let handler succ = ()
+let andThen _fn task =
+  let handler _succ = ()
     in
   AndThen (task, handler)
 

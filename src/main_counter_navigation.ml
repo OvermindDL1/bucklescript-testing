@@ -72,6 +72,6 @@ let main =
     { init
     ; update
     ; view
-    ; subscriptions = (fun model -> Sub.none)
-    ; shutdown = (fun model -> Cmd.none)
+    ; subscriptions = (fun _model -> Sub.none)
+    ; shutdown = (fun _model -> Cmd.none)
   }

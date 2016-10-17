@@ -11293,7 +11293,7 @@ function view(content) {
     return Caml_string.bytes_to_string(Bytes.init(len, f));
   };
   return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "placeholder",
                         "Text to reverse"
@@ -11403,7 +11403,7 @@ function viewValidation(model) {
 
 function view(model) {
   return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "type",
                         "text"
@@ -11422,7 +11422,7 @@ function view(model) {
                     ]
                   ], /* [] */0),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "type",
                           "password"
@@ -11441,7 +11441,7 @@ function view(model) {
                       ]
                     ], /* [] */0),
                 /* :: */[
-                  Tea_html.input(/* None */0, /* None */0, /* :: */[
+                  Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                         /* RawProp */Block.__(0, [
                             "type",
                             "password"
@@ -11920,7 +11920,7 @@ function viewEntry(todo) {
                       ]),
                     /* [] */0
                   ], /* :: */[
-                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
                               "className",
                               "toggle"
@@ -11971,7 +11971,7 @@ function viewEntry(todo) {
                     ]
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "edit"
@@ -12046,7 +12046,7 @@ function viewEntries(visibility, entries) {
                 /* [] */0
               ]
             ], /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "className",
                         "toggle-all"
@@ -12109,7 +12109,7 @@ function viewInput(task) {
                     /* [] */0
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "new-todo"
@@ -12649,7 +12649,7 @@ function viewEntry(todo, _) {
                       ]),
                     /* [] */0
                   ], /* :: */[
-                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
                               "className",
                               "toggle"
@@ -12698,7 +12698,7 @@ function viewEntry(todo, _) {
                     ]
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "edit"
@@ -12773,7 +12773,7 @@ function viewEntries(visibility, entries) {
                 /* [] */0
               ]
             ], /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "className",
                         "toggle-all"
@@ -12848,7 +12848,7 @@ function viewInput(task, _) {
                     /* [] */0
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "new-todo"
@@ -13403,7 +13403,7 @@ function viewEntry(todo, _) {
                       ]),
                     /* [] */0
                   ], /* :: */[
-                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
                               "className",
                               "toggle"
@@ -13452,7 +13452,7 @@ function viewEntry(todo, _) {
                     ]
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "edit"
@@ -13532,7 +13532,7 @@ function viewEntries(visibility, entries) {
                 /* [] */0
               ]
             ], /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "className",
                         "toggle-all"
@@ -13612,7 +13612,7 @@ function viewInput(task, _) {
                     /* [] */0
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "new-todo"
@@ -14912,7 +14912,7 @@ function viewEntry(todo, _) {
                       ]),
                     /* [] */0
                   ], /* :: */[
-                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
                               "className",
                               "toggle"
@@ -14961,7 +14961,7 @@ function viewEntry(todo, _) {
                     ]
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "edit"
@@ -15038,7 +15038,7 @@ function viewEntries(visibility, entries) {
                 /* [] */0
               ]
             ], /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "className",
                         "toggle-all"
@@ -15119,7 +15119,7 @@ function viewInput(task, _) {
                     /* [] */0
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "new-todo"
@@ -15681,7 +15681,7 @@ function viewEntry(todo) {
                       ]),
                     /* [] */0
                   ], /* :: */[
-                    Tea_html.input(/* None */0, /* None */0, /* :: */[
+                    Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
                               "className",
                               "toggle"
@@ -15732,7 +15732,7 @@ function viewEntry(todo) {
                     ]
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "edit"
@@ -15812,7 +15812,7 @@ function viewEntries(visibility, entries) {
                 /* [] */0
               ]
             ], /* :: */[
-              Tea_html.input(/* None */0, /* None */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                     /* RawProp */Block.__(0, [
                         "className",
                         "toggle-all"
@@ -15875,7 +15875,7 @@ function viewInput(task) {
                     /* [] */0
                   ]),
               /* :: */[
-                Tea_html.input(/* None */0, /* None */0, /* :: */[
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
                           "className",
                           "new-todo"
@@ -16147,7 +16147,7 @@ function partial_arg_003() {
 var partial_arg = /* record */[
   /* init */init,
   /* update */update,
-  /* view */viewNew,
+  /* view */view,
   partial_arg_003
 ];
 
@@ -16346,6 +16346,7 @@ function programStateWrapper(initModel, pump, shutdown) {
   callbacks[0] = finalizedCBs;
   var pi_requestShutdown = function () {
     callbacks[0] = /* record */[/* enqueue */function () {
+        console.log("INVALID message enqueued when shut down");
         return /* () */0;
       }];
     var cmd = Curry._1(shutdown, model[0]);
@@ -16576,12 +16577,6 @@ function run(callbacks, param) {
   }
 }
 
-function wrapCallbacks(func, callbacks) {
-  return [/* record */[/* enqueue */function (msg) {
-              return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
-            }]];
-}
-
 function map(func, cmd) {
   return /* Tagger */Block.__(0, [function (callbacks) {
               return run(Vdom.wrapCallbacks(func, callbacks), cmd);
@@ -16590,14 +16585,13 @@ function map(func, cmd) {
 
 var none = /* NoCmd */0;
 
-exports.none          = none;
-exports.batch         = batch;
-exports.call          = call;
-exports.fnMsg         = fnMsg;
-exports.msg           = msg;
-exports.run           = run;
-exports.wrapCallbacks = wrapCallbacks;
-exports.map           = map;
+exports.none  = none;
+exports.batch = batch;
+exports.call  = call;
+exports.fnMsg = fnMsg;
+exports.msg   = msg;
+exports.run   = run;
+exports.map   = map;
 /* No side effect */
 
 });
@@ -16695,7 +16689,7 @@ function button($staropt$star, $staropt$star$1, props, nodes) {
   return Vdom.fullnode("", "button", key, unique, props, nodes);
 }
 
-function input($staropt$star, $staropt$star$1, props, nodes) {
+function input$prime($staropt$star, $staropt$star$1, props, nodes) {
   var key = $staropt$star ? $staropt$star[0] : "";
   var unique = $staropt$star$1 ? $staropt$star$1[0] : "";
   return Vdom.fullnode("", "input", key, unique, props, nodes);
@@ -16982,7 +16976,7 @@ exports.footer        = footer;
 exports.h1            = h1;
 exports.strong        = strong;
 exports.button        = button;
-exports.input         = input;
+exports.input$prime   = input$prime;
 exports.label         = label;
 exports.ul            = ul;
 exports.ol            = ol;
@@ -17399,7 +17393,19 @@ function registration(key, enableCall) {
           ]);
 }
 
-function map(func, sub) {
+function map(msgMapper, sub) {
+  var func = function (callbacks) {
+    return [/* record */[/* enqueue */function (userMsg) {
+                return Curry._1(callbacks[0][/* enqueue */0], Curry._1(msgMapper, userMsg));
+              }]];
+  };
+  return /* Mapper */Block.__(2, [
+            func,
+            sub
+          ]);
+}
+
+function mapFunc(func, sub) {
   return /* Mapper */Block.__(2, [
             func,
             sub
@@ -17587,6 +17593,7 @@ exports.none         = none;
 exports.batch        = batch;
 exports.registration = registration;
 exports.map          = map;
+exports.mapFunc      = mapFunc;
 exports.run          = run;
 /* No side effect */
 
@@ -20698,126 +20705,133 @@ function renderToHtmlString(_param) {
             return param[0];
         case 1 : 
             var tagName = param[1];
+            var namespace = param[0];
             return $$String.concat("", /* :: */[
                         "<",
                         /* :: */[
-                          tagName,
+                          namespace,
                           /* :: */[
-                            $$String.concat("", List.map(function (p) {
-                                      var param = p;
-                                      if (typeof param === "number") {
-                                        return "";
-                                      }
-                                      else {
-                                        switch (param.tag | 0) {
-                                          case 0 : 
-                                              return $$String.concat("", /* :: */[
-                                                          " ",
-                                                          /* :: */[
-                                                            param[0],
-                                                            /* :: */[
-                                                              '="',
-                                                              /* :: */[
-                                                                param[1],
-                                                                /* :: */[
-                                                                  '"',
-                                                                  /* [] */0
-                                                                ]
-                                                              ]
-                                                            ]
-                                                          ]
-                                                        ]);
-                                          case 1 : 
-                                              return $$String.concat("", /* :: */[
-                                                          " ",
-                                                          /* :: */[
-                                                            param[1],
-                                                            /* :: */[
-                                                              '="',
-                                                              /* :: */[
-                                                                param[2],
-                                                                /* :: */[
-                                                                  '"',
-                                                                  /* [] */0
-                                                                ]
-                                                              ]
-                                                            ]
-                                                          ]
-                                                        ]);
-                                          case 2 : 
-                                              return $$String.concat("", /* :: */[
-                                                          " data-",
-                                                          /* :: */[
-                                                            param[0],
-                                                            /* :: */[
-                                                              '="',
-                                                              /* :: */[
-                                                                param[1],
-                                                                /* :: */[
-                                                                  '"',
-                                                                  /* [] */0
-                                                                ]
-                                                              ]
-                                                            ]
-                                                          ]
-                                                        ]);
-                                          case 3 : 
-                                              return $$String.concat("", /* :: */[
-                                                          " ",
-                                                          /* :: */[
-                                                            param[0],
-                                                            /* :: */[
-                                                              '="js:',
-                                                              /* :: */[
-                                                                typeof param[2],
-                                                                /* :: */[
-                                                                  '"',
-                                                                  /* [] */0
-                                                                ]
-                                                              ]
-                                                            ]
-                                                          ]
-                                                        ]);
-                                          case 4 : 
-                                              return $$String.concat("", /* :: */[
-                                                          ' style="',
-                                                          /* :: */[
-                                                            $$String.concat(";", List.map(function (param) {
-                                                                      return $$String.concat("", /* :: */[
-                                                                                  param[0],
-                                                                                  /* :: */[
-                                                                                    ":",
-                                                                                    /* :: */[
-                                                                                      param[1],
-                                                                                      /* :: */[
-                                                                                        ";",
-                                                                                        /* [] */0
-                                                                                      ]
-                                                                                    ]
-                                                                                  ]
-                                                                                ]);
-                                                                    }, param[0])),
-                                                            /* :: */[
-                                                              '"',
-                                                              /* [] */0
-                                                            ]
-                                                          ]
-                                                        ]);
-                                          
-                                        }
-                                      }
-                                    }, param[4])),
+                            namespace === "" ? "" : ":",
                             /* :: */[
-                              ">",
+                              tagName,
                               /* :: */[
-                                $$String.concat("", List.map(renderToHtmlString, param[5])),
+                                $$String.concat("", List.map(function (p) {
+                                          var param = p;
+                                          if (typeof param === "number") {
+                                            return "";
+                                          }
+                                          else {
+                                            switch (param.tag | 0) {
+                                              case 0 : 
+                                                  return $$String.concat("", /* :: */[
+                                                              " ",
+                                                              /* :: */[
+                                                                param[0],
+                                                                /* :: */[
+                                                                  '="',
+                                                                  /* :: */[
+                                                                    param[1],
+                                                                    /* :: */[
+                                                                      '"',
+                                                                      /* [] */0
+                                                                    ]
+                                                                  ]
+                                                                ]
+                                                              ]
+                                                            ]);
+                                              case 1 : 
+                                                  return $$String.concat("", /* :: */[
+                                                              " ",
+                                                              /* :: */[
+                                                                param[1],
+                                                                /* :: */[
+                                                                  '="',
+                                                                  /* :: */[
+                                                                    param[2],
+                                                                    /* :: */[
+                                                                      '"',
+                                                                      /* [] */0
+                                                                    ]
+                                                                  ]
+                                                                ]
+                                                              ]
+                                                            ]);
+                                              case 2 : 
+                                                  return $$String.concat("", /* :: */[
+                                                              " data-",
+                                                              /* :: */[
+                                                                param[0],
+                                                                /* :: */[
+                                                                  '="',
+                                                                  /* :: */[
+                                                                    param[1],
+                                                                    /* :: */[
+                                                                      '"',
+                                                                      /* [] */0
+                                                                    ]
+                                                                  ]
+                                                                ]
+                                                              ]
+                                                            ]);
+                                              case 3 : 
+                                                  return $$String.concat("", /* :: */[
+                                                              " ",
+                                                              /* :: */[
+                                                                param[0],
+                                                                /* :: */[
+                                                                  '="js:',
+                                                                  /* :: */[
+                                                                    typeof param[2],
+                                                                    /* :: */[
+                                                                      '"',
+                                                                      /* [] */0
+                                                                    ]
+                                                                  ]
+                                                                ]
+                                                              ]
+                                                            ]);
+                                              case 4 : 
+                                                  return $$String.concat("", /* :: */[
+                                                              ' style="',
+                                                              /* :: */[
+                                                                $$String.concat(";", List.map(function (param) {
+                                                                          return $$String.concat("", /* :: */[
+                                                                                      param[0],
+                                                                                      /* :: */[
+                                                                                        ":",
+                                                                                        /* :: */[
+                                                                                          param[1],
+                                                                                          /* :: */[
+                                                                                            ";",
+                                                                                            /* [] */0
+                                                                                          ]
+                                                                                        ]
+                                                                                      ]
+                                                                                    ]);
+                                                                        }, param[0])),
+                                                                /* :: */[
+                                                                  '"',
+                                                                  /* [] */0
+                                                                ]
+                                                              ]
+                                                            ]);
+                                              
+                                            }
+                                          }
+                                        }, param[4])),
                                 /* :: */[
-                                  "</",
+                                  ">",
                                   /* :: */[
-                                    tagName,
+                                    $$String.concat("", List.map(renderToHtmlString, param[5])),
                                     /* :: */[
-                                      ">",
-                                      /* [] */0
+                                      "</",
+                                      /* :: */[
+                                        tagName,
+                                        /* :: */[
+                                          ">",
+                                          /* [] */0
+                                        ]
+                                      ]
                                     ]
                                   ]
                                 ]

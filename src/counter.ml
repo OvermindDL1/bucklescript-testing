@@ -1,5 +1,4 @@
 
-open Tea.App
 open Tea.Html
 
 

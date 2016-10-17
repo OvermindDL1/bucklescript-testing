@@ -71,5 +71,6 @@ let main =
     init;
     update;
     view;
-    subscriptions=fun model -> Sub.none;
+    subscriptions = fun _model -> Sub.none;
   }
+

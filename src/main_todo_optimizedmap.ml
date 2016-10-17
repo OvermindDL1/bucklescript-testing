@@ -102,7 +102,7 @@ let update model = function
 
   | DeleteComplete ->
     { model with
-      entries = IntMap.filter (fun id {completed} -> not completed) model.entries
+      entries = IntMap.filter (fun _id {completed;_} -> not completed) model.entries
     }, Cmd.none
 
   | Check (id, completed) ->
@@ -147,7 +147,7 @@ let viewEntry todo () =
     ]
     [ div
         [ class' "view" ]
-        [ input
+        [ input'
             [ class' "toggle"
             ; type' "checkbox"
             ; checked todo.completed
@@ -163,7 +163,7 @@ let viewEntry todo () =
             ]
             []
         ]
-    ; input
+    ; input'
         [ class' "edit"
         ; value todo.description
         ; name "title"
@@ -183,14 +183,14 @@ let viewEntries visibility entries =
     | "Active" -> not todo.completed
     | _ -> true in
   let allCompleted =
-    IntMap.for_all (fun id {completed} -> completed) entries in
+    IntMap.for_all (fun _id {completed;_} -> completed) entries in
   let cssVisibility =
     if IntMap.is_empty entries then "hidden" else "visible" in
   section
     [ class' "main"
     ; style "visibility" cssVisibility
     ]
-    [ input
+    [ input'
         [ class' "toggle-all"
         ; type' "checkbox"
         ; name "toggle"
@@ -203,7 +203,7 @@ let viewEntries visibility entries =
         [ text "Mark all as complete" ]
     ; ul
         [ class' "todo-list" ]
-        (IntMap.bindings entries |> List.map (fun (id, todo) -> if isVisible todo then lazy1 (string_of_int todo.id ^ string_of_bool todo.completed ^ string_of_bool todo.editing) (viewEntry todo) else noNode))
+        (IntMap.bindings entries |> List.map (fun (_id, todo) -> if isVisible todo then lazy1 (string_of_int todo.id ^ string_of_bool todo.completed ^ string_of_bool todo.editing) (viewEntry todo) else noNode))
 ]
 
 
@@ -211,7 +211,7 @@ let viewInput task () =
   header ~key:task
     [ class' "header" ]
     [ h1 [] [ text "todos" ]
-    ; input
+    ; input'
         [ class' "new-todo"
         ; placeholder "What needs to be done?"
         ; autofocus true
@@ -265,7 +265,7 @@ let viewControlsClear entriesCompleted =
 
 let viewControls visibility entries =
   let entriesCompleted =
-    IntMap.fold (fun id {completed} c -> if completed then c + 1 else c) entries 0 in
+    IntMap.fold (fun _id {completed;_} c -> if completed then c + 1 else c) entries 0 in
   let len = IntMap.cardinal entries in
   let entriesLeft =
     len - entriesCompleted in
@@ -320,5 +320,5 @@ let main =
     { init
     ; update
     ; view
-    ; subscriptions = (fun model -> Sub.none)
+    ; subscriptions = (fun _model -> Sub.none)
     }

@@ -30,7 +30,7 @@ let subscribe tagger =
     let notifyHandler location =
       callbacks.enqueue (tagger location) in
     let () = notifier := Some notifyHandler in
-    let handler : Web.Node.event_cb = fun [@bs] event ->
+    let handler : Web.Node.event_cb = fun [@bs] _event ->
       notifyUrlChange () in
     let () = Web.Window.addEventListener "popstate" handler false in
     fun () -> Web.Window.removeEventListener "popstate" handler false
@@ -47,7 +47,7 @@ let pushState url =
 
 
 let modifyUrl url =
-  Tea_cmd.call (fun enqueue ->
+  Tea_cmd.call (fun _enqueue ->
       let () = replaceState url in
       let () = notifyUrlChange () in
       ()
@@ -55,7 +55,7 @@ let modifyUrl url =
 
 
 let newUrl url =
-  Tea_cmd.call (fun enqueue ->
+  Tea_cmd.call (fun _enqueue ->
       let () = pushState url in
       let () = notifyUrlChange () in
       ()
@@ -72,7 +72,7 @@ let navigationProgram locationToMessage stuff =
         ; stuff.subscriptions model
         ] in
 
-    let open Tea_app in
+    let open! Tea_app in
     program
       { init = init
       ; update = stuff.update

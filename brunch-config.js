@@ -26,7 +26,8 @@ module.exports = {
       tempOutputFolder: "tmp",
       compileAllAtOnce: process.platform == 'win32',
       bscParameters: [
-        "-bs-cross-module-opt"
+        "-bs-cross-module-opt",
+        "-w", "+a-29-42"
       ],
       verbosity: 1
     }
@@ -34,8 +35,8 @@ module.exports = {
 
   modules: {
     autoRequire: {
-      'app.js': ['src/main_entry.ml'],
-    },
+      'app.js': ['src/main_entry.ml']
+    }
   },
 
   npm: {

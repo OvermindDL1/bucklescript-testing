@@ -59,9 +59,9 @@ let viewValidation model =
 
 let view model =
   div []
-    [ input [ type' "text"; placeholder "Name"; onInput (fun s -> Name s) ] []
-    ; input [ type' "password"; placeholder "Password"; onInput (fun s -> Password s) ] []
-    ; input [ type' "password"; placeholder "Re-enter Password"; onInput (fun s -> PasswordAgain s) ] []
+    [ input' [ type' "text"; placeholder "Name"; onInput (fun s -> Name s) ] []
+    ; input' [ type' "password"; placeholder "Password"; onInput (fun s -> Password s) ] []
+    ; input' [ type' "password"; placeholder "Re-enter Password"; onInput (fun s -> PasswordAgain s) ] []
     ; viewValidation model
     ]
 

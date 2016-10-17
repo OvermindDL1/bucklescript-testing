@@ -44,7 +44,7 @@ let strong ?(key="") ?(unique="") props nodes = fullnode "" "strong" key unique 
 
 let button ?(key="") ?(unique="") props nodes = fullnode "" "button" key unique props nodes
 
-let input ?(key="") ?(unique="") props nodes = fullnode "" "input" key unique props nodes
+let input' ?(key="") ?(unique="") props nodes = fullnode "" "input" key unique props nodes
 
 let label ?(key="") ?(unique="") props nodes = fullnode "" "label" key unique props nodes
 
@@ -79,8 +79,8 @@ let class' name = prop "className" name
 
 let classList classes =
   classes
-  |> List.filter (fun (fst, snd) -> snd)
-  |> List.map (fun (fst, snd) -> fst)
+  |> List.filter (fun (_fst, snd) -> snd)
+  |> List.map (fun (fst, _snd) -> fst)
   |> String.concat " "
   |> class'
 
@@ -126,13 +126,13 @@ let onInput ?(key="") msg =
        ) *)
 
 let onClick ?(key="") msg =
-  onKeyed "click" key (fun ev -> Some msg)
+  onKeyed "click" key (fun _ev -> Some msg)
 
 let onDoubleClick ?(key="") msg =
-  onKeyed "dblclick" key (fun ev -> Some msg)
+  onKeyed "dblclick" key (fun _ev -> Some msg)
 
 let onBlur ?(key="") msg =
-  onKeyed "blur" key (fun ev -> Some msg)
+  onKeyed "blur" key (fun _ev -> Some msg)
 
 let onFocus ?(key="") msg =
-  onKeyed "focus" key (fun ev -> Some msg)
+  onKeyed "focus" key (fun _ev -> Some msg)

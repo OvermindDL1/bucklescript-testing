@@ -94,16 +94,18 @@ let rec renderToHtmlString = function
   | NoVNode -> ""
   | Text s -> s
   | Node (namespace, tagName, _key, _unique, props, vdoms) ->
-    let rec renderProp = function
+    let renderProp = function
       | NoProp -> ""
       | RawProp (k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
-      | Attribute (namespace, k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
+      | Attribute (_namespace, k, v) -> String.concat "" [" "; k; "=\""; v; "\""]
       | Data (k, v) -> String.concat "" [" data-"; k; "=\""; v; "\""]
-      | Event (typ, key, v) -> String.concat "" [" "; typ; "=\"js:"; Js.typeof v; "\""]
+      | Event (typ, _key, v) -> String.concat "" [" "; typ; "=\"js:"; Js.typeof v; "\""]
       | Style s -> String.concat "" [" style=\""; String.concat ";" (List.map (fun (k, v) -> String.concat "" [k;":";v;";"]) s); "\""]
     in
     String.concat ""
       [ "<"
+      ; namespace
+      ; if namespace = "" then "" else ":"
       ; tagName
       ; String.concat "" (List.map (fun p -> renderProp p) props)
       ; ">"
@@ -115,7 +117,7 @@ let rec renderToHtmlString = function
   | LazyGen (_key, gen, _cache) ->
     let vdom = gen () in
     renderToHtmlString vdom
-  | Tagger (tagger, vdom) -> renderToHtmlString vdom
+  | Tagger (_tagger, vdom) -> renderToHtmlString vdom
 
   (* | KeyedNode (elemType, props, vdoms) -> String.concat ":" ["UNIMPLEMENTED"; elemType] *)
 
@@ -237,7 +239,7 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
   | RawProp (k, v) -> Web.Node.setProp elem k v
   | Attribute (namespace, k, v) -> Web.Node.setAttributeNsOptional elem namespace k v
   | Data (k, v) -> Js.log ("TODO:  Add Data Unhandled", k, v); failwith "TODO:  Add Data Unhandled"
-  | Event (t, k, f) ->
+  | Event (t, _k, f) ->
     (* let () = Js.log ("Adding event", elem, t, k, f) in *)
     (* let cb : Web.Node.event_cb =
       fun [@bs] ev ->
@@ -251,7 +253,7 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
     let handler : Web.Node.event_cb =
       fun [@bs] ev -> match Js.Undefined.to_opt ev##target with
         | None -> failwith "Element Event called without being attached to an element?!  Report this with minimal test case!"
-        | Some target ->
+        | Some _target ->
           (* let () = Js.log ("ON-EVENT", elem, idx, ev) in *)
           let userCB = Web.Node.getProp elem (_handlerName idx "cb") in
           userCB ev [@bs] in
@@ -261,12 +263,12 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
   | Style s ->
     List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k (Js.Null.return v)) () s
 
-let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
+let patchVNodesOnElems_PropertiesApply_Remove _callbacks elem idx = function
   | NoProp -> ()
-  | RawProp (k, v) -> Web.Node.setProp elem k Js.Undefined.empty
-  | Attribute (namespace, k, v) -> Web.Node.removeAttributeNsOptional elem namespace k
+  | RawProp (k, _v) -> Web.Node.setProp elem k Js.Undefined.empty
+  | Attribute (namespace, k, _v) -> Web.Node.removeAttributeNsOptional elem namespace k
   | Data (k, v) -> Js.log ("TODO:  Remove Data Unhandled", k, v); failwith "TODO:  Remove Data Unhandled"
-  | Event (t, k, f) ->
+  | Event (t, _k, _f) ->
     (* let () = Js.log ("Removing Event", elem, t, k, f) in *)
     let () = match Js.Undefined.to_opt (Web.Node.getProp_asEventListener elem (_handlerName idx)) with
       | None -> failwith "Something else has messed with the DOM, inconsistent state!"
@@ -274,7 +276,7 @@ let patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx = function
     let () = Web.Node.setProp elem (_handlerName idx "cb") Js.Undefined.empty in
     let () = Web.Node.setProp_asEventListener elem (_handlerName idx "") Js.Undefined.empty in
     ()
-  | Style s -> List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k Js.Null.empty) () s
+  | Style s -> List.fold_left (fun () (k, _v) -> Web.Node.setStyle elem k Js.Null.empty) () s
 
 let patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp =
   let () = patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx oldProp in
@@ -292,10 +294,10 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
   | Data  (k, v) as _newProp -> Js.log ("TODO:  Mutate Data Unhandled", k, v)
   (* Wow but adding and removing event handlers is slow on the DOM, lets do this to see if it is faster... *)
   (* Initial profiling tests reveal a fairly substantial speed improvement in event handlers switching now! *)
-  | Event (t, k, f) as newProp ->
+  | Event (t, _k, f) as newProp ->
     (* let () = Js.log ("Mutating event", elem, oldProp, newProp) in *)
-    let oldT = match oldProp with
-      | Event (oldT, oldK, oldF) -> oldT
+    let oldT = match [@ocaml.warning "-4"] oldProp with
+      | Event (oldT, _oldK, _oldF) -> oldT
       | _ -> failwith "This should never be called as all entries to mutate are gated to the same types" in
     if oldT = t then
       let cb = _usercb callbacks f in
@@ -304,7 +306,7 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
     else patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp
   | Style s as _newProp ->
     (* let () = Js.log ("Mutating Style", elem, oldProp, _newProp) in *)
-    match oldProp with
+    match [@ocaml.warning "-4"] oldProp with
     | Style oldS ->
       List.fold_left2 (fun () (ok, ov) (nk, nv) ->
           if ok = nk then
@@ -320,7 +322,7 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
 
 let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newProperties =
   (* let () = Js.log ("PROPERTY-APPLY", elem, idx, oldProperties, newProperties) in *)
-  match oldProperties, newProperties with
+  match [@ocaml.warning "-4"] oldProperties, newProperties with
   | [], [] -> ()
   | [], newProp :: newRest ->
     let () = patchVNodesOnElems_PropertiesApply_Add callbacks elem idx newProp in
@@ -349,7 +351,7 @@ let rec patchVNodesOnElems_PropertiesApply callbacks elem idx oldProperties newP
   (* Event *)
   (* | Event (oldTyp, oldKey, oldCbev) :: oldRest, Event (newTyp, newKey, newCbev) :: newRest ->
      let () = if oldTyp = newTyp && oldKey = newKey then () else *)
-  | (Event (oldTyp, oldKey, oldCbev) as oldProp) :: oldRest, (Event (newTyp, newKey, newCbev) as newProp) :: newRest ->
+  | (Event (oldTyp, oldKey, _oldCbev) as oldProp) :: oldRest, (Event (newTyp, newKey, _newCbev) as newProp) :: newRest ->
     (* let () = Js.log ("Event Test", elem, idx, oldProp, newProp, oldTyp = newTyp && oldKey = newKey, oldRest, newRest) in *)
     (* TODO:  This is such a *BAD* way of doing this, but event removal needs to be passed in the same func as what was
        registered.  So we enforce a string key, which is more than what some virtualdoms allow for at least since with
@@ -405,8 +407,8 @@ let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
     child *)
 
 
-let rec patchVNodesOnElems_ReplaceNode callbacks elem elems idx = function
-  | (Node (newNamespace, newTagName, newKey, newUnique, newProperties, newChildren)) ->
+let rec patchVNodesOnElems_ReplaceNode callbacks elem elems idx = function [@ocaml.warning "-4"]
+  | (Node (newNamespace, newTagName, _newKey, _newUnique, newProperties, newChildren)) ->
     let oldChild = elems.(idx) in
     let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
     let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
@@ -427,7 +429,7 @@ and patchVNodesOnElems_CreateElement callbacks = function
     let childChildren = Web.Node.childNodes newChild in
     let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
     newChild
-  | LazyGen (newKey, newGen, newCache) ->
+  | LazyGen (_newKey, newGen, newCache) ->
     let vdom = newGen () in
     let () = newCache := vdom in
     patchVNodesOnElems_CreateElement callbacks vdom
@@ -437,8 +439,8 @@ and patchVNodesOnElems_CreateElement callbacks = function
 
 and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
   (* let () = Js.log ("patchVNodesOnElems", elem, elems, idx, oldVNodes, newVNodes) in *)
-  match oldVNodes, newVNodes with
-  | Tagger (oldTagger, oldVdom) :: oldRest, _ ->
+  match [@ocaml.warning "-4"] oldVNodes, newVNodes with
+  | Tagger (_oldTagger, oldVdom) :: oldRest, _ ->
     (* let () = Js.log ("Tagger", "old", oldTagger, oldVdom) in *)
     patchVNodesOnElems callbacks elem elems idx (oldVdom :: oldRest) newVNodes
   | oldNode :: oldRest, Tagger (newTagger, newVdom) :: newRest ->
@@ -450,7 +452,7 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
     let newChild = patchVNodesOnElems_CreateElement callbacks newNode in
     let _attachedChild = Web.Node.appendChild elem newChild in
     patchVNodesOnElems callbacks elem elems (idx + 1) [] newRest
-  | oldVnode :: oldRest, [] ->
+  | _oldVnode :: oldRest, [] ->
     let child = elems.(idx) in
     let _removedChild = Web.Node.removeChild elem child in
     patchVNodesOnElems callbacks elem elems idx oldRest [] (* Not changing idx so we can delete the rest too *)
@@ -460,14 +462,15 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
       let child = elems.(idx) in
       Web.Node.set_nodeValue child newText in
     patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
-  | LazyGen (oldKey, oldGen, oldCache) :: oldRest, LazyGen (newKey, newGen, newCache) :: newRest ->
+  | LazyGen (oldKey, _oldGen, oldCache) :: oldRest, LazyGen (newKey, newGen, newCache) :: newRest ->
     if oldKey = newKey then
       (* let () = Js.log ("Lazy match!", oldKey, newKey, elem, elems, idx) in *)
       let () = newCache := !oldCache in (* Don't forget to pass the cache along... *)
       patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
     else
       ( match oldRest, newRest with
-        | LazyGen (olderKey, olderGen, olderCache) :: olderRest, LazyGen (newerKey, newerGen, newerCache) :: newerRest when olderKey = newKey && oldKey = newerKey ->
+        | LazyGen (olderKey, _olderGen, _olderCache) :: olderRest,
+          LazyGen (newerKey, _newerGen, _newerCache) :: newerRest when olderKey = newKey && oldKey = newerKey ->
           (* let () = Js.log ("Lazy older newer swap", olderKey, oldKey, newKey, newerKey, elem, elems.(idx)) in *)
           (* TODO:  Test this branch, it is untested thus far *)
           let firstChild = elems.(idx) in
@@ -475,14 +478,14 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
           let _removedChild = Web.Node.removeChild elem secondChild in
           let _attachedChild = Web.Node.insertBefore elem secondChild firstChild in
           patchVNodesOnElems callbacks elem elems (idx+2) olderRest newerRest
-        | LazyGen (olderKey, olderGen, olderCache) :: olderRest, _ when olderKey = newKey ->
+        | LazyGen (olderKey, _olderGen, olderCache) :: olderRest, _ when olderKey = newKey ->
           (* let () = Js.log ("Lazy older match", olderKey, oldKey, newKey, elem, elems.(idx)) in *)
           let oldChild = elems.(idx) in
           let _removedChild = Web.Node.removeChild elem oldChild in
           let oldVdom = !olderCache in
           let () = newCache := oldVdom in (* Don't forget to pass the cache along... *)
           patchVNodesOnElems callbacks elem elems (idx+1) olderRest newRest
-        | _, LazyGen (newerKey, newerGen, newerCache) :: newerRest when newerKey = oldKey ->
+        | _, LazyGen (newerKey, _newerGen, _newerCache) :: _newerRest when newerKey = oldKey ->
           (* let () = Js.log ("Lazy newer match", "parse", oldKey, newKey, newerKey, elem, elems.(idx)) in *)
           let oldChild = elems.(idx) in
           let newVdom = newGen () in
@@ -516,8 +519,8 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
       patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
     else (* Keys do not match but do exist *)
       ( match oldRest, newRest with
-        | Node (olderNamespace, olderTagName, olderKey, olderUnique, olderProperties, olderChildren) :: olderRest,
-          Node (newerNamespace, newerTagName, newerKey, newerUnique, newerProperties, newerChildren) :: newerRest
+        | Node (olderNamespace, olderTagName, olderKey, _olderUnique, _olderProperties, _olderChildren) :: olderRest,
+          Node (newerNamespace, newerTagName, newerKey, _newerUnique, _newerProperties, _newerChildren) :: newerRest
           when olderNamespace = newNamespace && olderTagName = newTagName && olderKey = newKey &&
                oldNamespace = newerNamespace && oldTagName = newerTagName && oldKey = newerKey ->
           (* let () = Js.log ("Node test", "older newer swap", elem, elems.(idx), newNode) in *)
@@ -527,13 +530,13 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
           let _removedChild = Web.Node.removeChild elem secondChild in
           let _attachedChild = Web.Node.insertBefore elem secondChild firstChild in
           patchVNodesOnElems callbacks elem elems (idx+2) olderRest newerRest
-        | Node (olderNamespace, olderTagName, olderKey, olderUnique, olderProperties, olderChildren) :: olderRest, _
+        | Node (olderNamespace, olderTagName, olderKey, _olderUnique, _olderProperties, _olderChildren) :: olderRest, _
           when olderNamespace = newNamespace && olderTagName = newTagName && olderKey = newKey ->
           (* let () = Js.log ("Node test", "older match", elem, elems.(idx), newNode) in *)
           let oldChild = elems.(idx) in
           let _removedChild = Web.Node.removeChild elem oldChild in
           patchVNodesOnElems callbacks elem elems (idx+1) olderRest newRest
-        | _, Node (newerNamespace, newerTagName, newerKey, newerUnique, newerProperties, newerChildren) :: newerRest
+        | _, Node (newerNamespace, newerTagName, newerKey, _newerUnique, _newerProperties, _newerChildren) :: _newerRest
           when oldNamespace = newerNamespace && oldTagName = newerTagName && oldKey = newerKey ->
             (* let () = Js.log ("Node test", "newer match", elem, elems.(idx), newNode) in *)
           let oldChild = elems.(idx) in

@@ -99,7 +99,7 @@ let update model = function
 
   | DeleteComplete ->
     { model with
-      entries = List.filter (fun {completed} -> not completed) (Array.to_list model.entries) |> Array.of_list
+      entries = List.filter (fun {completed;_} -> not completed) (Array.to_list model.entries) |> Array.of_list
     }, Cmd.none
 
   | Check (id, completed) ->
@@ -144,7 +144,7 @@ let viewEntry todo () =
     ]
     [ div
         [ class' "view" ]
-        [ input
+        [ input'
             [ class' "toggle"
             ; type' "checkbox"
             ; checked todo.completed
@@ -160,7 +160,7 @@ let viewEntry todo () =
             ]
             []
         ]
-    ; input
+    ; input'
         [ class' "edit"
         ; value todo.description
         ; name "title"
@@ -180,14 +180,14 @@ let viewEntries visibility entries =
     | "Active" -> not todo.completed
     | _ -> true in
   let allCompleted =
-    Array.fold_left (fun b {completed} -> b && completed) true entries in
+    Array.fold_left (fun b {completed;_} -> b && completed) true entries in
   let cssVisibility =
     if Array.length entries = 0 then "hidden" else "visible" in
   section
     [ class' "main"
     ; style "visibility" cssVisibility
     ]
-    [ input
+    [ input'
         [ class' "toggle-all"
         ; type' "checkbox"
         ; name "toggle"
@@ -208,7 +208,7 @@ let viewInput task () =
   header ~key:task
     [ class' "header" ]
     [ h1 [] [ text "todos" ]
-    ; input
+    ; input'
         [ class' "new-todo"
         ; placeholder "What needs to be done?"
         ; autofocus true
@@ -262,7 +262,7 @@ let viewControlsClear entriesCompleted =
 
 let viewControls visibility entries =
   let entriesCompleted =
-    Array.fold_left (fun c {completed} -> if completed then c + 1 else c) 0 entries in
+    Array.fold_left (fun c {completed;_} -> if completed then c + 1 else c) 0 entries in
   let entriesLeft =
     Array.length entries - entriesCompleted in
   footer
@@ -316,5 +316,5 @@ let main =
     { init
     ; update
     ; view
-    ; subscriptions = (fun model -> Sub.none)
+    ; subscriptions = (fun _model -> Sub.none)
     }

@@ -82,7 +82,7 @@ let programStateWrapper initModel pump shutdown =
 (* let programStateWrapper : 'model -> ('msg Vdom.applicationCallbacks ref -> 'model -> 'msg -> 'model) -> 'msg programInterface = fun initModel pump -> *)
   let open Vdom in
   let model = ref initModel in
-  let callbacks = ref { enqueue = fun msg -> Js.log "INVALID enqueue CALL!" } in
+  let callbacks = ref { enqueue = fun _msg -> Js.log "INVALID enqueue CALL!" } in
   let pumperInterfaceC () = pump callbacks in
   let pumperInterface = pumperInterfaceC () in
   (* let handler = function
@@ -113,7 +113,7 @@ let programStateWrapper initModel pump shutdown =
   } in
   let () = (callbacks := finalizedCBs) in
   let pi_requestShutdown () =
-    let () = callbacks := { enqueue = fun msg -> () } in
+    let () = callbacks := { enqueue = fun _msg -> Js.log "INVALID message enqueued when shut down" } in
     let cmd = shutdown !model in
     let () = pumperInterface.shutdown cmd in
     () in
@@ -127,7 +127,7 @@ let programLoop update view subscriptions initModel initCmd = function
   | None -> fun callbacks ->
     let oldSub = ref Tea_sub.none in
     let handleSubscriptionChange model =
-      let open Vdom in
+      (* let open Vdom in *)
       let newSub = subscriptions model in
       oldSub := (Tea_sub.run callbacks callbacks !oldSub newSub) in
     { startup =
@@ -139,7 +139,7 @@ let programLoop update view subscriptions initModel initCmd = function
     ; handleMsg =
         ( fun model msg ->
             let newModel, cmd = update model msg in (* TODO:  Process commands to callbacks *)
-            let open Vdom in
+            (* let open Vdom in *)
             let () = Tea_cmd.run callbacks cmd in
             let () = handleSubscriptionChange newModel in
             newModel
@@ -189,7 +189,7 @@ let programLoop update view subscriptions initModel initCmd = function
     (*  Initial render *)
     let oldSub = ref Tea_sub.none in
     let handleSubscriptionChange model =
-      let open Vdom in
+      (* let open Vdom in *)
       let newSub = subscriptions model in
       oldSub := (Tea_sub.run callbacks callbacks !oldSub newSub) in
     let handlerStartup () =
@@ -202,7 +202,7 @@ let programLoop update view subscriptions initModel initCmd = function
     let handler model msg =
       let newModel, cmd = update model msg in
       let () = latestModel := newModel in
-      let open Vdom in
+      (* let open Vdom in *)
       (* let () = Js.log ("APP", "latestModel", "precmd", !latestModel) in *)
       let () = Tea_cmd.run callbacks cmd in
       (* let () = Js.log ("APP", "latestModel", "postcmd", !latestModel) in *)
@@ -219,7 +219,7 @@ let programLoop update view subscriptions initModel initCmd = function
       (* let () = Js.log ("APP", "latestModel", "postsub", !latestModel) in *)
       newModel in
     let handlerShutdown cmd =
-      let open Vdom in
+      (* let open Vdom in *)
       let () = nextFrameID := None in
       let () = Tea_cmd.run callbacks cmd in
       let () = oldSub := (Tea_sub.run callbacks callbacks !oldSub Tea_sub.none) in
@@ -258,7 +258,7 @@ let beginnerProgram : ('model, 'msg) beginnerProgram -> Web.Node.t Js.null_undef
       init = (fun () -> (model, Tea_cmd.none));
       update = (fun model msg -> (update model msg, Tea_cmd.none));
       view = view;
-      subscriptions = (fun model -> Tea_sub.none)
+      subscriptions = (fun _model -> Tea_sub.none)
     } pnode ()
 
 

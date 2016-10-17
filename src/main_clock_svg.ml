@@ -20,7 +20,7 @@ let update model =
   | Time time -> time, Cmd.none
 
 
-let subscriptions model =
+let subscriptions _model =
   (* let () = Js.log ("Subscriptions", model) in *)
   Time.every Time.second (fun t -> Time t)
 

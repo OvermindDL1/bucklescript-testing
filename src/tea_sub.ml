@@ -51,16 +51,16 @@ let rec run : type msgOld msgNew . msgOld Vdom.applicationCallbacks ref -> msgNe
       | Mapper (mapper, sub) ->
         let subCallbacks = mapper callbacks in
         disable subCallbacks sub
-      | Registration (_key, enCB, diCB) ->
+      | Registration (_key, _enCB, diCB) ->
         match !diCB with
         | None -> ()
         | Some cb ->
           let () = diCB := None in
           cb ()
       in
-    match oldSub, newSub with
+    match [@ocaml.warning "-4"] oldSub, newSub with
     | NoSub, NoSub -> newSub
-    | Registration (oldKey, oldEnCB, oldDiCB), Registration (newKey, newEnCB, newDiCB) when oldKey = newKey ->
+    | Registration (oldKey, _oldEnCB, oldDiCB), Registration (newKey, _newEnCB, newDiCB) when oldKey = newKey ->
       let () = newDiCB := !oldDiCB in
       newSub
     | Mapper (oldMapper, oldSubSub), Mapper (newMapper, newSubSub) ->

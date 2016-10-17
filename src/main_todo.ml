@@ -99,7 +99,7 @@ let update model = function
 
   | DeleteComplete ->
     { model with
-      entries = List.filter (fun {completed} -> not completed) model.entries
+      entries = List.filter (fun {completed;_} -> not completed) model.entries
     }, Cmd.none
 
   | Check (id, completed) ->
@@ -140,7 +140,7 @@ let viewEntry todo =
     ]
     [ div
         [ class' "view" ]
-        [ input
+        [ input'
             [ class' "toggle"
             ; type' "checkbox"
             ; checked todo.completed
@@ -156,7 +156,7 @@ let viewEntry todo =
             ]
             []
         ]
-    ; input
+    ; input'
         [ class' "edit"
         ; value todo.description
         ; name "title"
@@ -176,14 +176,14 @@ let viewEntries visibility entries =
     | "Active" -> not todo.completed
     | _ -> true in
   let allCompleted =
-    List.for_all (fun {completed} -> completed) entries in
+    List.for_all (fun {completed;_} -> completed) entries in
   let cssVisibility =
     if [] = entries then "hidden" else "visible" in
   section
     [ class' "main"
     ; style "visibility" cssVisibility
     ]
-    [ input
+    [ input'
         [ class' "toggle-all"
         ; type' "checkbox"
         ; name "toggle"
@@ -202,7 +202,7 @@ let viewInput task =
   header
     [ class' "header" ]
     [ h1 [] [ text "todos" ]
-    ; input
+    ; input'
         [ class' "new-todo"
         ; placeholder "What needs to be done?"
         ; autofocus true
@@ -256,7 +256,7 @@ let viewControlsClear entriesCompleted =
 
 let viewControls visibility entries =
   let entriesCompleted =
-    List.length (List.filter (fun {completed} -> completed) entries) in
+    List.length (List.filter (fun {completed;_} -> completed) entries) in
   let entriesLeft =
     List.length entries - entriesCompleted in
   footer
@@ -307,5 +307,5 @@ let main =
     { init
     ; update
     ; view
-    ; subscriptions = (fun model -> Sub.none)
+    ; subscriptions = (fun _model -> Sub.none)
     }

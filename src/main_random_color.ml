@@ -30,7 +30,7 @@ let update model = function
   | NewColor (r, g, b) -> { r; g; b }, Cmd.none
 
 
-let subscriptions model =
+let subscriptions _model =
   Sub.none
 
 
