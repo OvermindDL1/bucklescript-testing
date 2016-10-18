@@ -1,3 +1,4 @@
+// -*- js-indent-level: 2 -*-
 // See http://brunch.io for documentation.
 module.exports = {
   files: {
@@ -27,7 +28,17 @@ module.exports = {
       compileAllAtOnce: process.platform == 'win32',
       bscParameters: [
         "-bs-cross-module-opt",
+        "-safe-string",
         "-w", "+a-4-29-42"
+      ],
+      ppxs: [
+        // "ppx_deriving",
+      //   "ppx_compare",
+      //   "ppx_variants_conv",
+      //   "ppx_fields_conv",
+      //   "ppx_here",
+      //   "ppx_fail",
+      //   "ppx_pipebang"
       ],
       verbosity: 1
     }
