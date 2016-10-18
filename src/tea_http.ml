@@ -1,10 +1,5 @@
 
 
-(* TODO:  Remove this when Bucklescript is updated to OCaml 4.03 as it includes result *)
-type ('a, 'b) result =
-  | Ok of 'a
-  | Error of 'b
-
 type response_status =
   { code : int
   ; message : string
