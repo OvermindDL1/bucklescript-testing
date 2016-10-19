@@ -19,6 +19,9 @@ module Program = Tea_program
 module Time = Tea_time
 
 
+module Json = Tea_json
+
+
 module Navigation = Tea_navigation
 
 

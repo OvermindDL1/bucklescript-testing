@@ -30,6 +30,8 @@ let span ?(key="") ?(unique="") props nodes = fullnode "" "span" key unique prop
 
 let p ?(key="") ?(unique="") props nodes = fullnode "" "p" key unique props nodes
 
+let pre ?(key="") ?(unique="") props nodes = fullnode "" "pre" key unique props nodes
+
 let a ?(key="") ?(unique="") props nodes = fullnode "" "a" key unique props nodes
 
 let section ?(key="") ?(unique="") props nodes = fullnode "" "section" key unique props nodes

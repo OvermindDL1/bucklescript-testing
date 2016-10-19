@@ -18,6 +18,9 @@ module Window = Web_window
 module Location = Web_location
 
 
+module Json = Web_json
+
+
 let polyfills () =
   let () = Node.remove_polyfill () in
   let () = Window.requestAnimationFrame_polyfill () in
