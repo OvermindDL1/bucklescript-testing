@@ -33,7 +33,7 @@ type body =
   | StringBody of string * string
   | FormDataBody
 
-type 'a expect = Expect of string * (string response -> ('a, string) result)
+type 'a expect = Expect of string * (string response -> ('a, string) Tea_result.t)
 
 type 'a rawRequest =
   { method' : string
@@ -52,7 +52,7 @@ let expectStringResponse func =
 
 
 let expectString =
-  expectStringResponse (fun response -> Ok response.body)
+  expectStringResponse (fun response -> Tea_result.Ok response.body)
 
 
 let request rawRequest =
