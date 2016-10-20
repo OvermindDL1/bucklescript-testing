@@ -27,7 +27,6 @@ type msg =
   | NoOp
   | GetBook of string
   | GetBookProgress of string Progress.t
-(* [@@deriving variants] *)
 
 
 let subscriptions model =
@@ -36,7 +35,6 @@ let subscriptions model =
   | Some bookUrl ->
     Http.getString bookUrl
     |> Http.Progress.track bookUrl (fun progress -> GetBookProgress progress)
-    (* |> Http.Progress.track bookUrl getBookProgress *)
 
 
 let update model = function

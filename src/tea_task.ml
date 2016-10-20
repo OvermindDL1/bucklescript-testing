@@ -1,29 +1,162 @@
 
-type ('fail, 'succeed) t =
-  | Succeed of 'succeed
-  | Fail of 'fail
-  | AndThen of ('fail, 'succeed) t * ('succeed -> unit)
-  | OnError of ('fail, 'succeed) t * ('fail -> unit)
+type never
+
+type ('succeed, 'fail) t =
+  (* | Succeed : (('fail, 'succed) Tea_result.t -> unit -> (never, 'succeed) t *)
+  (* | Fail : 'value -> ('fail, never) t *)
+  Task : ((('succeed, 'fail) Tea_result.t -> unit) -> unit) -> ('succeed, 'fail) t
+  (* | Task : (unit -> ('fail, 'succeed) Tea_result.t) -> ('fail, 'succeed) t *)
+  (* Task of ('msg Vdom.applicationCallbacks ref -> ('succeed, 'fail) Tea_result.t) *)
+  (* | Succeed of 'succeed *)
+  (* | Fail of 'fail *)
+  (* | AndThen of ('fail, 'succeed) t * ('succeed -> unit) *)
+  (* | OnError of ('fail, 'succeed) t * ('fail -> unit) *)
 
 
-let succeed value =
-  Succeed value
+(* Resolvers *)
 
 
-let fail value =
-  Fail value
+let performOpt (toOptionalMessage : 'value -> 'msg) (Task task : (never, 'msg) t) =
+  Tea_cmd.call (fun enqueue ->
+      let open Tea_result in
+      (* let cb value = enqueue (toOptionalMessage value) *)
+      let cb = function
+        | Error _e -> failwith "ERROR:  Task perfom was called with an error of never!"
+        | Ok v -> enqueue (toOptionalMessage v)
+      in task cb
+    )
+
+let perform toMessage task =
+  performOpt (fun v -> Some (toMessage v)) task
 
 
-let andThen _fn task =
-  let handler _succ = ()
-    in
-  AndThen (task, handler)
+let attemptOpt resultToOptionalMessage (Task task) =
+  Tea_cmd.call (fun enqueue ->
+      let cb value = enqueue (resultToOptionalMessage value) in
+      task cb
+    )
+
+let attempt resultToMessage task =
+  attemptOpt (fun v -> Some (resultToMessage v)) task
 
 
-let onError fn task =
-  OnError (task, fn)
+(* Tasks *)
+
+let succeed (value : 'v) : ('v, never) t =
+  Task (fun cb -> cb (Tea_result.Ok value))
 
 
-(* let testing =
-  succeed 42
-  |> onError (fun () -> succeed "stringy") *)
+let fail (value : 'v) : (never, 'v) t =
+  Task (fun cb -> cb (Tea_result.Error value))
+
+
+let andThen fn (Task task) =
+  let open Tea_result in
+  Task (fun cb ->
+      task (function
+          | Error _e as err -> cb err
+          | Ok v ->
+            let (Task nextTask) = fn v in
+            nextTask cb
+        )
+    )
+  (*     let open Tea_result in *)
+  (*     match task () with *)
+  (*     | Error _e as err -> err *)
+  (*     | Ok v -> Ok (fn v) *)
+  (*   ) *)
+
+
+let map func task1 =
+  task1
+  |> andThen (fun v1 -> succeed (func v1))
+
+
+let map2 func task1 task2 =
+  task1
+  |> andThen (fun v1 -> task2
+  |> andThen (fun v2 -> succeed (func v1 v2)))
+
+
+let map3 func task1 task2 task3 =
+  task1
+  |> andThen (fun v1 -> task2
+  |> andThen (fun v2 -> task3
+  |> andThen (fun v3 -> succeed (func v1 v2 v3))))
+
+
+let map4 func task1 task2 task3 task4 =
+  task1
+  |> andThen (fun v1 -> task2
+  |> andThen (fun v2 -> task3
+  |> andThen (fun v3 -> task4
+  |> andThen (fun v4 -> succeed (func v1 v2 v3 v4)))))
+
+
+let map5 func task1 task2 task3 task4 task5 =
+  task1
+  |> andThen (fun v1 -> task2
+  |> andThen (fun v2 -> task3
+  |> andThen (fun v3 -> task4
+  |> andThen (fun v4 -> task5
+  |> andThen (fun v5 -> succeed (func v1 v2 v3 v4 v5))))))
+
+
+let map6 func task1 task2 task3 task4 task5 task6 =
+  task1
+  |> andThen (fun v1 -> task2
+  |> andThen (fun v2 -> task3
+  |> andThen (fun v3 -> task4
+  |> andThen (fun v4 -> task5
+  |> andThen (fun v5 -> task6
+  |> andThen (fun v6 -> succeed (func v1 v2 v3 v4 v5 v6)))))))
+
+
+let rec sequence = function
+  | [] -> succeed []
+  | task :: remainingTasks ->
+    map2 (fun l r -> l :: r (* TODO:  Replace with `List.cons` when updated to version 4.03 *)) task (sequence remainingTasks)
+
+
+let onError fn (Task task) =
+  let open Tea_result in
+  Task (fun cb ->
+      task (function
+          | Ok _v as ok -> cb ok
+          | Error e ->
+            let (Task newTask) = fn e in
+            newTask cb
+        )
+    )
+
+
+let mapError func task =
+  task
+  |> onError (fun e -> fail (func e))
+
+
+let testing () =
+  let open Tea_result in
+  let doTest expected (Task task) =
+    let testAssert v =
+      if v = expected
+      then Js.log ("Passed:", expected)
+      else Js.log ("FAILED:", expected, v)
+    in task testAssert in
+  let s = succeed 42 in
+  let () = doTest (Ok 42) s in
+  let f = fail 86 in
+  let () = doTest (Error 86) f in
+  let a = succeed 2 |> andThen (fun n -> succeed (n + 2)) in
+  let () = doTest (Ok 4) a in
+  let m1 = map sqrt (succeed 9.) in
+  let () = doTest (Ok 3.) m1 in
+  let m2 = map2 (+) (succeed 9) (succeed 3) in
+  let () = doTest (Ok 12) m2 in
+  let s = sequence [ succeed 1; succeed 2 ] in
+  let () = doTest (Ok [1; 2]) s in
+  let e0 = fail "file not found" |> onError (fun _msg -> succeed 42) in
+  (* let () = doTest (Ok 42) e0 in *)
+  let e1 = succeed 9 |> onError (fun _msg -> succeed 42) in
+  let () = doTest (Ok 9) e1 in
+  ()
