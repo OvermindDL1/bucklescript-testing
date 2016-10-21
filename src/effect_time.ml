@@ -17,4 +17,14 @@ let every interval tagger =
 
 
 let delay msTime msg =
-  Cmd.call (fun enqueue -> let _unhandledID = Web.Window.setTimeout (fun () -> enqueue msg) msTime in ())
+  Cmd.call
+    ( fun callbacks ->
+        let _unhandledID =
+          Web.Window.setTimeout
+            ( fun () ->
+                let open Vdom in
+                !callbacks.enqueue msg
+            )
+            msTime
+        in ()
+    )

@@ -2,27 +2,24 @@
 type never
 
 type ('succeed, 'fail) t =
-  (* | Succeed : (('fail, 'succed) Tea_result.t -> unit -> (never, 'succeed) t *)
-  (* | Fail : 'value -> ('fail, never) t *)
-  Task : ((('succeed, 'fail) Tea_result.t -> unit) -> unit) -> ('succeed, 'fail) t
-  (* | Task : (unit -> ('fail, 'succeed) Tea_result.t) -> ('fail, 'succeed) t *)
-  (* Task of ('msg Vdom.applicationCallbacks ref -> ('succeed, 'fail) Tea_result.t) *)
-  (* | Succeed of 'succeed *)
-  (* | Fail of 'fail *)
-  (* | AndThen of ('fail, 'succeed) t * ('succeed -> unit) *)
-  (* | OnError of ('fail, 'succeed) t * ('fail -> unit) *)
+    Task : ((('succeed, 'fail) Tea_result.t -> unit) -> unit) -> ('succeed, 'fail) t
+    (* Task : ((('succeed, 'fail) Tea_result.t -> (unit -> unit)) -> (unit -> unit)) -> ('succeed, 'fail) t *)
 
+
+(* Helpers *)
+
+let nothing () = ()
 
 (* Resolvers *)
 
 
 let performOpt (toOptionalMessage : 'value -> 'msg) (Task task : ('msg, never) t) =
-  Tea_cmd.call (fun enqueue ->
+  Tea_cmd.call (fun callbacks ->
       let open Tea_result in
-      (* let cb value = enqueue (toOptionalMessage value) *)
+      let open Vdom in
       let cb = function
-        | Error _e -> failwith "ERROR:  Task perfom was called with an error of never!"
-        | Ok v -> enqueue (toOptionalMessage v)
+        | Error _e -> failwith "ERROR:  Task perfom returned error of never! Should not happen!"
+        | Ok v -> !callbacks.enqueue (toOptionalMessage v)
       in task cb
     )
 
@@ -31,8 +28,9 @@ let perform toMessage task =
 
 
 let attemptOpt resultToOptionalMessage (Task task) =
-  Tea_cmd.call (fun enqueue ->
-      let cb value = enqueue (resultToOptionalMessage value) in
+  Tea_cmd.call (fun callbacks ->
+      let open Vdom in
+      let cb value = !callbacks.enqueue (resultToOptionalMessage value) in
       task cb
     )
 
@@ -50,12 +48,17 @@ let fail (value : 'v) : ('s, 'v) t =
   Task (fun cb -> cb (Tea_result.Error value))
 
 
+let nativeBinding func =
+  Task func
+
+
 (* Chaining *)
 
 let andThen fn (Task task) =
   let open Tea_result in
   Task (fun cb ->
-      task (function
+      task
+        (function
           | Error _e as err -> cb err
           | Ok v ->
             let (Task nextTask) = fn v in
@@ -67,7 +70,8 @@ let andThen fn (Task task) =
 let onError fn (Task task) =
   let open Tea_result in
   Task (fun cb ->
-      task (function
+      task
+        (function
           | Ok _v as ok -> cb ok
           | Error e ->
             let (Task newTask) = fn e in
@@ -173,6 +177,6 @@ let testing () =
   let () = doTest (Error "3.14") n1 in
   let n2 = sequence [ mapError string_of_int (succeed 1); mapError string_of_float (succeed 2)] in
   let () = doTest (Ok [1;2]) n2 in
-  let c0 = performOpt (fun _ -> 42) (succeed 18) in
-  (* (\* Should not compile *\) let c1 = perform (fun _ -> 42) (fail 18) in *)
+  let _c0 = performOpt (fun _ -> 42) (succeed 18) in
+  (* (\* Should not compile *\) let _c1 = perform (fun _ -> 42) (fail 18) in *)
   ()

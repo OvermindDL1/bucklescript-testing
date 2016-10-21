@@ -24,7 +24,17 @@ let every interval tagger =
 
 
 let delay msTime msg =
-  Tea_cmd.call (fun enqueue -> let _unhandledID = Web.Window.setTimeout (fun () -> enqueue msg) msTime in ())
+  Tea_cmd.call
+    ( fun callbacks ->
+        let _unhandledID =
+          Web.Window.setTimeout
+            ( fun () ->
+                let open Vdom in
+                !callbacks.enqueue msg
+            )
+            msTime
+        in ()
+    )
 
 
 (* Generic Helpers *)

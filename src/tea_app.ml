@@ -138,14 +138,14 @@ let programLoop update view subscriptions initModel initCmd = function
         )
     ; handleMsg =
         ( fun model msg ->
-            let newModel, cmd = update model msg in (* TODO:  Process commands to callbacks *)
+            let newModel, cmd = update model msg in
             (* let open Vdom in *)
             let () = Tea_cmd.run callbacks cmd in
             let () = handleSubscriptionChange newModel in
             newModel
         )
     ; shutdown = (fun cmd ->
-          let () = Tea_cmd.run callbacks cmd in
+          let () = Tea_cmd.run callbacks cmd in (* TODO:  Perhaps add cancelable commands? *)
           let () = oldSub := (Tea_sub.run callbacks callbacks !oldSub Tea_sub.none) in
           ()
         )

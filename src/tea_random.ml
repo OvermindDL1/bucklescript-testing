@@ -92,11 +92,12 @@ let pair gen1 gen2 =
 
 
 let generate tagger (Generator genCmd) =
-  Tea_cmd.call (fun enqueue ->
+  Tea_cmd.call (fun callbacks ->
       let state = Random.get_state () in
       let genValue = genCmd state in
       let () = Random.set_state state in
-      enqueue (tagger genValue)
+      let open Vdom in
+      !callbacks.enqueue (tagger genValue)
     )
 
 

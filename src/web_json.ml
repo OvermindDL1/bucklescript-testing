@@ -11,7 +11,7 @@ let string_of_json ?(indent=2) value =
     try stringify v Js.Null.empty indent
     with _ -> ""
 
-let of_type (type a) (v : a kind) (x : a) : t =
+let of_type (type a) (_v : a kind) (x : a) : t =
   Obj.magic x
 
 let null : Js_types.null_val = Obj.magic Js.null

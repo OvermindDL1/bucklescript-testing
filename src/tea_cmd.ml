@@ -6,7 +6,7 @@ type 'msg t =
   | NoCmd
   | Tagger of ('msg applicationCallbacks ref -> unit)
   | Batch of 'msg t list
-  | EnqueueCall of (('msg -> unit) -> unit)
+  | EnqueueCall of ('msg applicationCallbacks ref -> unit)
 
 
 
@@ -22,22 +22,23 @@ let call call =
 
 
 let fnMsg fnMsg =
-  EnqueueCall (fun enqueue -> enqueue (fnMsg ()))
+  let open Vdom in
+  EnqueueCall (fun callbacks -> !callbacks.enqueue (fnMsg ()))
 
 
 let msg msg =
-  EnqueueCall (fun enqueue -> enqueue msg)
+  let open Vdom in
+  EnqueueCall (fun callbacks -> !callbacks.enqueue msg)
 
 
 let rec run callbacks =
-  let open Vdom in
   function
   | NoCmd -> ()
   | Tagger tagger -> tagger callbacks
   | Batch cmds -> List.fold_left (fun () cmd -> run callbacks cmd) () cmds
   | EnqueueCall cb ->
     (* let () = Js.log ("Cmd.run", "enqueue", cb) in *)
-    cb !callbacks.enqueue
+    cb callbacks
 
 
 
