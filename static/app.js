@@ -117,6 +117,7 @@
 
 (function() {
 var global = window;
+var process;
 var __makeRelativeRequire = function(require, mappings, pref) {
   var none = {};
   var tryReq = function(name, pref) {
@@ -8601,9 +8602,9 @@ var match_001 = /* array */[];
 
 var big_endian = /* false */0;
 
-var unix = /* false */0;
+var unix = /* true */1;
 
-var win32 = /* true */1;
+var win32 = /* false */0;
 
 var cygwin = /* false */0;
 
@@ -8627,7 +8628,7 @@ var argv = match_001;
 
 var executable_name = "cmd";
 
-var os_type = "Win32";
+var os_type = "Unix";
 
 var word_size = 32;
 
@@ -23533,6 +23534,7 @@ exports.writingMode                = writingMode;
 
 var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
 var Caml_obj                = require("bs-platform/lib/js/caml_obj");
+var Pervasives              = require("bs-platform/lib/js/pervasives");
 var Block                   = require("bs-platform/lib/js/block");
 var Curry                   = require("bs-platform/lib/js/curry");
 var Tea_cmd                 = require("./tea_cmd");
@@ -23600,6 +23602,30 @@ function andThen(fn, param) {
                         }
                       });
           }];
+}
+
+function onError(fn, param) {
+  var task = param[0];
+  return /* Task */[function (cb) {
+            return Curry._1(task, function (ok) {
+                        if (ok.tag) {
+                          var match = Curry._1(fn, ok[0]);
+                          return Curry._1(match[0], cb);
+                        }
+                        else {
+                          return Curry._1(cb, ok);
+                        }
+                      });
+          }];
+}
+
+function mapError(func, task) {
+  return onError(function (e) {
+              var value = Curry._1(func, e);
+              return /* Task */[function (cb) {
+                        return Curry._1(cb, /* Error */Block.__(1, [value]));
+                      }];
+            }, task);
 }
 
 function map(func, task1) {
@@ -23702,29 +23728,7 @@ function sequence(param) {
   }
 }
 
-function onError(fn, param) {
-  var task = param[0];
-  return /* Task */[function (cb) {
-            return Curry._1(task, function (ok) {
-                        if (ok.tag) {
-                          var match = Curry._1(fn, ok[0]);
-                          return Curry._1(match[0], cb);
-                        }
-                        else {
-                          return Curry._1(cb, ok);
-                        }
-                      });
-          }];
-}
-
-function mapError(func, task) {
-  return onError(function (e) {
-              var value = Curry._1(func, e);
-              return /* Task */[function (cb) {
-                        return Curry._1(cb, /* Error */Block.__(1, [value]));
-                      }];
-            }, task);
-}
+var testing_deop = [/* true */1];
 
 function testing() {
   var doTest = function (expected, param) {
@@ -23732,7 +23736,8 @@ function testing() {
                 if (Caml_obj.caml_equal(v, expected)) {
                   console.log(/* tuple */[
                         "Passed:",
-                        expected
+                        expected,
+                        v
                       ]);
                   return /* () */0;
                 }
@@ -23754,7 +23759,19 @@ function testing() {
       return Curry._1(cb, /* Error */Block.__(1, [86]));
     }];
   doTest(/* Error */Block.__(1, [86]), f);
-  var a = andThen(function (n) {
+  var r = function () {
+    if (testing_deop[0]) {
+      return /* Task */[function (cb) {
+                return Curry._1(cb, /* Ok */Block.__(0, [42]));
+              }];
+    }
+    else {
+      return /* Task */[function (cb) {
+                return Curry._1(cb, /* Error */Block.__(1, [3.14]));
+              }];
+    }
+  };
+  var a1 = andThen(function (n) {
         var value = n + 2 | 0;
         return /* Task */[function (cb) {
                   return Curry._1(cb, /* Ok */Block.__(0, [value]));
@@ -23762,7 +23779,16 @@ function testing() {
       }, /* Task */[function (cb) {
           return Curry._1(cb, /* Ok */Block.__(0, [2]));
         }]);
-  doTest(/* Ok */Block.__(0, [4]), a);
+  doTest(/* Ok */Block.__(0, [4]), a1);
+  var a2 = andThen(function (n) {
+        var value = "" + n;
+        return /* Task */[function (cb) {
+                  return Curry._1(cb, /* Ok */Block.__(0, [value]));
+                }];
+      }, /* Task */[function (cb) {
+          return Curry._1(cb, /* Ok */Block.__(0, [2]));
+        }]);
+  doTest(/* Ok */Block.__(0, ["2"]), a2);
   var m1 = map(function (prim) {
         return Math.sqrt(prim);
       }, /* Task */[function (cb) {
@@ -23777,7 +23803,11 @@ function testing() {
           return Curry._1(cb, /* Ok */Block.__(0, [3]));
         }]);
   doTest(/* Ok */Block.__(0, [12]), m2);
-  var s$1 = sequence(/* :: */[
+  var m3 = map(Pervasives.string_of_int, /* Task */[function (cb) {
+          return Curry._1(cb, /* Ok */Block.__(0, [9]));
+        }]);
+  doTest(/* Ok */Block.__(0, ["9"]), m3);
+  var s0 = sequence(/* :: */[
         /* Task */[function (cb) {
             return Curry._1(cb, /* Ok */Block.__(0, [1]));
           }],
@@ -23794,35 +23824,106 @@ function testing() {
               2,
               /* [] */0
             ]
-          ]]), s$1);
-  var e1 = onError(function () {
+          ]]), s0);
+  var s1 = sequence(/* :: */[
+        /* Task */[function (cb) {
+            return Curry._1(cb, /* Ok */Block.__(0, [1]));
+          }],
+        /* :: */[
+          /* Task */[function (cb) {
+              return Curry._1(cb, /* Error */Block.__(1, [2.7]));
+            }],
+          /* :: */[
+            r(/* () */0),
+            /* [] */0
+          ]
+        ]
+      ]);
+  doTest(/* Error */Block.__(1, [2.7]), s1);
+  var e0 = onError(function () {
         return /* Task */[function (cb) {
                   return Curry._1(cb, /* Ok */Block.__(0, [42]));
                 }];
       }, /* Task */[function (cb) {
-          return Curry._1(cb, /* Ok */Block.__(0, [9]));
+          return Curry._1(cb, /* Error */Block.__(1, ["file not found"]));
         }]);
-  doTest(/* Ok */Block.__(0, [9]), e1);
+  doTest(/* Ok */Block.__(0, [42]), e0);
+  var e1 = onError(function () {
+        return /* Task */[function (cb) {
+                  return Curry._1(cb, /* Error */Block.__(1, [42]));
+                }];
+      }, /* Task */[function (cb) {
+          return Curry._1(cb, /* Error */Block.__(1, ["file not found"]));
+        }]);
+  doTest(/* Error */Block.__(1, [42]), e1);
+  var n0 = sequence(/* :: */[
+        mapError(Pervasives.string_of_int, /* Task */[function (cb) {
+                return Curry._1(cb, /* Error */Block.__(1, [42]));
+              }]),
+        /* :: */[
+          mapError(Pervasives.string_of_float, /* Task */[function (cb) {
+                  return Curry._1(cb, /* Error */Block.__(1, [3.14]));
+                }]),
+          /* [] */0
+        ]
+      ]);
+  doTest(/* Error */Block.__(1, ["42"]), n0);
+  var n1 = sequence(/* :: */[
+        mapError(Pervasives.string_of_int, /* Task */[function (cb) {
+                return Curry._1(cb, /* Ok */Block.__(0, [1]));
+              }]),
+        /* :: */[
+          mapError(Pervasives.string_of_float, /* Task */[function (cb) {
+                  return Curry._1(cb, /* Error */Block.__(1, [3.14]));
+                }]),
+          /* [] */0
+        ]
+      ]);
+  doTest(/* Error */Block.__(1, ["3.14"]), n1);
+  var n2 = sequence(/* :: */[
+        mapError(Pervasives.string_of_int, /* Task */[function (cb) {
+                return Curry._1(cb, /* Ok */Block.__(0, [1]));
+              }]),
+        /* :: */[
+          mapError(Pervasives.string_of_float, /* Task */[function (cb) {
+                  return Curry._1(cb, /* Ok */Block.__(0, [2]));
+                }]),
+          /* [] */0
+        ]
+      ]);
+  doTest(/* Ok */Block.__(0, [/* :: */[
+            1,
+            /* :: */[
+              2,
+              /* [] */0
+            ]
+          ]]), n2);
+  performOpt(function () {
+        return 42;
+      }, /* Task */[function (cb) {
+          return Curry._1(cb, /* Ok */Block.__(0, [18]));
+        }]);
   return /* () */0;
 }
 
-exports.performOpt = performOpt;
-exports.perform    = perform;
-exports.attemptOpt = attemptOpt;
-exports.attempt    = attempt;
-exports.succeed    = succeed;
-exports.fail       = fail;
-exports.andThen    = andThen;
-exports.map        = map;
-exports.map2       = map2;
-exports.map3       = map3;
-exports.map4       = map4;
-exports.map5       = map5;
-exports.map6       = map6;
-exports.sequence   = sequence;
-exports.onError    = onError;
-exports.mapError   = mapError;
-exports.testing    = testing;
+exports.performOpt   = performOpt;
+exports.perform      = perform;
+exports.attemptOpt   = attemptOpt;
+exports.attempt      = attempt;
+exports.succeed      = succeed;
+exports.fail         = fail;
+exports.andThen      = andThen;
+exports.onError      = onError;
+exports.mapError     = mapError;
+exports.map          = map;
+exports.map2         = map2;
+exports.map3         = map3;
+exports.map4         = map4;
+exports.map5         = map5;
+exports.map6         = map6;
+exports.sequence     = sequence;
+exports.testing_deop = testing_deop;
+exports.testing      = testing;
 /* Tea_cmd Not a pure module */
 
 });
@@ -25084,44 +25185,44 @@ exports.map                                          = map;
 var Web_json = require("./web_json");
 
 function polyfills() {
-  ((
-  // remove polyfill
-  (function() {
-    if (!('remove' in Element.prototype)) {
-      Element.prototype.remove = function() {
-        if (this.parentNode) {
-          this.parentNode.removeChild(this);
-        }
-      };
-    };
-  }())
+  ((
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
   ));
-  ((
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }())
+  ((
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   ));
   return /* () */0;
 }
@@ -25517,17 +25618,17 @@ function get_nodeValue(n) {
 }
 
 function remove_polyfill() {
-  return (
-  // remove polyfill
-  (function() {
-    if (!('remove' in Element.prototype)) {
-      Element.prototype.remove = function() {
-        if (this.parentNode) {
-          this.parentNode.removeChild(this);
-        }
-      };
-    };
-  }())
+  return (
+  // remove polyfill
+  (function() {
+    if (!('remove' in Element.prototype)) {
+      Element.prototype.remove = function() {
+        if (this.parentNode) {
+          this.parentNode.removeChild(this);
+        }
+      };
+    };
+  }())
   );
 }
 
@@ -25598,32 +25699,32 @@ function removeEventListener(typ, listener, options) {
 }
 
 function requestAnimationFrame_polyfill() {
-  return (
-  // requestAnimationFrame polyfill
-  (function() {
-      var lastTime = 0;
-      var vendors = ['ms', 'moz', 'webkit', 'o'];
-      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
-      }
-
-      if (!window.requestAnimationFrame)
-          window.requestAnimationFrame = function(callback, element) {
-              var currTime = new Date().getTime();
-              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-                timeToCall);
-              lastTime = currTime + timeToCall;
-              return id;
-          };
-
-      if (!window.cancelAnimationFrame)
-          window.cancelAnimationFrame = function(id) {
-              clearTimeout(id);
-          };
-  }())
+  return (
+  // requestAnimationFrame polyfill
+  (function() {
+      var lastTime = 0;
+      var vendors = ['ms', 'moz', 'webkit', 'o'];
+      for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+          window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+          window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
+                                     || window[vendors[x]+'CancelRequestAnimationFrame'];
+      }
+
+      if (!window.requestAnimationFrame)
+          window.requestAnimationFrame = function(callback, element) {
+              var currTime = new Date().getTime();
+              var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+              var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+                timeToCall);
+              lastTime = currTime + timeToCall;
+              return id;
+          };
+
+      if (!window.cancelAnimationFrame)
+          window.cancelAnimationFrame = function(id) {
+              clearTimeout(id);
+          };
+  }())
   );
 }
 
@@ -26593,7 +26694,7 @@ exports.get_onloadend               = get_onloadend;
 
 });
 
-;require.alias("process/browser.js", "process");require.register("___globals___", function(exports, require, module) {
+;require.alias("process/browser.js", "process");process = require('process');require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 

@@ -16,7 +16,7 @@ type ('succeed, 'fail) t =
 (* Resolvers *)
 
 
-let performOpt (toOptionalMessage : 'value -> 'msg) (Task task : (never, 'msg) t) =
+let performOpt (toOptionalMessage : 'value -> 'msg) (Task task : ('msg, never) t) =
   Tea_cmd.call (fun enqueue ->
       let open Tea_result in
       (* let cb value = enqueue (toOptionalMessage value) *)
@@ -40,15 +40,17 @@ let attempt resultToMessage task =
   attemptOpt (fun v -> Some (resultToMessage v)) task
 
 
-(* Tasks *)
+(* Basics *)
 
-let succeed (value : 'v) : ('v, never) t =
+let succeed (value : 'v) : ('v, 'e) t =
   Task (fun cb -> cb (Tea_result.Ok value))
 
 
-let fail (value : 'v) : (never, 'v) t =
+let fail (value : 'v) : ('s, 'v) t =
   Task (fun cb -> cb (Tea_result.Error value))
 
+
+(* Chaining *)
 
 let andThen fn (Task task) =
   let open Tea_result in
@@ -60,12 +62,26 @@ let andThen fn (Task task) =
             nextTask cb
         )
     )
-  (*     let open Tea_result in *)
-  (*     match task () with *)
-  (*     | Error _e as err -> err *)
-  (*     | Ok v -> Ok (fn v) *)
-  (*   ) *)
 
+
+let onError fn (Task task) =
+  let open Tea_result in
+  Task (fun cb ->
+      task (function
+          | Ok _v as ok -> cb ok
+          | Error e ->
+            let (Task newTask) = fn e in
+            newTask cb
+        )
+    )
+
+
+let mapError func task =
+  task
+  |> onError (fun e -> fail (func e))
+
+
+(* Mapping *)
 
 let map func task1 =
   task1
@@ -118,45 +134,45 @@ let rec sequence = function
     map2 (fun l r -> l :: r (* TODO:  Replace with `List.cons` when updated to version 4.03 *)) task (sequence remainingTasks)
 
 
-let onError fn (Task task) =
-  let open Tea_result in
-  Task (fun cb ->
-      task (function
-          | Ok _v as ok -> cb ok
-          | Error e ->
-            let (Task newTask) = fn e in
-            newTask cb
-        )
-    )
 
-
-let mapError func task =
-  task
-  |> onError (fun e -> fail (func e))
-
-
+let testing_deop = ref true
 let testing () =
   let open Tea_result in
   let doTest expected (Task task) =
     let testAssert v =
       if v = expected
-      then Js.log ("Passed:", expected)
+      then Js.log ("Passed:", expected, v)
       else Js.log ("FAILED:", expected, v)
     in task testAssert in
   let s = succeed 42 in
   let () = doTest (Ok 42) s in
   let f = fail 86 in
   let () = doTest (Error 86) f in
-  let a = succeed 2 |> andThen (fun n -> succeed (n + 2)) in
-  let () = doTest (Ok 4) a in
+  let r () = if !testing_deop then succeed 42 else fail 3.14 in
+  let a1 = succeed 2 |> andThen (fun n -> succeed (n + 2)) in
+  let () = doTest (Ok 4) a1 in
+  let a2 = succeed 2 |> andThen (fun n -> succeed (string_of_int n)) in
+  let () = doTest (Ok "2") a2 in
   let m1 = map sqrt (succeed 9.) in
   let () = doTest (Ok 3.) m1 in
   let m2 = map2 (+) (succeed 9) (succeed 3) in
   let () = doTest (Ok 12) m2 in
-  let s = sequence [ succeed 1; succeed 2 ] in
-  let () = doTest (Ok [1; 2]) s in
+  let m3 = map string_of_int (succeed 9) in
+  let () = doTest (Ok "9") m3 in
+  let s0 = sequence [ succeed 1; succeed 2 ] in
+  let () = doTest (Ok [1; 2]) s0 in
+  let s1 = sequence [succeed 1; fail 2.7; r ()] in
+  let () = doTest (Error 2.7) s1 in
   let e0 = fail "file not found" |> onError (fun _msg -> succeed 42) in
-  (* let () = doTest (Ok 42) e0 in *)
-  let e1 = succeed 9 |> onError (fun _msg -> succeed 42) in
-  let () = doTest (Ok 9) e1 in
+  let () = doTest (Ok 42) e0 in
+  let e1 = fail "file not found" |> onError (fun _msg -> fail 42) in
+  let () = doTest (Error 42) e1 in
+  let n0 = sequence [ mapError string_of_int (fail 42); mapError string_of_float (fail 3.14) ] in
+  let () = doTest (Error "42") n0 in
+  let n1 = sequence [ mapError string_of_int (succeed 1); mapError string_of_float (fail 3.14)] in
+  let () = doTest (Error "3.14") n1 in
+  let n2 = sequence [ mapError string_of_int (succeed 1); mapError string_of_float (succeed 2)] in
+  let () = doTest (Ok [1;2]) n2 in
+  let c0 = performOpt (fun _ -> 42) (succeed 18) in
+  (* (\* Should not compile *\) let c1 = perform (fun _ -> 42) (fail 18) in *)
   ()
