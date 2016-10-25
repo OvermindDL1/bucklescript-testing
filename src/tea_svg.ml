@@ -20,7 +20,6 @@ let lazy1 key gen = lazyGen key gen
 
 let node tagName ?(key="") ?(unique="") props nodes = fullnode svgNamespace tagName key unique props nodes
 
-
 let svg ?(key="") ?(unique="") props nodes = fullnode svgNamespace "svg" key unique props nodes
 
 (* Animation elements *)

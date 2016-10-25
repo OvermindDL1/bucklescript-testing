@@ -149,6 +149,121 @@ var __makeRelativeRequire = function(require, mappings, pref) {
   }
 };
 
+require.register("base64-js/lib/b64.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "base64-js");
+  (function() {
+    'use strict'
+
+exports.toByteArray = toByteArray
+exports.fromByteArray = fromByteArray
+
+var lookup = []
+var revLookup = []
+var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array
+
+function init () {
+  var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+  for (var i = 0, len = code.length; i < len; ++i) {
+    lookup[i] = code[i]
+    revLookup[code.charCodeAt(i)] = i
+  }
+
+  revLookup['-'.charCodeAt(0)] = 62
+  revLookup['_'.charCodeAt(0)] = 63
+}
+
+init()
+
+function toByteArray (b64) {
+  var i, j, l, tmp, placeHolders, arr
+  var len = b64.length
+
+  if (len % 4 > 0) {
+    throw new Error('Invalid string. Length must be a multiple of 4')
+  }
+
+  // the number of equal signs (place holders)
+  // if there are two placeholders, than the two characters before it
+  // represent one byte
+  // if there is only one, then the three characters before it represent 2 bytes
+  // this is just a cheap hack to not do indexOf twice
+  placeHolders = b64[len - 2] === '=' ? 2 : b64[len - 1] === '=' ? 1 : 0
+
+  // base64 is 4/3 + up to two characters of the original data
+  arr = new Arr(len * 3 / 4 - placeHolders)
+
+  // if there are placeholders, only get up to the last complete 4 chars
+  l = placeHolders > 0 ? len - 4 : len
+
+  var L = 0
+
+  for (i = 0, j = 0; i < l; i += 4, j += 3) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 18) | (revLookup[b64.charCodeAt(i + 1)] << 12) | (revLookup[b64.charCodeAt(i + 2)] << 6) | revLookup[b64.charCodeAt(i + 3)]
+    arr[L++] = (tmp >> 16) & 0xFF
+    arr[L++] = (tmp >> 8) & 0xFF
+    arr[L++] = tmp & 0xFF
+  }
+
+  if (placeHolders === 2) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 2) | (revLookup[b64.charCodeAt(i + 1)] >> 4)
+    arr[L++] = tmp & 0xFF
+  } else if (placeHolders === 1) {
+    tmp = (revLookup[b64.charCodeAt(i)] << 10) | (revLookup[b64.charCodeAt(i + 1)] << 4) | (revLookup[b64.charCodeAt(i + 2)] >> 2)
+    arr[L++] = (tmp >> 8) & 0xFF
+    arr[L++] = tmp & 0xFF
+  }
+
+  return arr
+}
+
+function tripletToBase64 (num) {
+  return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F]
+}
+
+function encodeChunk (uint8, start, end) {
+  var tmp
+  var output = []
+  for (var i = start; i < end; i += 3) {
+    tmp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
+    output.push(tripletToBase64(tmp))
+  }
+  return output.join('')
+}
+
+function fromByteArray (uint8) {
+  var tmp
+  var len = uint8.length
+  var extraBytes = len % 3 // if we have 1 byte left, pad 2 bytes
+  var output = ''
+  var parts = []
+  var maxChunkLength = 16383 // must be multiple of 3
+
+  // go through the array every three bytes, we'll deal with trailing stuff later
+  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)))
+  }
+
+  // pad the end with zeros, but make sure to not forget the extra bytes
+  if (extraBytes === 1) {
+    tmp = uint8[len - 1]
+    output += lookup[tmp >> 2]
+    output += lookup[(tmp << 4) & 0x3F]
+    output += '=='
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2] << 8) + (uint8[len - 1])
+    output += lookup[tmp >> 10]
+    output += lookup[(tmp >> 4) & 0x3F]
+    output += lookup[(tmp << 2) & 0x3F]
+    output += '='
+  }
+
+  parts.push(output)
+
+  return parts.join('')
+}
+  })();
+});
+
 require.register("bs-platform/lib/js/array.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -629,6 +744,404 @@ function __(tag, block) {
 }
 
 exports.__ = __;
+/* No side effect */
+  })();
+});
+
+require.register("bs-platform/lib/js/buffer.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Bytes                   = require("bs-platform/lib/js/bytes");
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Pervasives              = require("bs-platform/lib/js/pervasives");
+var Sys                     = require("bs-platform/lib/js/sys");
+var Curry                   = require("bs-platform/lib/js/curry");
+var $$String                = require("bs-platform/lib/js/string");
+var Caml_string             = require("bs-platform/lib/js/caml_string");
+
+function create(n) {
+  var n$1 = n < 1 ? 1 : n;
+  var n$2 = n$1 > Sys.max_string_length ? Sys.max_string_length : n$1;
+  var s = Caml_string.caml_create_string(n$2);
+  return /* record */[
+          /* buffer */s,
+          /* position */0,
+          /* length */n$2,
+          /* initial_buffer */s
+        ];
+}
+
+function contents(b) {
+  return Bytes.sub_string(b[/* buffer */0], 0, b[/* position */1]);
+}
+
+function to_bytes(b) {
+  return Bytes.sub(b[/* buffer */0], 0, b[/* position */1]);
+}
+
+function sub(b, ofs, len) {
+  if (ofs < 0 || len < 0 || ofs > (b[/* position */1] - len | 0)) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Buffer.sub"
+        ];
+  }
+  else {
+    return Bytes.sub_string(b[/* buffer */0], ofs, len);
+  }
+}
+
+function blit(src, srcoff, dst, dstoff, len) {
+  if (len < 0 || srcoff < 0 || srcoff > (src[/* position */1] - len | 0) || dstoff < 0 || dstoff > (dst.length - len | 0)) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Buffer.blit"
+        ];
+  }
+  else {
+    return Bytes.blit(src[/* buffer */0], srcoff, dst, dstoff, len);
+  }
+}
+
+function nth(b, ofs) {
+  if (ofs < 0 || ofs >= b[/* position */1]) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Buffer.nth"
+        ];
+  }
+  else {
+    return b[/* buffer */0][ofs];
+  }
+}
+
+function length(b) {
+  return b[/* position */1];
+}
+
+function clear(b) {
+  b[/* position */1] = 0;
+  return /* () */0;
+}
+
+function reset(b) {
+  b[/* position */1] = 0;
+  b[/* buffer */0] = b[/* initial_buffer */3];
+  b[/* length */2] = b[/* buffer */0].length;
+  return /* () */0;
+}
+
+function resize(b, more) {
+  var len = b[/* length */2];
+  var new_len = len;
+  while((b[/* position */1] + more | 0) > new_len) {
+    new_len = (new_len << 1);
+  };
+  if (new_len > Sys.max_string_length) {
+    if ((b[/* position */1] + more | 0) <= Sys.max_string_length) {
+      new_len = Sys.max_string_length;
+    }
+    else {
+      throw [
+            Caml_builtin_exceptions.failure,
+            "Buffer.add: cannot grow buffer"
+          ];
+    }
+  }
+  var new_buffer = Caml_string.caml_create_string(new_len);
+  Bytes.blit(b[/* buffer */0], 0, new_buffer, 0, b[/* position */1]);
+  b[/* buffer */0] = new_buffer;
+  b[/* length */2] = new_len;
+  return /* () */0;
+}
+
+function add_char(b, c) {
+  var pos = b[/* position */1];
+  if (pos >= b[/* length */2]) {
+    resize(b, 1);
+  }
+  b[/* buffer */0][pos] = c;
+  b[/* position */1] = pos + 1 | 0;
+  return /* () */0;
+}
+
+function add_substring(b, s, offset, len) {
+  if (offset < 0 || len < 0 || (offset + len | 0) > s.length) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Buffer.add_substring/add_subbytes"
+        ];
+  }
+  var new_position = b[/* position */1] + len | 0;
+  if (new_position > b[/* length */2]) {
+    resize(b, len);
+  }
+  Bytes.blit_string(s, offset, b[/* buffer */0], b[/* position */1], len);
+  b[/* position */1] = new_position;
+  return /* () */0;
+}
+
+function add_subbytes(b, s, offset, len) {
+  return add_substring(b, Caml_string.bytes_to_string(s), offset, len);
+}
+
+function add_string(b, s) {
+  var len = s.length;
+  var new_position = b[/* position */1] + len | 0;
+  if (new_position > b[/* length */2]) {
+    resize(b, len);
+  }
+  Bytes.blit_string(s, 0, b[/* buffer */0], b[/* position */1], len);
+  b[/* position */1] = new_position;
+  return /* () */0;
+}
+
+function add_bytes(b, s) {
+  return add_string(b, Caml_string.bytes_to_string(s));
+}
+
+function add_buffer(b, bs) {
+  return add_subbytes(b, bs[/* buffer */0], 0, bs[/* position */1]);
+}
+
+function add_channel(b, ic, len) {
+  if (len < 0 || len > Sys.max_string_length) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Buffer.add_channel"
+        ];
+  }
+  if ((b[/* position */1] + len | 0) > b[/* length */2]) {
+    resize(b, len);
+  }
+  Pervasives.really_input(ic, b[/* buffer */0], b[/* position */1], len);
+  b[/* position */1] = b[/* position */1] + len | 0;
+  return /* () */0;
+}
+
+function output_buffer(oc, b) {
+  return Pervasives.output(oc, b[/* buffer */0], 0, b[/* position */1]);
+}
+
+function closing(param) {
+  if (param !== 40) {
+    if (param !== 123) {
+      throw [
+            Caml_builtin_exceptions.assert_failure,
+            [
+              "buffer.ml",
+              115,
+              9
+            ]
+          ];
+    }
+    else {
+      return /* "}" */125;
+    }
+  }
+  else {
+    return /* ")" */41;
+  }
+}
+
+function advance_to_closing(opening, closing, k, s, start) {
+  var _k = k;
+  var _i = start;
+  var lim = s.length;
+  while(true) {
+    var i = _i;
+    var k$1 = _k;
+    if (i >= lim) {
+      throw Caml_builtin_exceptions.not_found;
+    }
+    else if (Caml_string.get(s, i) === opening) {
+      _i = i + 1 | 0;
+      _k = k$1 + 1 | 0;
+      continue ;
+      
+    }
+    else if (Caml_string.get(s, i) === closing) {
+      if (k$1) {
+        _i = i + 1 | 0;
+        _k = k$1 - 1 | 0;
+        continue ;
+        
+      }
+      else {
+        return i;
+      }
+    }
+    else {
+      _i = i + 1 | 0;
+      continue ;
+      
+    }
+  };
+}
+
+function advance_to_non_alpha(s, start) {
+  var _i = start;
+  var lim = s.length;
+  while(true) {
+    var i = _i;
+    if (i >= lim) {
+      return lim;
+    }
+    else {
+      var match = Caml_string.get(s, i);
+      var exit = 0;
+      if (match >= 91) {
+        if (match >= 97) {
+          if (match >= 123) {
+            return i;
+          }
+          else {
+            exit = 1;
+          }
+        }
+        else if (match !== 95) {
+          return i;
+        }
+        else {
+          exit = 1;
+        }
+      }
+      else if (match >= 58) {
+        if (match >= 65) {
+          exit = 1;
+        }
+        else {
+          return i;
+        }
+      }
+      else if (match >= 48) {
+        exit = 1;
+      }
+      else {
+        return i;
+      }
+      if (exit === 1) {
+        _i = i + 1 | 0;
+        continue ;
+        
+      }
+      
+    }
+  };
+}
+
+function find_ident(s, start, lim) {
+  if (start >= lim) {
+    throw Caml_builtin_exceptions.not_found;
+  }
+  else {
+    var c = Caml_string.get(s, start);
+    var exit = 0;
+    if (c !== 40) {
+      if (c !== 123) {
+        var stop = advance_to_non_alpha(s, start + 1 | 0);
+        return /* tuple */[
+                $$String.sub(s, start, stop - start | 0),
+                stop
+              ];
+      }
+      else {
+        exit = 1;
+      }
+    }
+    else {
+      exit = 1;
+    }
+    if (exit === 1) {
+      var new_start = start + 1 | 0;
+      var stop$1 = advance_to_closing(c, closing(c), 0, s, new_start);
+      return /* tuple */[
+              $$String.sub(s, new_start, (stop$1 - start | 0) - 1 | 0),
+              stop$1 + 1 | 0
+            ];
+    }
+    
+  }
+}
+
+function add_substitute(b, f, s) {
+  var lim = s.length;
+  var _previous = /* " " */32;
+  var _i = 0;
+  while(true) {
+    var i = _i;
+    var previous = _previous;
+    if (i < lim) {
+      var current = Caml_string.get(s, i);
+      if (current !== 36) {
+        if (previous === /* "\\" */92) {
+          add_char(b, /* "\\" */92);
+          add_char(b, current);
+          _i = i + 1 | 0;
+          _previous = /* " " */32;
+          continue ;
+          
+        }
+        else if (current !== 92) {
+          add_char(b, current);
+          _i = i + 1 | 0;
+          _previous = current;
+          continue ;
+          
+        }
+        else {
+          _i = i + 1 | 0;
+          _previous = current;
+          continue ;
+          
+        }
+      }
+      else if (previous === /* "\\" */92) {
+        add_char(b, current);
+        _i = i + 1 | 0;
+        _previous = /* " " */32;
+        continue ;
+        
+      }
+      else {
+        var j = i + 1 | 0;
+        var match = find_ident(s, j, lim);
+        add_string(b, Curry._1(f, match[0]));
+        _i = match[1];
+        _previous = /* " " */32;
+        continue ;
+        
+      }
+    }
+    else if (previous === /* "\\" */92) {
+      return add_char(b, previous);
+    }
+    else {
+      return 0;
+    }
+  };
+}
+
+exports.create         = create;
+exports.contents       = contents;
+exports.to_bytes       = to_bytes;
+exports.sub            = sub;
+exports.blit           = blit;
+exports.nth            = nth;
+exports.length         = length;
+exports.clear          = clear;
+exports.reset          = reset;
+exports.add_char       = add_char;
+exports.add_string     = add_string;
+exports.add_bytes      = add_bytes;
+exports.add_substring  = add_substring;
+exports.add_subbytes   = add_subbytes;
+exports.add_substitute = add_substitute;
+exports.add_buffer     = add_buffer;
+exports.add_channel    = add_channel;
+exports.output_buffer  = output_buffer;
 /* No side effect */
   })();
 });
@@ -1343,6 +1856,30 @@ exports.undefined_recursive_module = undefined_recursive_module;
   })();
 });
 
+require.register("bs-platform/lib/js/caml_bytes.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+
+function get(s, i) {
+  if (i < 0 || i >= s.length) {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "index out of bounds"
+        ];
+  }
+  else {
+    return s[i];
+  }
+}
+
+exports.get = get;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/caml_exceptions.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -1376,6 +1913,176 @@ exports.caml_set_oo_id = caml_set_oo_id;
 exports.get_id         = get_id;
 exports.create         = create;
 /* No side effect */
+  })();
+});
+
+require.register("bs-platform/lib/js/caml_float.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  (function() {
+    'use strict';
+
+
+function caml_int32_float_of_bits(x) {
+  var int32 = new Int32Array(/* array */[x]);
+  var float32 = new Float32Array(int32.buffer);
+  return float32[0];
+}
+
+function caml_int32_bits_of_float(x) {
+  var float32 = new Float32Array(/* float array */[x]);
+  return new Int32Array(float32.buffer)[0];
+}
+
+function caml_classify_float(x) {
+  if (isFinite(x)) {
+    if (Math.abs(x) >= 2.2250738585072014e-308) {
+      return /* FP_normal */0;
+    }
+    else if (x !== 0) {
+      return /* FP_subnormal */1;
+    }
+    else {
+      return /* FP_zero */2;
+    }
+  }
+  else if (isNaN(x)) {
+    return /* FP_nan */4;
+  }
+  else {
+    return /* FP_infinite */3;
+  }
+}
+
+function caml_modf_float(x) {
+  if (isFinite(x)) {
+    var neg = +(1 / x < 0);
+    var x$1 = Math.abs(x);
+    var i = Math.floor(x$1);
+    var f = x$1 - i;
+    if (neg) {
+      return /* tuple */[
+              -f,
+              -i
+            ];
+    }
+    else {
+      return /* tuple */[
+              f,
+              i
+            ];
+    }
+  }
+  else if (isNaN(x)) {
+    return /* tuple */[
+            NaN,
+            NaN
+          ];
+  }
+  else {
+    return /* tuple */[
+            1 / x,
+            x
+          ];
+  }
+}
+
+var caml_ldexp_float = ( function (x,exp) {
+    exp |= 0;
+    if (exp > 1023) {
+        exp -= 1023;
+        x *= Math.pow(2, 1023);
+        if (exp > 1023) {  // in case x is subnormal
+            exp -= 1023;
+            x *= Math.pow(2, 1023);
+        }
+    }
+    if (exp < -1023) {
+        exp += 1023;
+        x *= Math.pow(2, -1023);
+    }
+    x *= Math.pow(2, exp);
+    return x;
+}
+);
+
+var caml_frexp_float = (function (x) {
+    if ((x == 0) || !isFinite(x)) return [ x, 0];
+    var neg = x < 0;
+    if (neg) x = - x;
+    var exp = Math.floor(Math.LOG2E*Math.log(x)) + 1;
+    x *= Math.pow(2,-exp);
+    if (x < 0.5) { x *= 2; exp -= 1; }
+    if (neg) x = - x;
+    return [x, exp];
+}
+);
+
+function caml_float_compare(x, y) {
+  if (x === y) {
+    return 0;
+  }
+  else if (x < y) {
+    return -1;
+  }
+  else if (x > y || x === x) {
+    return 1;
+  }
+  else if (y === y) {
+    return -1;
+  }
+  else {
+    return 0;
+  }
+}
+
+function caml_copysign_float(x, y) {
+  var x$1 = Math.abs(x);
+  var y$1 = y === 0 ? 1 / y : y;
+  if (y$1 < 0) {
+    return -x$1;
+  }
+  else {
+    return x$1;
+  }
+}
+
+function caml_expm1_float(x) {
+  var y = Math.exp(x);
+  var z = y - 1;
+  if (Math.abs(x) > 1) {
+    return z;
+  }
+  else if (z === 0) {
+    return x;
+  }
+  else {
+    return x * z / Math.log(y);
+  }
+}
+
+var caml_hypot_float = ( function (x, y) {
+    var x0 = Math.abs(x), y0 = Math.abs(y);
+    var a = Math.max(x0, y0), b = Math.min(x0,y0) / (a?a:1);
+    return a * Math.sqrt(1 + b*b);
+}
+);
+
+var caml_log10_float = ( function  (x) { 
+   return Math.LOG10E * Math.log(x); }
+);
+
+exports.caml_int32_float_of_bits = caml_int32_float_of_bits;
+exports.caml_int32_bits_of_float = caml_int32_bits_of_float;
+exports.caml_classify_float      = caml_classify_float;
+exports.caml_modf_float          = caml_modf_float;
+exports.caml_ldexp_float         = caml_ldexp_float;
+exports.caml_frexp_float         = caml_frexp_float;
+exports.caml_float_compare       = caml_float_compare;
+exports.caml_copysign_float      = caml_copysign_float;
+exports.caml_expm1_float         = caml_expm1_float;
+exports.caml_hypot_float         = caml_hypot_float;
+exports.caml_log10_float         = caml_log10_float;
+/* caml_ldexp_float Not a pure module */
   })();
 });
 
@@ -3931,6 +4638,6962 @@ var repeat = ( (String.prototype.repeat && function (count,self){return self.rep
 
 exports.repeat = repeat;
 /* repeat Not a pure module */
+  })();
+});
+
+require.register("bs-platform/lib/js/camlinternalFormat.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  var _Buffer = require('buffer'); var Buffer = _Buffer && _Buffer.Buffer;
+(function() {
+    'use strict';
+
+var Bytes                    = require("bs-platform/lib/js/bytes");
+var Caml_builtin_exceptions  = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Caml_obj                 = require("bs-platform/lib/js/caml_obj");
+var Caml_io                  = require("bs-platform/lib/js/caml_io");
+var Caml_float               = require("bs-platform/lib/js/caml_float");
+var Pervasives               = require("bs-platform/lib/js/pervasives");
+var Caml_exceptions          = require("bs-platform/lib/js/caml_exceptions");
+var Caml_format              = require("bs-platform/lib/js/caml_format");
+var Caml_int32               = require("bs-platform/lib/js/caml_int32");
+var Block                    = require("bs-platform/lib/js/block");
+var Char                     = require("bs-platform/lib/js/char");
+var Sys                      = require("bs-platform/lib/js/sys");
+var Curry                    = require("bs-platform/lib/js/curry");
+var Caml_bytes               = require("bs-platform/lib/js/caml_bytes");
+var CamlinternalFormatBasics = require("bs-platform/lib/js/camlinternalFormatBasics");
+var Buffer                   = require("bs-platform/lib/js/buffer");
+var $$String                 = require("bs-platform/lib/js/string");
+var Caml_string              = require("bs-platform/lib/js/caml_string");
+
+function create_char_set() {
+  return Bytes.make(32, /* "\000" */0);
+}
+
+function add_in_char_set(char_set, c) {
+  var str_ind = (c >>> 3);
+  var mask = (1 << (c & 7));
+  char_set[str_ind] = Pervasives.char_of_int(Caml_bytes.get(char_set, str_ind) | mask);
+  return /* () */0;
+}
+
+var freeze_char_set = Bytes.to_string
+
+function rev_char_set(char_set) {
+  var char_set$prime = Bytes.make(32, /* "\000" */0);
+  for(var i = 0; i <= 31; ++i){
+    char_set$prime[i] = Pervasives.char_of_int(Caml_string.get(char_set, i) ^ 255);
+  }
+  return Caml_string.bytes_to_string(char_set$prime);
+}
+
+function is_in_char_set(char_set, c) {
+  var str_ind = (c >>> 3);
+  var mask = (1 << (c & 7));
+  return +((Caml_string.get(char_set, str_ind) & mask) !== 0);
+}
+
+function pad_of_pad_opt(pad_opt) {
+  if (pad_opt) {
+    return /* Lit_padding */Block.__(0, [
+              /* Right */1,
+              pad_opt[0]
+            ]);
+  }
+  else {
+    return /* No_padding */0;
+  }
+}
+
+function prec_of_prec_opt(prec_opt) {
+  if (prec_opt) {
+    return /* Lit_precision */[prec_opt[0]];
+  }
+  else {
+    return /* No_precision */0;
+  }
+}
+
+function param_format_of_ignored_format(ign, fmt) {
+  if (typeof ign === "number") {
+    switch (ign) {
+      case 0 : 
+          return /* Param_format_EBB */[/* Char */Block.__(0, [fmt])];
+      case 1 : 
+          return /* Param_format_EBB */[/* Caml_char */Block.__(1, [fmt])];
+      case 2 : 
+          return /* Param_format_EBB */[/* Bool */Block.__(9, [fmt])];
+      case 3 : 
+          return /* Param_format_EBB */[/* Reader */Block.__(19, [fmt])];
+      case 4 : 
+          return /* Param_format_EBB */[/* Scan_next_char */Block.__(22, [fmt])];
+      
+    }
+  }
+  else {
+    switch (ign.tag | 0) {
+      case 0 : 
+          return /* Param_format_EBB */[/* String */Block.__(2, [
+                      pad_of_pad_opt(ign[0]),
+                      fmt
+                    ])];
+      case 1 : 
+          return /* Param_format_EBB */[/* Caml_string */Block.__(3, [
+                      pad_of_pad_opt(ign[0]),
+                      fmt
+                    ])];
+      case 2 : 
+          return /* Param_format_EBB */[/* Int */Block.__(4, [
+                      ign[0],
+                      pad_of_pad_opt(ign[1]),
+                      /* No_precision */0,
+                      fmt
+                    ])];
+      case 3 : 
+          return /* Param_format_EBB */[/* Int32 */Block.__(5, [
+                      ign[0],
+                      pad_of_pad_opt(ign[1]),
+                      /* No_precision */0,
+                      fmt
+                    ])];
+      case 4 : 
+          return /* Param_format_EBB */[/* Nativeint */Block.__(6, [
+                      ign[0],
+                      pad_of_pad_opt(ign[1]),
+                      /* No_precision */0,
+                      fmt
+                    ])];
+      case 5 : 
+          return /* Param_format_EBB */[/* Int64 */Block.__(7, [
+                      ign[0],
+                      pad_of_pad_opt(ign[1]),
+                      /* No_precision */0,
+                      fmt
+                    ])];
+      case 6 : 
+          return /* Param_format_EBB */[/* Float */Block.__(8, [
+                      /* Float_f */0,
+                      pad_of_pad_opt(ign[0]),
+                      prec_of_prec_opt(ign[1]),
+                      fmt
+                    ])];
+      case 7 : 
+          return /* Param_format_EBB */[/* Format_arg */Block.__(13, [
+                      ign[0],
+                      ign[1],
+                      fmt
+                    ])];
+      case 8 : 
+          return /* Param_format_EBB */[/* Format_subst */Block.__(14, [
+                      ign[0],
+                      ign[1],
+                      fmt
+                    ])];
+      case 9 : 
+          return /* Param_format_EBB */[/* Scan_char_set */Block.__(20, [
+                      ign[0],
+                      ign[1],
+                      fmt
+                    ])];
+      case 10 : 
+          return /* Param_format_EBB */[/* Scan_get_counter */Block.__(21, [
+                      ign[0],
+                      fmt
+                    ])];
+      
+    }
+  }
+}
+
+function buffer_check_size(buf, overhead) {
+  var len = buf[/* bytes */1].length;
+  var min_len = buf[/* ind */0] + overhead | 0;
+  if (min_len > len) {
+    var new_len = Pervasives.max((len << 1), min_len);
+    var new_str = Caml_string.caml_create_string(new_len);
+    Bytes.blit(buf[/* bytes */1], 0, new_str, 0, len);
+    buf[/* bytes */1] = new_str;
+    return /* () */0;
+  }
+  else {
+    return 0;
+  }
+}
+
+function buffer_add_char(buf, c) {
+  buffer_check_size(buf, 1);
+  buf[/* bytes */1][buf[/* ind */0]] = c;
+  buf[/* ind */0] = buf[/* ind */0] + 1 | 0;
+  return /* () */0;
+}
+
+function buffer_add_string(buf, s) {
+  var str_len = s.length;
+  buffer_check_size(buf, str_len);
+  $$String.blit(s, 0, buf[/* bytes */1], buf[/* ind */0], str_len);
+  buf[/* ind */0] = buf[/* ind */0] + str_len | 0;
+  return /* () */0;
+}
+
+function buffer_contents(buf) {
+  return Bytes.sub_string(buf[/* bytes */1], 0, buf[/* ind */0]);
+}
+
+function char_of_iconv(iconv) {
+  switch (iconv) {
+    case 0 : 
+    case 1 : 
+    case 2 : 
+        return /* "d" */100;
+    case 3 : 
+    case 4 : 
+    case 5 : 
+        return /* "i" */105;
+    case 6 : 
+    case 7 : 
+        return /* "x" */120;
+    case 8 : 
+    case 9 : 
+        return /* "X" */88;
+    case 10 : 
+    case 11 : 
+        return /* "o" */111;
+    case 12 : 
+        return /* "u" */117;
+    
+  }
+}
+
+function char_of_fconv(fconv) {
+  switch (fconv) {
+    case 0 : 
+    case 1 : 
+    case 2 : 
+        return /* "f" */102;
+    case 3 : 
+    case 4 : 
+    case 5 : 
+        return /* "e" */101;
+    case 6 : 
+    case 7 : 
+    case 8 : 
+        return /* "E" */69;
+    case 9 : 
+    case 10 : 
+    case 11 : 
+        return /* "g" */103;
+    case 12 : 
+    case 13 : 
+    case 14 : 
+        return /* "G" */71;
+    case 15 : 
+        return /* "F" */70;
+    
+  }
+}
+
+function char_of_counter(counter) {
+  switch (counter) {
+    case 0 : 
+        return /* "l" */108;
+    case 1 : 
+        return /* "n" */110;
+    case 2 : 
+        return /* "N" */78;
+    
+  }
+}
+
+function bprint_char_set(buf, char_set) {
+  var print_start = function (set) {
+    var is_alone = function (c) {
+      var match_000 = Char.chr(c - 1 | 0);
+      var match_001 = Char.chr(c + 1 | 0);
+      if (is_in_char_set(set, c)) {
+        return !(is_in_char_set(set, match_000) && is_in_char_set(set, match_001));
+      }
+      else {
+        return /* false */0;
+      }
+    };
+    if (is_alone(/* "]" */93)) {
+      buffer_add_char(buf, /* "]" */93);
+    }
+    print_out(set, 1);
+    if (is_alone(/* "-" */45)) {
+      return buffer_add_char(buf, /* "-" */45);
+    }
+    else {
+      return 0;
+    }
+  };
+  var print_out = function (set, _i) {
+    while(true) {
+      var i = _i;
+      if (i < 256) {
+        if (is_in_char_set(set, Pervasives.char_of_int(i))) {
+          var set$1 = set;
+          var i$1 = i;
+          var match = Pervasives.char_of_int(i$1);
+          var switcher = match - 45 | 0;
+          if (switcher > 48 || switcher < 0) {
+            if (switcher >= 210) {
+              return print_char(buf, 255);
+            }
+            else {
+              return print_second(set$1, i$1 + 1 | 0);
+            }
+          }
+          else if (switcher > 47 || switcher < 1) {
+            return print_out(set$1, i$1 + 1 | 0);
+          }
+          else {
+            return print_second(set$1, i$1 + 1 | 0);
+          }
+        }
+        else {
+          _i = i + 1 | 0;
+          continue ;
+          
+        }
+      }
+      else {
+        return 0;
+      }
+    };
+  };
+  var print_second = function (set, i) {
+    if (is_in_char_set(set, Pervasives.char_of_int(i))) {
+      var match = Pervasives.char_of_int(i);
+      var exit = 0;
+      var switcher = match - 45 | 0;
+      if (switcher > 48 || switcher < 0) {
+        if (switcher >= 210) {
+          print_char(buf, 254);
+          return print_char(buf, 255);
+        }
+        else {
+          exit = 1;
+        }
+      }
+      else if (switcher > 47 || switcher < 1) {
+        if (is_in_char_set(set, Pervasives.char_of_int(i + 1 | 0))) {
+          exit = 1;
+        }
+        else {
+          print_char(buf, i - 1 | 0);
+          return print_out(set, i + 1 | 0);
+        }
+      }
+      else {
+        exit = 1;
+      }
+      if (exit === 1) {
+        if (is_in_char_set(set, Pervasives.char_of_int(i + 1 | 0))) {
+          var set$1 = set;
+          var i$1 = i - 1 | 0;
+          var _j = i + 2 | 0;
+          while(true) {
+            var j = _j;
+            if (j === 256 || !is_in_char_set(set$1, Pervasives.char_of_int(j))) {
+              print_char(buf, i$1);
+              print_char(buf, /* "-" */45);
+              print_char(buf, j - 1 | 0);
+              if (j < 256) {
+                return print_out(set$1, j + 1 | 0);
+              }
+              else {
+                return 0;
+              }
+            }
+            else {
+              _j = j + 1 | 0;
+              continue ;
+              
+            }
+          };
+        }
+        else {
+          print_char(buf, i - 1 | 0);
+          print_char(buf, i);
+          return print_out(set, i + 2 | 0);
+        }
+      }
+      
+    }
+    else {
+      print_char(buf, i - 1 | 0);
+      return print_out(set, i + 1 | 0);
+    }
+  };
+  var print_char = function (buf, i) {
+    var c = Pervasives.char_of_int(i);
+    if (c !== 37) {
+      if (c !== 64) {
+        return buffer_add_char(buf, c);
+      }
+      else {
+        buffer_add_char(buf, /* "%" */37);
+        return buffer_add_char(buf, /* "@" */64);
+      }
+    }
+    else {
+      buffer_add_char(buf, /* "%" */37);
+      return buffer_add_char(buf, /* "%" */37);
+    }
+  };
+  buffer_add_char(buf, /* "[" */91);
+  print_start(is_in_char_set(char_set, /* "\000" */0) ? (buffer_add_char(buf, /* "^" */94), rev_char_set(char_set)) : char_set);
+  return buffer_add_char(buf, /* "]" */93);
+}
+
+function bprint_padty(buf, padty) {
+  switch (padty) {
+    case 0 : 
+        return buffer_add_char(buf, /* "-" */45);
+    case 1 : 
+        return /* () */0;
+    case 2 : 
+        return buffer_add_char(buf, /* "0" */48);
+    
+  }
+}
+
+function bprint_ignored_flag(buf, ign_flag) {
+  if (ign_flag) {
+    return buffer_add_char(buf, /* "_" */95);
+  }
+  else {
+    return 0;
+  }
+}
+
+function bprint_pad_opt(buf, pad_opt) {
+  if (pad_opt) {
+    return buffer_add_string(buf, "" + pad_opt[0]);
+  }
+  else {
+    return /* () */0;
+  }
+}
+
+function bprint_padding(buf, pad) {
+  if (typeof pad === "number") {
+    return /* () */0;
+  }
+  else {
+    bprint_padty(buf, pad[0]);
+    if (pad.tag) {
+      return buffer_add_char(buf, /* "*" */42);
+    }
+    else {
+      return buffer_add_string(buf, "" + pad[1]);
+    }
+  }
+}
+
+function bprint_precision(buf, prec) {
+  if (typeof prec === "number") {
+    if (prec !== 0) {
+      return buffer_add_string(buf, ".*");
+    }
+    else {
+      return /* () */0;
+    }
+  }
+  else {
+    buffer_add_char(buf, /* "." */46);
+    return buffer_add_string(buf, "" + prec[0]);
+  }
+}
+
+function bprint_iconv_flag(buf, iconv) {
+  switch (iconv) {
+    case 1 : 
+    case 4 : 
+        return buffer_add_char(buf, /* "+" */43);
+    case 2 : 
+    case 5 : 
+        return buffer_add_char(buf, /* " " */32);
+    case 7 : 
+    case 9 : 
+    case 11 : 
+        return buffer_add_char(buf, /* "#" */35);
+    case 0 : 
+    case 3 : 
+    case 6 : 
+    case 8 : 
+    case 10 : 
+    case 12 : 
+        return /* () */0;
+    
+  }
+}
+
+function bprint_int_fmt(buf, ign_flag, iconv, pad, prec) {
+  buffer_add_char(buf, /* "%" */37);
+  bprint_ignored_flag(buf, ign_flag);
+  bprint_iconv_flag(buf, iconv);
+  bprint_padding(buf, pad);
+  bprint_precision(buf, prec);
+  return buffer_add_char(buf, char_of_iconv(iconv));
+}
+
+function bprint_altint_fmt(buf, ign_flag, iconv, pad, prec, c) {
+  buffer_add_char(buf, /* "%" */37);
+  bprint_ignored_flag(buf, ign_flag);
+  bprint_iconv_flag(buf, iconv);
+  bprint_padding(buf, pad);
+  bprint_precision(buf, prec);
+  buffer_add_char(buf, c);
+  return buffer_add_char(buf, char_of_iconv(iconv));
+}
+
+function bprint_fconv_flag(buf, fconv) {
+  switch (fconv) {
+    case 1 : 
+    case 4 : 
+    case 7 : 
+    case 10 : 
+    case 13 : 
+        return buffer_add_char(buf, /* "+" */43);
+    case 2 : 
+    case 5 : 
+    case 8 : 
+    case 11 : 
+    case 14 : 
+        return buffer_add_char(buf, /* " " */32);
+    case 0 : 
+    case 3 : 
+    case 6 : 
+    case 9 : 
+    case 12 : 
+    case 15 : 
+        return /* () */0;
+    
+  }
+}
+
+function bprint_float_fmt(buf, ign_flag, fconv, pad, prec) {
+  buffer_add_char(buf, /* "%" */37);
+  bprint_ignored_flag(buf, ign_flag);
+  bprint_fconv_flag(buf, fconv);
+  bprint_padding(buf, pad);
+  bprint_precision(buf, prec);
+  return buffer_add_char(buf, char_of_fconv(fconv));
+}
+
+function string_of_formatting_lit(formatting_lit) {
+  if (typeof formatting_lit === "number") {
+    switch (formatting_lit) {
+      case 0 : 
+          return "@]";
+      case 1 : 
+          return "@}";
+      case 2 : 
+          return "@?";
+      case 3 : 
+          return "@\n";
+      case 4 : 
+          return "@.";
+      case 5 : 
+          return "@@";
+      case 6 : 
+          return "@%";
+      
+    }
+  }
+  else {
+    switch (formatting_lit.tag | 0) {
+      case 0 : 
+      case 1 : 
+          return formatting_lit[0];
+      case 2 : 
+          return "@" + Caml_string.bytes_to_string(Bytes.make(1, formatting_lit[0]));
+      
+    }
+  }
+}
+
+function string_of_formatting_gen(formatting_gen) {
+  return formatting_gen[0][1];
+}
+
+function bprint_char_literal(buf, chr) {
+  if (chr !== 37) {
+    return buffer_add_char(buf, chr);
+  }
+  else {
+    return buffer_add_string(buf, "%%");
+  }
+}
+
+function bprint_string_literal(buf, str) {
+  for(var i = 0 ,i_finish = str.length - 1 | 0; i <= i_finish; ++i){
+    bprint_char_literal(buf, Caml_string.get(str, i));
+  }
+  return /* () */0;
+}
+
+function bprint_fmtty(buf, _fmtty) {
+  while(true) {
+    var fmtty = _fmtty;
+    if (typeof fmtty === "number") {
+      return /* () */0;
+    }
+    else {
+      switch (fmtty.tag | 0) {
+        case 0 : 
+            buffer_add_string(buf, "%c");
+            _fmtty = fmtty[0];
+            continue ;
+            case 1 : 
+            buffer_add_string(buf, "%s");
+            _fmtty = fmtty[0];
+            continue ;
+            case 2 : 
+            buffer_add_string(buf, "%i");
+            _fmtty = fmtty[0];
+            continue ;
+            case 3 : 
+            buffer_add_string(buf, "%li");
+            _fmtty = fmtty[0];
+            continue ;
+            case 4 : 
+            buffer_add_string(buf, "%ni");
+            _fmtty = fmtty[0];
+            continue ;
+            case 5 : 
+            buffer_add_string(buf, "%Li");
+            _fmtty = fmtty[0];
+            continue ;
+            case 6 : 
+            buffer_add_string(buf, "%f");
+            _fmtty = fmtty[0];
+            continue ;
+            case 7 : 
+            buffer_add_string(buf, "%B");
+            _fmtty = fmtty[0];
+            continue ;
+            case 8 : 
+            buffer_add_string(buf, "%{");
+            bprint_fmtty(buf, fmtty[0]);
+            buffer_add_string(buf, "%}");
+            _fmtty = fmtty[1];
+            continue ;
+            case 9 : 
+            buffer_add_string(buf, "%(");
+            bprint_fmtty(buf, fmtty[0]);
+            buffer_add_string(buf, "%)");
+            _fmtty = fmtty[2];
+            continue ;
+            case 10 : 
+            buffer_add_string(buf, "%a");
+            _fmtty = fmtty[0];
+            continue ;
+            case 11 : 
+            buffer_add_string(buf, "%t");
+            _fmtty = fmtty[0];
+            continue ;
+            case 12 : 
+            buffer_add_string(buf, "%?");
+            _fmtty = fmtty[0];
+            continue ;
+            case 13 : 
+            buffer_add_string(buf, "%r");
+            _fmtty = fmtty[0];
+            continue ;
+            case 14 : 
+            buffer_add_string(buf, "%_r");
+            _fmtty = fmtty[0];
+            continue ;
+            
+      }
+    }
+  };
+}
+
+function int_of_custom_arity(param) {
+  if (param) {
+    return 1 + int_of_custom_arity(param[0]) | 0;
+  }
+  else {
+    return 0;
+  }
+}
+
+function bprint_fmt(buf, fmt) {
+  var _fmt = fmt;
+  var _ign_flag = /* false */0;
+  while(true) {
+    var ign_flag = _ign_flag;
+    var fmt$1 = _fmt;
+    if (typeof fmt$1 === "number") {
+      return /* () */0;
+    }
+    else {
+      switch (fmt$1.tag | 0) {
+        case 0 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, /* "c" */99);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 1 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, /* "C" */67);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 2 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            bprint_padding(buf, fmt$1[0]);
+            buffer_add_char(buf, /* "s" */115);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[1];
+            continue ;
+            case 3 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            bprint_padding(buf, fmt$1[0]);
+            buffer_add_char(buf, /* "S" */83);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[1];
+            continue ;
+            case 4 : 
+            bprint_int_fmt(buf, ign_flag, fmt$1[0], fmt$1[1], fmt$1[2]);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[3];
+            continue ;
+            case 5 : 
+            bprint_altint_fmt(buf, ign_flag, fmt$1[0], fmt$1[1], fmt$1[2], /* "l" */108);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[3];
+            continue ;
+            case 6 : 
+            bprint_altint_fmt(buf, ign_flag, fmt$1[0], fmt$1[1], fmt$1[2], /* "n" */110);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[3];
+            continue ;
+            case 7 : 
+            bprint_altint_fmt(buf, ign_flag, fmt$1[0], fmt$1[1], fmt$1[2], /* "L" */76);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[3];
+            continue ;
+            case 8 : 
+            bprint_float_fmt(buf, ign_flag, fmt$1[0], fmt$1[1], fmt$1[2]);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[3];
+            continue ;
+            case 9 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, /* "B" */66);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 10 : 
+            buffer_add_string(buf, "%!");
+            _fmt = fmt$1[0];
+            continue ;
+            case 11 : 
+            bprint_string_literal(buf, fmt$1[0]);
+            _fmt = fmt$1[1];
+            continue ;
+            case 12 : 
+            bprint_char_literal(buf, fmt$1[0]);
+            _fmt = fmt$1[1];
+            continue ;
+            case 13 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            bprint_pad_opt(buf, fmt$1[0]);
+            buffer_add_char(buf, /* "{" */123);
+            bprint_fmtty(buf, fmt$1[1]);
+            buffer_add_char(buf, /* "%" */37);
+            buffer_add_char(buf, /* "}" */125);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[2];
+            continue ;
+            case 14 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            bprint_pad_opt(buf, fmt$1[0]);
+            buffer_add_char(buf, /* "(" */40);
+            bprint_fmtty(buf, fmt$1[1]);
+            buffer_add_char(buf, /* "%" */37);
+            buffer_add_char(buf, /* ")" */41);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[2];
+            continue ;
+            case 15 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, /* "a" */97);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 16 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, /* "t" */116);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 17 : 
+            bprint_string_literal(buf, string_of_formatting_lit(fmt$1[0]));
+            _fmt = fmt$1[1];
+            continue ;
+            case 18 : 
+            bprint_string_literal(buf, "@{");
+            bprint_string_literal(buf, string_of_formatting_gen(fmt$1[0]));
+            _fmt = fmt$1[1];
+            continue ;
+            case 19 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, /* "r" */114);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 20 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            bprint_pad_opt(buf, fmt$1[0]);
+            bprint_char_set(buf, fmt$1[1]);
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[2];
+            continue ;
+            case 21 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            buffer_add_char(buf, char_of_counter(fmt$1[0]));
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[1];
+            continue ;
+            case 22 : 
+            buffer_add_char(buf, /* "%" */37);
+            bprint_ignored_flag(buf, ign_flag);
+            bprint_string_literal(buf, "0c");
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[0];
+            continue ;
+            case 23 : 
+            var match = param_format_of_ignored_format(fmt$1[0], fmt$1[1]);
+            _ign_flag = /* true */1;
+            _fmt = match[0];
+            continue ;
+            case 24 : 
+            for(var _i = 1 ,_i_finish = int_of_custom_arity(fmt$1[0]); _i <= _i_finish; ++_i){
+              buffer_add_char(buf, /* "%" */37);
+              bprint_ignored_flag(buf, ign_flag);
+              buffer_add_char(buf, /* "?" */63);
+            }
+            _ign_flag = /* false */0;
+            _fmt = fmt$1[2];
+            continue ;
+            
+      }
+    }
+  };
+}
+
+function string_of_fmt(fmt) {
+  var buf = /* record */[
+    /* ind */0,
+    /* bytes */new Array(16)
+  ];
+  bprint_fmt(buf, fmt);
+  return buffer_contents(buf);
+}
+
+function symm(param) {
+  if (typeof param === "number") {
+    return /* End_of_fmtty */0;
+  }
+  else {
+    switch (param.tag | 0) {
+      case 0 : 
+          return /* Char_ty */Block.__(0, [symm(param[0])]);
+      case 1 : 
+          return /* String_ty */Block.__(1, [symm(param[0])]);
+      case 2 : 
+          return /* Int_ty */Block.__(2, [symm(param[0])]);
+      case 3 : 
+          return /* Int32_ty */Block.__(3, [symm(param[0])]);
+      case 4 : 
+          return /* Nativeint_ty */Block.__(4, [symm(param[0])]);
+      case 5 : 
+          return /* Int64_ty */Block.__(5, [symm(param[0])]);
+      case 6 : 
+          return /* Float_ty */Block.__(6, [symm(param[0])]);
+      case 7 : 
+          return /* Bool_ty */Block.__(7, [symm(param[0])]);
+      case 8 : 
+          return /* Format_arg_ty */Block.__(8, [
+                    param[0],
+                    symm(param[1])
+                  ]);
+      case 9 : 
+          return /* Format_subst_ty */Block.__(9, [
+                    param[1],
+                    param[0],
+                    symm(param[2])
+                  ]);
+      case 10 : 
+          return /* Alpha_ty */Block.__(10, [symm(param[0])]);
+      case 11 : 
+          return /* Theta_ty */Block.__(11, [symm(param[0])]);
+      case 12 : 
+          return /* Any_ty */Block.__(12, [symm(param[0])]);
+      case 13 : 
+          return /* Reader_ty */Block.__(13, [symm(param[0])]);
+      case 14 : 
+          return /* Ignored_reader_ty */Block.__(14, [symm(param[0])]);
+      
+    }
+  }
+}
+
+function fmtty_rel_det(param) {
+  if (typeof param === "number") {
+    return /* tuple */[
+            function () {
+              return /* Refl */0;
+            },
+            function () {
+              return /* Refl */0;
+            },
+            function () {
+              return /* Refl */0;
+            },
+            function () {
+              return /* Refl */0;
+            }
+          ];
+  }
+  else {
+    switch (param.tag | 0) {
+      case 0 : 
+          var match = fmtty_rel_det(param[0]);
+          var af = match[1];
+          var fa = match[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match[2],
+                  match[3]
+                ];
+      case 1 : 
+          var match$1 = fmtty_rel_det(param[0]);
+          var af$1 = match$1[1];
+          var fa$1 = match$1[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$1, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$1, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$1[2],
+                  match$1[3]
+                ];
+      case 2 : 
+          var match$2 = fmtty_rel_det(param[0]);
+          var af$2 = match$2[1];
+          var fa$2 = match$2[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$2, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$2, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$2[2],
+                  match$2[3]
+                ];
+      case 3 : 
+          var match$3 = fmtty_rel_det(param[0]);
+          var af$3 = match$3[1];
+          var fa$3 = match$3[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$3, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$3, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$3[2],
+                  match$3[3]
+                ];
+      case 4 : 
+          var match$4 = fmtty_rel_det(param[0]);
+          var af$4 = match$4[1];
+          var fa$4 = match$4[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$4, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$4, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$4[2],
+                  match$4[3]
+                ];
+      case 5 : 
+          var match$5 = fmtty_rel_det(param[0]);
+          var af$5 = match$5[1];
+          var fa$5 = match$5[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$5, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$5, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$5[2],
+                  match$5[3]
+                ];
+      case 6 : 
+          var match$6 = fmtty_rel_det(param[0]);
+          var af$6 = match$6[1];
+          var fa$6 = match$6[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$6, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$6, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$6[2],
+                  match$6[3]
+                ];
+      case 7 : 
+          var match$7 = fmtty_rel_det(param[0]);
+          var af$7 = match$7[1];
+          var fa$7 = match$7[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$7, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$7, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$7[2],
+                  match$7[3]
+                ];
+      case 8 : 
+          var match$8 = fmtty_rel_det(param[1]);
+          var af$8 = match$8[1];
+          var fa$8 = match$8[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$8, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$8, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$8[2],
+                  match$8[3]
+                ];
+      case 9 : 
+          var match$9 = fmtty_rel_det(param[2]);
+          var de = match$9[3];
+          var ed = match$9[2];
+          var af$9 = match$9[1];
+          var fa$9 = match$9[0];
+          var ty = trans(symm(param[0]), param[1]);
+          var match$10 = fmtty_rel_det(ty);
+          var jd = match$10[3];
+          var dj = match$10[2];
+          var ga = match$10[1];
+          var ag = match$10[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$9, /* Refl */0);
+                    Curry._1(ag, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(ga, /* Refl */0);
+                    Curry._1(af$9, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(ed, /* Refl */0);
+                    Curry._1(dj, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(jd, /* Refl */0);
+                    Curry._1(de, /* Refl */0);
+                    return /* Refl */0;
+                  }
+                ];
+      case 10 : 
+          var match$11 = fmtty_rel_det(param[0]);
+          var af$10 = match$11[1];
+          var fa$10 = match$11[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$10, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$10, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$11[2],
+                  match$11[3]
+                ];
+      case 11 : 
+          var match$12 = fmtty_rel_det(param[0]);
+          var af$11 = match$12[1];
+          var fa$11 = match$12[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$11, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$11, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$12[2],
+                  match$12[3]
+                ];
+      case 12 : 
+          var match$13 = fmtty_rel_det(param[0]);
+          var af$12 = match$13[1];
+          var fa$12 = match$13[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$12, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$12, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  match$13[2],
+                  match$13[3]
+                ];
+      case 13 : 
+          var match$14 = fmtty_rel_det(param[0]);
+          var de$1 = match$14[3];
+          var ed$1 = match$14[2];
+          var af$13 = match$14[1];
+          var fa$13 = match$14[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$13, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$13, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(ed$1, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(de$1, /* Refl */0);
+                    return /* Refl */0;
+                  }
+                ];
+      case 14 : 
+          var match$15 = fmtty_rel_det(param[0]);
+          var de$2 = match$15[3];
+          var ed$2 = match$15[2];
+          var af$14 = match$15[1];
+          var fa$14 = match$15[0];
+          return /* tuple */[
+                  function () {
+                    Curry._1(fa$14, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(af$14, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(ed$2, /* Refl */0);
+                    return /* Refl */0;
+                  },
+                  function () {
+                    Curry._1(de$2, /* Refl */0);
+                    return /* Refl */0;
+                  }
+                ];
+      
+    }
+  }
+}
+
+function trans(ty1, ty2) {
+  var exit = 0;
+  if (typeof ty1 === "number") {
+    if (typeof ty2 === "number") {
+      if (ty2) {
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                816,
+                23
+              ]
+            ];
+      }
+      else {
+        return /* End_of_fmtty */0;
+      }
+    }
+    else {
+      switch (ty2.tag | 0) {
+        case 8 : 
+            exit = 6;
+            break;
+        case 9 : 
+            exit = 7;
+            break;
+        case 10 : 
+            exit = 1;
+            break;
+        case 11 : 
+            exit = 2;
+            break;
+        case 12 : 
+            exit = 3;
+            break;
+        case 13 : 
+            exit = 4;
+            break;
+        case 14 : 
+            exit = 5;
+            break;
+        default:
+          throw [
+                Caml_builtin_exceptions.assert_failure,
+                [
+                  "camlinternalFormat.ml",
+                  816,
+                  23
+                ]
+              ];
+      }
+    }
+  }
+  else {
+    switch (ty1.tag | 0) {
+      case 0 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 0 : 
+                  return /* Char_ty */Block.__(0, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 1 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 1 : 
+                  return /* String_ty */Block.__(1, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 2 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 2 : 
+                  return /* Int_ty */Block.__(2, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 3 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 3 : 
+                  return /* Int32_ty */Block.__(3, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 4 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 4 : 
+                  return /* Nativeint_ty */Block.__(4, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 5 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 5 : 
+                  return /* Int64_ty */Block.__(5, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 6 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 6 : 
+                  return /* Float_ty */Block.__(6, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 7 : 
+          if (typeof ty2 === "number") {
+            exit = 8;
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 7 : 
+                  return /* Bool_ty */Block.__(7, [trans(ty1[0], ty2[0])]);
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  exit = 7;
+                  break;
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              
+            }
+          }
+          break;
+      case 8 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    802,
+                    26
+                  ]
+                ];
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 8 : 
+                  return /* Format_arg_ty */Block.__(8, [
+                            trans(ty1[0], ty2[0]),
+                            trans(ty1[1], ty2[1])
+                          ]);
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              default:
+                throw [
+                      Caml_builtin_exceptions.assert_failure,
+                      [
+                        "camlinternalFormat.ml",
+                        802,
+                        26
+                      ]
+                    ];
+            }
+          }
+          break;
+      case 9 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    812,
+                    28
+                  ]
+                ];
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 8 : 
+                  exit = 6;
+                  break;
+              case 9 : 
+                  var ty = trans(symm(ty1[1]), ty2[0]);
+                  var match = fmtty_rel_det(ty);
+                  Curry._1(match[1], /* Refl */0);
+                  Curry._1(match[3], /* Refl */0);
+                  return /* Format_subst_ty */Block.__(9, [
+                            ty1[0],
+                            ty2[1],
+                            trans(ty1[2], ty2[2])
+                          ]);
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  exit = 5;
+                  break;
+              default:
+                throw [
+                      Caml_builtin_exceptions.assert_failure,
+                      [
+                        "camlinternalFormat.ml",
+                        812,
+                        28
+                      ]
+                    ];
+            }
+          }
+          break;
+      case 10 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    780,
+                    21
+                  ]
+                ];
+          }
+          else if (ty2.tag === 10) {
+            return /* Alpha_ty */Block.__(10, [trans(ty1[0], ty2[0])]);
+          }
+          else {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    780,
+                    21
+                  ]
+                ];
+          }
+          break;
+      case 11 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    784,
+                    21
+                  ]
+                ];
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  return /* Theta_ty */Block.__(11, [trans(ty1[0], ty2[0])]);
+              default:
+                throw [
+                      Caml_builtin_exceptions.assert_failure,
+                      [
+                        "camlinternalFormat.ml",
+                        784,
+                        21
+                      ]
+                    ];
+            }
+          }
+          break;
+      case 12 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    788,
+                    19
+                  ]
+                ];
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  return /* Any_ty */Block.__(12, [trans(ty1[0], ty2[0])]);
+              default:
+                throw [
+                      Caml_builtin_exceptions.assert_failure,
+                      [
+                        "camlinternalFormat.ml",
+                        788,
+                        19
+                      ]
+                    ];
+            }
+          }
+          break;
+      case 13 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    792,
+                    22
+                  ]
+                ];
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  return /* Reader_ty */Block.__(13, [trans(ty1[0], ty2[0])]);
+              default:
+                throw [
+                      Caml_builtin_exceptions.assert_failure,
+                      [
+                        "camlinternalFormat.ml",
+                        792,
+                        22
+                      ]
+                    ];
+            }
+          }
+          break;
+      case 14 : 
+          if (typeof ty2 === "number") {
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    797,
+                    30
+                  ]
+                ];
+          }
+          else {
+            switch (ty2.tag | 0) {
+              case 10 : 
+                  exit = 1;
+                  break;
+              case 11 : 
+                  exit = 2;
+                  break;
+              case 12 : 
+                  exit = 3;
+                  break;
+              case 13 : 
+                  exit = 4;
+                  break;
+              case 14 : 
+                  return /* Ignored_reader_ty */Block.__(14, [trans(ty1[0], ty2[0])]);
+              default:
+                throw [
+                      Caml_builtin_exceptions.assert_failure,
+                      [
+                        "camlinternalFormat.ml",
+                        797,
+                        30
+                      ]
+                    ];
+            }
+          }
+          break;
+      
+    }
+  }
+  switch (exit) {
+    case 1 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                781,
+                21
+              ]
+            ];
+    case 2 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                785,
+                21
+              ]
+            ];
+    case 3 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                789,
+                19
+              ]
+            ];
+    case 4 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                793,
+                22
+              ]
+            ];
+    case 5 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                798,
+                30
+              ]
+            ];
+    case 6 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                803,
+                26
+              ]
+            ];
+    case 7 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                813,
+                28
+              ]
+            ];
+    case 8 : 
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                817,
+                23
+              ]
+            ];
+    
+  }
+}
+
+function fmtty_of_formatting_gen(formatting_gen) {
+  return fmtty_of_fmt(formatting_gen[0][0]);
+}
+
+function fmtty_of_fmt(_fmtty) {
+  while(true) {
+    var fmtty = _fmtty;
+    if (typeof fmtty === "number") {
+      return /* End_of_fmtty */0;
+    }
+    else {
+      switch (fmtty.tag | 0) {
+        case 2 : 
+        case 3 : 
+            return fmtty_of_padding_fmtty(fmtty[0], /* String_ty */Block.__(1, [fmtty_of_fmt(fmtty[1])]));
+        case 4 : 
+            var ty_rest = fmtty_of_fmt(fmtty[3]);
+            var prec_ty = fmtty_of_precision_fmtty(fmtty[2], /* Int_ty */Block.__(2, [ty_rest]));
+            return fmtty_of_padding_fmtty(fmtty[1], prec_ty);
+        case 5 : 
+            var ty_rest$1 = fmtty_of_fmt(fmtty[3]);
+            var prec_ty$1 = fmtty_of_precision_fmtty(fmtty[2], /* Int32_ty */Block.__(3, [ty_rest$1]));
+            return fmtty_of_padding_fmtty(fmtty[1], prec_ty$1);
+        case 6 : 
+            var ty_rest$2 = fmtty_of_fmt(fmtty[3]);
+            var prec_ty$2 = fmtty_of_precision_fmtty(fmtty[2], /* Nativeint_ty */Block.__(4, [ty_rest$2]));
+            return fmtty_of_padding_fmtty(fmtty[1], prec_ty$2);
+        case 7 : 
+            var ty_rest$3 = fmtty_of_fmt(fmtty[3]);
+            var prec_ty$3 = fmtty_of_precision_fmtty(fmtty[2], /* Int64_ty */Block.__(5, [ty_rest$3]));
+            return fmtty_of_padding_fmtty(fmtty[1], prec_ty$3);
+        case 8 : 
+            var ty_rest$4 = fmtty_of_fmt(fmtty[3]);
+            var prec_ty$4 = fmtty_of_precision_fmtty(fmtty[2], /* Float_ty */Block.__(6, [ty_rest$4]));
+            return fmtty_of_padding_fmtty(fmtty[1], prec_ty$4);
+        case 9 : 
+            return /* Bool_ty */Block.__(7, [fmtty_of_fmt(fmtty[0])]);
+        case 10 : 
+            _fmtty = fmtty[0];
+            continue ;
+            case 13 : 
+            return /* Format_arg_ty */Block.__(8, [
+                      fmtty[1],
+                      fmtty_of_fmt(fmtty[2])
+                    ]);
+        case 14 : 
+            var ty = fmtty[1];
+            return /* Format_subst_ty */Block.__(9, [
+                      ty,
+                      ty,
+                      fmtty_of_fmt(fmtty[2])
+                    ]);
+        case 15 : 
+            return /* Alpha_ty */Block.__(10, [fmtty_of_fmt(fmtty[0])]);
+        case 16 : 
+            return /* Theta_ty */Block.__(11, [fmtty_of_fmt(fmtty[0])]);
+        case 11 : 
+        case 12 : 
+        case 17 : 
+            _fmtty = fmtty[1];
+            continue ;
+            case 18 : 
+            return CamlinternalFormatBasics.concat_fmtty(fmtty_of_formatting_gen(fmtty[0]), fmtty_of_fmt(fmtty[1]));
+        case 19 : 
+            return /* Reader_ty */Block.__(13, [fmtty_of_fmt(fmtty[0])]);
+        case 20 : 
+            return /* String_ty */Block.__(1, [fmtty_of_fmt(fmtty[2])]);
+        case 21 : 
+            return /* Int_ty */Block.__(2, [fmtty_of_fmt(fmtty[1])]);
+        case 0 : 
+        case 1 : 
+        case 22 : 
+            return /* Char_ty */Block.__(0, [fmtty_of_fmt(fmtty[0])]);
+        case 23 : 
+            var ign = fmtty[0];
+            var fmt = fmtty[1];
+            if (typeof ign === "number") {
+              switch (ign) {
+                case 3 : 
+                    return /* Ignored_reader_ty */Block.__(14, [fmtty_of_fmt(fmt)]);
+                case 0 : 
+                case 1 : 
+                case 2 : 
+                case 4 : 
+                    return fmtty_of_fmt(fmt);
+                
+              }
+            }
+            else {
+              switch (ign.tag | 0) {
+                case 8 : 
+                    return CamlinternalFormatBasics.concat_fmtty(ign[1], fmtty_of_fmt(fmt));
+                case 0 : 
+                case 1 : 
+                case 2 : 
+                case 3 : 
+                case 4 : 
+                case 5 : 
+                case 6 : 
+                case 7 : 
+                case 9 : 
+                case 10 : 
+                    return fmtty_of_fmt(fmt);
+                
+              }
+            }
+        case 24 : 
+            return fmtty_of_custom(fmtty[0], fmtty_of_fmt(fmtty[2]));
+        
+      }
+    }
+  };
+}
+
+function fmtty_of_custom(arity, fmtty) {
+  if (arity) {
+    return /* Any_ty */Block.__(12, [fmtty_of_custom(arity[0], fmtty)]);
+  }
+  else {
+    return fmtty;
+  }
+}
+
+function fmtty_of_padding_fmtty(pad, fmtty) {
+  if (typeof pad === "number" || !pad.tag) {
+    return fmtty;
+  }
+  else {
+    return /* Int_ty */Block.__(2, [fmtty]);
+  }
+}
+
+function fmtty_of_precision_fmtty(prec, fmtty) {
+  if (typeof prec === "number" && prec !== 0) {
+    return /* Int_ty */Block.__(2, [fmtty]);
+  }
+  else {
+    return fmtty;
+  }
+}
+
+var Type_mismatch = Caml_exceptions.create("CamlinternalFormat.Type_mismatch");
+
+function type_padding(pad, fmtty) {
+  if (typeof pad === "number") {
+    return /* Padding_fmtty_EBB */[
+            /* No_padding */0,
+            fmtty
+          ];
+  }
+  else if (pad.tag) {
+    if (typeof fmtty === "number") {
+      throw Type_mismatch;
+    }
+    else if (fmtty.tag === 2) {
+      return /* Padding_fmtty_EBB */[
+              /* Arg_padding */Block.__(1, [pad[0]]),
+              fmtty[0]
+            ];
+    }
+    else {
+      throw Type_mismatch;
+    }
+  }
+  else {
+    return /* Padding_fmtty_EBB */[
+            /* Lit_padding */Block.__(0, [
+                pad[0],
+                pad[1]
+              ]),
+            fmtty
+          ];
+  }
+}
+
+function type_padprec(pad, prec, fmtty) {
+  var match = type_padding(pad, fmtty);
+  if (typeof prec === "number") {
+    if (prec !== 0) {
+      var match$1 = match[1];
+      if (typeof match$1 === "number") {
+        throw Type_mismatch;
+      }
+      else if (match$1.tag === 2) {
+        return /* Padprec_fmtty_EBB */[
+                match[0],
+                /* Arg_precision */1,
+                match$1[0]
+              ];
+      }
+      else {
+        throw Type_mismatch;
+      }
+    }
+    else {
+      return /* Padprec_fmtty_EBB */[
+              match[0],
+              /* No_precision */0,
+              match[1]
+            ];
+    }
+  }
+  else {
+    return /* Padprec_fmtty_EBB */[
+            match[0],
+            /* Lit_precision */[prec[0]],
+            match[1]
+          ];
+  }
+}
+
+function type_format(fmt, fmtty) {
+  var match = type_format_gen(fmt, fmtty);
+  if (typeof match[1] === "number") {
+    return match[0];
+  }
+  else {
+    throw Type_mismatch;
+  }
+}
+
+function type_format_gen(fmt, fmtty) {
+  if (typeof fmt === "number") {
+    return /* Fmt_fmtty_EBB */[
+            /* End_of_format */0,
+            fmtty
+          ];
+  }
+  else {
+    switch (fmt.tag | 0) {
+      case 0 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag) {
+            throw Type_mismatch;
+          }
+          else {
+            var match = type_format_gen(fmt[0], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Char */Block.__(0, [match[0]]),
+                    match[1]
+                  ];
+          }
+          break;
+      case 1 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag) {
+            throw Type_mismatch;
+          }
+          else {
+            var match$1 = type_format_gen(fmt[0], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Caml_char */Block.__(1, [match$1[0]]),
+                    match$1[1]
+                  ];
+          }
+          break;
+      case 2 : 
+          var match$2 = type_padding(fmt[0], fmtty);
+          var match$3 = match$2[1];
+          if (typeof match$3 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$3.tag === 1) {
+            var match$4 = type_format_gen(fmt[1], match$3[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* String */Block.__(2, [
+                        match$2[0],
+                        match$4[0]
+                      ]),
+                    match$4[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 3 : 
+          var match$5 = type_padding(fmt[0], fmtty);
+          var match$6 = match$5[1];
+          if (typeof match$6 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$6.tag === 1) {
+            var match$7 = type_format_gen(fmt[1], match$6[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Caml_string */Block.__(3, [
+                        match$5[0],
+                        match$7[0]
+                      ]),
+                    match$7[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 4 : 
+          var match$8 = type_padprec(fmt[1], fmt[2], fmtty);
+          var match$9 = match$8[2];
+          if (typeof match$9 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$9.tag === 2) {
+            var match$10 = type_format_gen(fmt[3], match$9[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Int */Block.__(4, [
+                        fmt[0],
+                        match$8[0],
+                        match$8[1],
+                        match$10[0]
+                      ]),
+                    match$10[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 5 : 
+          var match$11 = type_padprec(fmt[1], fmt[2], fmtty);
+          var match$12 = match$11[2];
+          if (typeof match$12 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$12.tag === 3) {
+            var match$13 = type_format_gen(fmt[3], match$12[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Int32 */Block.__(5, [
+                        fmt[0],
+                        match$11[0],
+                        match$11[1],
+                        match$13[0]
+                      ]),
+                    match$13[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 6 : 
+          var match$14 = type_padprec(fmt[1], fmt[2], fmtty);
+          var match$15 = match$14[2];
+          if (typeof match$15 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$15.tag === 4) {
+            var match$16 = type_format_gen(fmt[3], match$15[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Nativeint */Block.__(6, [
+                        fmt[0],
+                        match$14[0],
+                        match$14[1],
+                        match$16[0]
+                      ]),
+                    match$16[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 7 : 
+          var match$17 = type_padprec(fmt[1], fmt[2], fmtty);
+          var match$18 = match$17[2];
+          if (typeof match$18 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$18.tag === 5) {
+            var match$19 = type_format_gen(fmt[3], match$18[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Int64 */Block.__(7, [
+                        fmt[0],
+                        match$17[0],
+                        match$17[1],
+                        match$19[0]
+                      ]),
+                    match$19[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 8 : 
+          var match$20 = type_padprec(fmt[1], fmt[2], fmtty);
+          var match$21 = match$20[2];
+          if (typeof match$21 === "number") {
+            throw Type_mismatch;
+          }
+          else if (match$21.tag === 6) {
+            var match$22 = type_format_gen(fmt[3], match$21[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Float */Block.__(8, [
+                        fmt[0],
+                        match$20[0],
+                        match$20[1],
+                        match$22[0]
+                      ]),
+                    match$22[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 9 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 7) {
+            var match$23 = type_format_gen(fmt[0], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Bool */Block.__(9, [match$23[0]]),
+                    match$23[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 10 : 
+          var match$24 = type_format_gen(fmt[0], fmtty);
+          return /* Fmt_fmtty_EBB */[
+                  /* Flush */Block.__(10, [match$24[0]]),
+                  match$24[1]
+                ];
+      case 11 : 
+          var match$25 = type_format_gen(fmt[1], fmtty);
+          return /* Fmt_fmtty_EBB */[
+                  /* String_literal */Block.__(11, [
+                      fmt[0],
+                      match$25[0]
+                    ]),
+                  match$25[1]
+                ];
+      case 12 : 
+          var match$26 = type_format_gen(fmt[1], fmtty);
+          return /* Fmt_fmtty_EBB */[
+                  /* Char_literal */Block.__(12, [
+                      fmt[0],
+                      match$26[0]
+                    ]),
+                  match$26[1]
+                ];
+      case 13 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 8) {
+            var sub_fmtty$prime = fmtty[0];
+            if (Caml_obj.caml_notequal(/* Fmtty_EBB */[fmt[1]], /* Fmtty_EBB */[sub_fmtty$prime])) {
+              throw Type_mismatch;
+            }
+            var match$27 = type_format_gen(fmt[2], fmtty[1]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Format_arg */Block.__(13, [
+                        fmt[0],
+                        sub_fmtty$prime,
+                        match$27[0]
+                      ]),
+                    match$27[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 14 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 9) {
+            var sub_fmtty1 = fmtty[0];
+            if (Caml_obj.caml_notequal(/* Fmtty_EBB */[CamlinternalFormatBasics.erase_rel(fmt[1])], /* Fmtty_EBB */[CamlinternalFormatBasics.erase_rel(sub_fmtty1)])) {
+              throw Type_mismatch;
+            }
+            var match$28 = type_format_gen(fmt[2], CamlinternalFormatBasics.erase_rel(fmtty[2]));
+            return /* Fmt_fmtty_EBB */[
+                    /* Format_subst */Block.__(14, [
+                        fmt[0],
+                        sub_fmtty1,
+                        match$28[0]
+                      ]),
+                    match$28[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 15 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 10) {
+            var match$29 = type_format_gen(fmt[0], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Alpha */Block.__(15, [match$29[0]]),
+                    match$29[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 16 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 11) {
+            var match$30 = type_format_gen(fmt[0], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Theta */Block.__(16, [match$30[0]]),
+                    match$30[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 17 : 
+          var match$31 = type_format_gen(fmt[1], fmtty);
+          return /* Fmt_fmtty_EBB */[
+                  /* Formatting_lit */Block.__(17, [
+                      fmt[0],
+                      match$31[0]
+                    ]),
+                  match$31[1]
+                ];
+      case 18 : 
+          var formatting_gen = fmt[0];
+          var fmt0 = fmt[1];
+          var fmtty0 = fmtty;
+          if (formatting_gen.tag) {
+            var match$32 = formatting_gen[0];
+            var match$33 = type_format_gen(match$32[0], fmtty0);
+            var match$34 = type_format_gen(fmt0, match$33[1]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Formatting_gen */Block.__(18, [
+                        /* Open_box */Block.__(1, [/* Format */[
+                              match$33[0],
+                              match$32[1]
+                            ]]),
+                        match$34[0]
+                      ]),
+                    match$34[1]
+                  ];
+          }
+          else {
+            var match$35 = formatting_gen[0];
+            var match$36 = type_format_gen(match$35[0], fmtty0);
+            var match$37 = type_format_gen(fmt0, match$36[1]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Formatting_gen */Block.__(18, [
+                        /* Open_tag */Block.__(0, [/* Format */[
+                              match$36[0],
+                              match$35[1]
+                            ]]),
+                        match$37[0]
+                      ]),
+                    match$37[1]
+                  ];
+          }
+      case 19 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 13) {
+            var match$38 = type_format_gen(fmt[0], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Reader */Block.__(19, [match$38[0]]),
+                    match$38[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 20 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 1) {
+            var match$39 = type_format_gen(fmt[2], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Scan_char_set */Block.__(20, [
+                        fmt[0],
+                        fmt[1],
+                        match$39[0]
+                      ]),
+                    match$39[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 21 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 2) {
+            var match$40 = type_format_gen(fmt[1], fmtty[0]);
+            return /* Fmt_fmtty_EBB */[
+                    /* Scan_get_counter */Block.__(21, [
+                        fmt[0],
+                        match$40[0]
+                      ]),
+                    match$40[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 23 : 
+          var ign = fmt[0];
+          var fmt$1 = fmt[1];
+          var fmtty$1 = fmtty;
+          if (typeof ign === "number") {
+            switch (ign) {
+              case 3 : 
+                  if (typeof fmtty$1 === "number") {
+                    throw Type_mismatch;
+                  }
+                  else if (fmtty$1.tag === 14) {
+                    var match$41 = type_format_gen(fmt$1, fmtty$1[0]);
+                    return /* Fmt_fmtty_EBB */[
+                            /* Ignored_param */Block.__(23, [
+                                /* Ignored_reader */3,
+                                match$41[0]
+                              ]),
+                            match$41[1]
+                          ];
+                  }
+                  else {
+                    throw Type_mismatch;
+                  }
+                  break;
+              case 0 : 
+              case 1 : 
+              case 2 : 
+              case 4 : 
+                  return type_ignored_param_one(ign, fmt$1, fmtty$1);
+              
+            }
+          }
+          else {
+            switch (ign.tag | 0) {
+              case 7 : 
+                  return type_ignored_param_one(/* Ignored_format_arg */Block.__(7, [
+                                ign[0],
+                                ign[1]
+                              ]), fmt$1, fmtty$1);
+              case 8 : 
+                  var match$42 = type_ignored_format_substitution(ign[1], fmt$1, fmtty$1);
+                  var match$43 = match$42[1];
+                  return /* Fmt_fmtty_EBB */[
+                          /* Ignored_param */Block.__(23, [
+                              /* Ignored_format_subst */Block.__(8, [
+                                  ign[0],
+                                  match$42[0]
+                                ]),
+                              match$43[0]
+                            ]),
+                          match$43[1]
+                        ];
+              case 0 : 
+              case 1 : 
+              case 2 : 
+              case 3 : 
+              case 4 : 
+              case 5 : 
+              case 6 : 
+              case 9 : 
+              case 10 : 
+                  return type_ignored_param_one(ign, fmt$1, fmtty$1);
+              
+            }
+          }
+      case 22 : 
+      case 24 : 
+          throw Type_mismatch;
+      
+    }
+  }
+}
+
+function type_ignored_param_one(ign, fmt, fmtty) {
+  var match = type_format_gen(fmt, fmtty);
+  return /* Fmt_fmtty_EBB */[
+          /* Ignored_param */Block.__(23, [
+              ign,
+              match[0]
+            ]),
+          match[1]
+        ];
+}
+
+function type_ignored_format_substitution(sub_fmtty, fmt, fmtty) {
+  if (typeof sub_fmtty === "number") {
+    return /* Fmtty_fmt_EBB */[
+            /* End_of_fmtty */0,
+            type_format_gen(fmt, fmtty)
+          ];
+  }
+  else {
+    switch (sub_fmtty.tag | 0) {
+      case 0 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag) {
+            throw Type_mismatch;
+          }
+          else {
+            var match = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Char_ty */Block.__(0, [match[0]]),
+                    match[1]
+                  ];
+          }
+          break;
+      case 1 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 1) {
+            var match$1 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* String_ty */Block.__(1, [match$1[0]]),
+                    match$1[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 2 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 2) {
+            var match$2 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Int_ty */Block.__(2, [match$2[0]]),
+                    match$2[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 3 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 3) {
+            var match$3 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Int32_ty */Block.__(3, [match$3[0]]),
+                    match$3[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 4 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 4) {
+            var match$4 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Nativeint_ty */Block.__(4, [match$4[0]]),
+                    match$4[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 5 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 5) {
+            var match$5 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Int64_ty */Block.__(5, [match$5[0]]),
+                    match$5[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 6 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 6) {
+            var match$6 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Float_ty */Block.__(6, [match$6[0]]),
+                    match$6[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 7 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 7) {
+            var match$7 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Bool_ty */Block.__(7, [match$7[0]]),
+                    match$7[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 8 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 8) {
+            var sub2_fmtty$prime = fmtty[0];
+            if (Caml_obj.caml_notequal(/* Fmtty_EBB */[sub_fmtty[0]], /* Fmtty_EBB */[sub2_fmtty$prime])) {
+              throw Type_mismatch;
+            }
+            var match$8 = type_ignored_format_substitution(sub_fmtty[1], fmt, fmtty[1]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Format_arg_ty */Block.__(8, [
+                        sub2_fmtty$prime,
+                        match$8[0]
+                      ]),
+                    match$8[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 9 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 9) {
+            var sub2_fmtty$prime$1 = fmtty[1];
+            var sub1_fmtty$prime = fmtty[0];
+            if (Caml_obj.caml_notequal(/* Fmtty_EBB */[CamlinternalFormatBasics.erase_rel(sub_fmtty[0])], /* Fmtty_EBB */[CamlinternalFormatBasics.erase_rel(sub1_fmtty$prime)])) {
+              throw Type_mismatch;
+            }
+            if (Caml_obj.caml_notequal(/* Fmtty_EBB */[CamlinternalFormatBasics.erase_rel(sub_fmtty[1])], /* Fmtty_EBB */[CamlinternalFormatBasics.erase_rel(sub2_fmtty$prime$1)])) {
+              throw Type_mismatch;
+            }
+            var sub_fmtty$prime = trans(symm(sub1_fmtty$prime), sub2_fmtty$prime$1);
+            var match$9 = fmtty_rel_det(sub_fmtty$prime);
+            Curry._1(match$9[1], /* Refl */0);
+            Curry._1(match$9[3], /* Refl */0);
+            var match$10 = type_ignored_format_substitution(CamlinternalFormatBasics.erase_rel(sub_fmtty[2]), fmt, fmtty[2]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Format_subst_ty */Block.__(9, [
+                        sub1_fmtty$prime,
+                        sub2_fmtty$prime$1,
+                        symm(match$10[0])
+                      ]),
+                    match$10[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 10 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 10) {
+            var match$11 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Alpha_ty */Block.__(10, [match$11[0]]),
+                    match$11[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 11 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 11) {
+            var match$12 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Theta_ty */Block.__(11, [match$12[0]]),
+                    match$12[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 12 : 
+          throw Type_mismatch;
+      case 13 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 13) {
+            var match$13 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Reader_ty */Block.__(13, [match$13[0]]),
+                    match$13[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      case 14 : 
+          if (typeof fmtty === "number") {
+            throw Type_mismatch;
+          }
+          else if (fmtty.tag === 14) {
+            var match$14 = type_ignored_format_substitution(sub_fmtty[0], fmt, fmtty[0]);
+            return /* Fmtty_fmt_EBB */[
+                    /* Ignored_reader_ty */Block.__(14, [match$14[0]]),
+                    match$14[1]
+                  ];
+          }
+          else {
+            throw Type_mismatch;
+          }
+          break;
+      
+    }
+  }
+}
+
+function recast(fmt, fmtty) {
+  return type_format(fmt, CamlinternalFormatBasics.erase_rel(symm(fmtty)));
+}
+
+function fix_padding(padty, width, str) {
+  var len = str.length;
+  var match_000 = Pervasives.abs(width);
+  var match_001 = width < 0 ? /* Left */0 : padty;
+  var padty$1 = match_001;
+  var width$1 = match_000;
+  if (width$1 <= len) {
+    return str;
+  }
+  else {
+    var res = Bytes.make(width$1, padty$1 === /* Zeros */2 ? /* "0" */48 : /* " " */32);
+    switch (padty$1) {
+      case 0 : 
+          $$String.blit(str, 0, res, 0, len);
+          break;
+      case 1 : 
+          $$String.blit(str, 0, res, width$1 - len | 0, len);
+          break;
+      case 2 : 
+          if (len > 0 && (Caml_string.get(str, 0) === /* "+" */43 || Caml_string.get(str, 0) === /* "-" */45 || Caml_string.get(str, 0) === /* " " */32)) {
+            res[0] = Caml_string.get(str, 0);
+            $$String.blit(str, 1, res, (width$1 - len | 0) + 1 | 0, len - 1 | 0);
+          }
+          else if (len > 1 && Caml_string.get(str, 0) === /* "0" */48 && (Caml_string.get(str, 1) === /* "x" */120 || Caml_string.get(str, 1) === /* "X" */88)) {
+            res[1] = Caml_string.get(str, 1);
+            $$String.blit(str, 2, res, (width$1 - len | 0) + 2 | 0, len - 2 | 0);
+          }
+          else {
+            $$String.blit(str, 0, res, width$1 - len | 0, len);
+          }
+          break;
+      
+    }
+    return Caml_string.bytes_to_string(res);
+  }
+}
+
+function fix_int_precision(prec, str) {
+  var prec$1 = Pervasives.abs(prec);
+  var len = str.length;
+  var c = Caml_string.get(str, 0);
+  var exit = 0;
+  if (c >= 58) {
+    if (c >= 71) {
+      if (c > 102 || c < 97) {
+        return str;
+      }
+      else {
+        exit = 2;
+      }
+    }
+    else if (c >= 65) {
+      exit = 2;
+    }
+    else {
+      return str;
+    }
+  }
+  else if (c !== 32) {
+    if (c >= 43) {
+      switch (c - 43 | 0) {
+        case 0 : 
+        case 2 : 
+            exit = 1;
+            break;
+        case 1 : 
+        case 3 : 
+        case 4 : 
+            return str;
+        case 5 : 
+            if ((prec$1 + 2 | 0) > len && len > 1 && (Caml_string.get(str, 1) === /* "x" */120 || Caml_string.get(str, 1) === /* "X" */88)) {
+              var res = Bytes.make(prec$1 + 2 | 0, /* "0" */48);
+              res[1] = Caml_string.get(str, 1);
+              $$String.blit(str, 2, res, (prec$1 - len | 0) + 4 | 0, len - 2 | 0);
+              return Caml_string.bytes_to_string(res);
+            }
+            else {
+              exit = 2;
+            }
+            break;
+        case 6 : 
+        case 7 : 
+        case 8 : 
+        case 9 : 
+        case 10 : 
+        case 11 : 
+        case 12 : 
+        case 13 : 
+        case 14 : 
+            exit = 2;
+            break;
+        
+      }
+    }
+    else {
+      return str;
+    }
+  }
+  else {
+    exit = 1;
+  }
+  switch (exit) {
+    case 1 : 
+        if ((prec$1 + 1 | 0) > len) {
+          var res$1 = Bytes.make(prec$1 + 1 | 0, /* "0" */48);
+          res$1[0] = c;
+          $$String.blit(str, 1, res$1, (prec$1 - len | 0) + 2 | 0, len - 1 | 0);
+          return Caml_string.bytes_to_string(res$1);
+        }
+        else {
+          return str;
+        }
+        break;
+    case 2 : 
+        if (prec$1 > len) {
+          var res$2 = Bytes.make(prec$1, /* "0" */48);
+          $$String.blit(str, 0, res$2, prec$1 - len | 0, len);
+          return Caml_string.bytes_to_string(res$2);
+        }
+        else {
+          return str;
+        }
+        break;
+    
+  }
+}
+
+function string_to_caml_string(str) {
+  return $$String.concat($$String.escaped(str), /* :: */[
+              '"',
+              /* :: */[
+                '"',
+                /* [] */0
+              ]
+            ]);
+}
+
+function format_of_iconv(iconv) {
+  switch (iconv) {
+    case 0 : 
+        return "%d";
+    case 1 : 
+        return "%+d";
+    case 2 : 
+        return "% d";
+    case 3 : 
+        return "%i";
+    case 4 : 
+        return "%+i";
+    case 5 : 
+        return "% i";
+    case 6 : 
+        return "%x";
+    case 7 : 
+        return "%#x";
+    case 8 : 
+        return "%X";
+    case 9 : 
+        return "%#X";
+    case 10 : 
+        return "%o";
+    case 11 : 
+        return "%#o";
+    case 12 : 
+        return "%u";
+    
+  }
+}
+
+function format_of_aconv(iconv, c) {
+  var seps;
+  switch (iconv) {
+    case 0 : 
+        seps = /* :: */[
+          "%",
+          /* :: */[
+            "d",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 1 : 
+        seps = /* :: */[
+          "%+",
+          /* :: */[
+            "d",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 2 : 
+        seps = /* :: */[
+          "% ",
+          /* :: */[
+            "d",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 3 : 
+        seps = /* :: */[
+          "%",
+          /* :: */[
+            "i",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 4 : 
+        seps = /* :: */[
+          "%+",
+          /* :: */[
+            "i",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 5 : 
+        seps = /* :: */[
+          "% ",
+          /* :: */[
+            "i",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 6 : 
+        seps = /* :: */[
+          "%",
+          /* :: */[
+            "x",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 7 : 
+        seps = /* :: */[
+          "%#",
+          /* :: */[
+            "x",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 8 : 
+        seps = /* :: */[
+          "%",
+          /* :: */[
+            "X",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 9 : 
+        seps = /* :: */[
+          "%#",
+          /* :: */[
+            "X",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 10 : 
+        seps = /* :: */[
+          "%",
+          /* :: */[
+            "o",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 11 : 
+        seps = /* :: */[
+          "%#",
+          /* :: */[
+            "o",
+            /* [] */0
+          ]
+        ];
+        break;
+    case 12 : 
+        seps = /* :: */[
+          "%",
+          /* :: */[
+            "u",
+            /* [] */0
+          ]
+        ];
+        break;
+    
+  }
+  return $$String.concat(Caml_string.bytes_to_string(Bytes.make(1, c)), seps);
+}
+
+function format_of_fconv(fconv, prec) {
+  if (fconv === /* Float_F */15) {
+    return "%.12g";
+  }
+  else {
+    var prec$1 = Pervasives.abs(prec);
+    var symb = char_of_fconv(fconv);
+    var buf = /* record */[
+      /* ind */0,
+      /* bytes */new Array(16)
+    ];
+    buffer_add_char(buf, /* "%" */37);
+    bprint_fconv_flag(buf, fconv);
+    buffer_add_char(buf, /* "." */46);
+    buffer_add_string(buf, "" + prec$1);
+    buffer_add_char(buf, symb);
+    return buffer_contents(buf);
+  }
+}
+
+function convert_int(iconv, n) {
+  return Caml_format.caml_format_int(format_of_iconv(iconv), n);
+}
+
+function convert_int32(iconv, n) {
+  return Caml_format.caml_int32_format(format_of_aconv(iconv, /* "l" */108), n);
+}
+
+function convert_nativeint(iconv, n) {
+  return Caml_format.caml_nativeint_format(format_of_aconv(iconv, /* "n" */110), n);
+}
+
+function convert_int64(iconv, n) {
+  return Caml_format.caml_int64_format(format_of_aconv(iconv, /* "L" */76), n);
+}
+
+function convert_float(fconv, prec, x) {
+  var prec$1 = Pervasives.abs(prec);
+  var str = Caml_format.caml_format_float(format_of_fconv(fconv, prec$1), x);
+  if (fconv !== /* Float_F */15) {
+    return str;
+  }
+  else {
+    var len = str.length;
+    var is_valid = function (_i) {
+      while(true) {
+        var i = _i;
+        if (i === len) {
+          return /* false */0;
+        }
+        else {
+          var match = Caml_string.get(str, i);
+          var switcher = match - 46 | 0;
+          if (switcher > 23 || switcher < 0) {
+            if (switcher !== 55) {
+              _i = i + 1 | 0;
+              continue ;
+              
+            }
+            else {
+              return /* true */1;
+            }
+          }
+          else if (switcher > 22 || switcher < 1) {
+            return /* true */1;
+          }
+          else {
+            _i = i + 1 | 0;
+            continue ;
+            
+          }
+        }
+      };
+    };
+    var match = Caml_float.caml_classify_float(x);
+    if (match !== 3) {
+      if (match >= 4) {
+        return "nan";
+      }
+      else if (is_valid(0)) {
+        return str;
+      }
+      else {
+        return str + ".";
+      }
+    }
+    else if (x < 0.0) {
+      return "neg_infinity";
+    }
+    else {
+      return "infinity";
+    }
+  }
+}
+
+function format_caml_char(c) {
+  return $$String.concat(Char.escaped(c), /* :: */[
+              "'",
+              /* :: */[
+                "'",
+                /* [] */0
+              ]
+            ]);
+}
+
+function string_of_fmtty(fmtty) {
+  var buf = /* record */[
+    /* ind */0,
+    /* bytes */new Array(16)
+  ];
+  bprint_fmtty(buf, fmtty);
+  return buffer_contents(buf);
+}
+
+function make_printf(_k, o, _acc, _fmt) {
+  while(true) {
+    var fmt = _fmt;
+    var acc = _acc;
+    var k = _k;
+    if (typeof fmt === "number") {
+      return Curry._2(k, o, acc);
+    }
+    else {
+      switch (fmt.tag | 0) {
+        case 0 : 
+            var rest = fmt[0];
+            return (function(k,acc,rest){
+            return function (c) {
+              var new_acc = /* Acc_data_char */Block.__(5, [
+                  acc,
+                  c
+                ]);
+              return make_printf(k, o, new_acc, rest);
+            }
+            }(k,acc,rest));
+        case 1 : 
+            var rest$1 = fmt[0];
+            return (function(k,acc,rest$1){
+            return function (c) {
+              var new_acc_001 = format_caml_char(c);
+              var new_acc = /* Acc_data_string */Block.__(4, [
+                  acc,
+                  new_acc_001
+                ]);
+              return make_printf(k, o, new_acc, rest$1);
+            }
+            }(k,acc,rest$1));
+        case 2 : 
+            return make_string_padding(k, o, acc, fmt[1], fmt[0], function (str) {
+                        return str;
+                      });
+        case 3 : 
+            return make_string_padding(k, o, acc, fmt[1], fmt[0], string_to_caml_string);
+        case 4 : 
+            return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_int, fmt[0]);
+        case 5 : 
+            return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_int32, fmt[0]);
+        case 6 : 
+            return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_nativeint, fmt[0]);
+        case 7 : 
+            return make_int_padding_precision(k, o, acc, fmt[3], fmt[1], fmt[2], convert_int64, fmt[0]);
+        case 8 : 
+            var k$1 = k;
+            var o$1 = o;
+            var acc$1 = acc;
+            var fmt$1 = fmt[3];
+            var pad = fmt[1];
+            var prec = fmt[2];
+            var fconv = fmt[0];
+            if (typeof pad === "number") {
+              if (typeof prec === "number") {
+                if (prec !== 0) {
+                  return (function(k$1,o$1,acc$1,fmt$1,fconv){
+                  return function (p, x) {
+                    var str = convert_float(fconv, p, x);
+                    return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                  acc$1,
+                                  str
+                                ]), fmt$1);
+                  }
+                  }(k$1,o$1,acc$1,fmt$1,fconv));
+                }
+                else {
+                  return (function(k$1,o$1,acc$1,fmt$1,fconv){
+                  return function (x) {
+                    var str = convert_float(fconv, 6, x);
+                    return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                  acc$1,
+                                  str
+                                ]), fmt$1);
+                  }
+                  }(k$1,o$1,acc$1,fmt$1,fconv));
+                }
+              }
+              else {
+                var p = prec[0];
+                return (function(k$1,o$1,acc$1,fmt$1,fconv,p){
+                return function (x) {
+                  var str = convert_float(fconv, p, x);
+                  return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                acc$1,
+                                str
+                              ]), fmt$1);
+                }
+                }(k$1,o$1,acc$1,fmt$1,fconv,p));
+              }
+            }
+            else if (pad.tag) {
+              var padty = pad[0];
+              if (typeof prec === "number") {
+                if (prec !== 0) {
+                  return (function(k$1,o$1,acc$1,fmt$1,fconv,padty){
+                  return function (w, p, x) {
+                    var str = fix_padding(padty, w, convert_float(fconv, p, x));
+                    return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                  acc$1,
+                                  str
+                                ]), fmt$1);
+                  }
+                  }(k$1,o$1,acc$1,fmt$1,fconv,padty));
+                }
+                else {
+                  return (function(k$1,o$1,acc$1,fmt$1,fconv,padty){
+                  return function (w, x) {
+                    var str = convert_float(fconv, 6, x);
+                    var str$prime = fix_padding(padty, w, str);
+                    return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                  acc$1,
+                                  str$prime
+                                ]), fmt$1);
+                  }
+                  }(k$1,o$1,acc$1,fmt$1,fconv,padty));
+                }
+              }
+              else {
+                var p$1 = prec[0];
+                return (function(k$1,o$1,acc$1,fmt$1,fconv,padty,p$1){
+                return function (w, x) {
+                  var str = fix_padding(padty, w, convert_float(fconv, p$1, x));
+                  return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                acc$1,
+                                str
+                              ]), fmt$1);
+                }
+                }(k$1,o$1,acc$1,fmt$1,fconv,padty,p$1));
+              }
+            }
+            else {
+              var w = pad[1];
+              var padty$1 = pad[0];
+              if (typeof prec === "number") {
+                if (prec !== 0) {
+                  return (function(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w){
+                  return function (p, x) {
+                    var str = fix_padding(padty$1, w, convert_float(fconv, p, x));
+                    return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                  acc$1,
+                                  str
+                                ]), fmt$1);
+                  }
+                  }(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w));
+                }
+                else {
+                  return (function(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w){
+                  return function (x) {
+                    var str = convert_float(fconv, 6, x);
+                    var str$prime = fix_padding(padty$1, w, str);
+                    return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                  acc$1,
+                                  str$prime
+                                ]), fmt$1);
+                  }
+                  }(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w));
+                }
+              }
+              else {
+                var p$2 = prec[0];
+                return (function(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w,p$2){
+                return function (x) {
+                  var str = fix_padding(padty$1, w, convert_float(fconv, p$2, x));
+                  return make_printf(k$1, o$1, /* Acc_data_string */Block.__(4, [
+                                acc$1,
+                                str
+                              ]), fmt$1);
+                }
+                }(k$1,o$1,acc$1,fmt$1,fconv,padty$1,w,p$2));
+              }
+            }
+        case 9 : 
+            var rest$2 = fmt[0];
+            return (function(k,acc,rest$2){
+            return function (b) {
+              return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                            acc,
+                            b ? "true" : "false"
+                          ]), rest$2);
+            }
+            }(k,acc,rest$2));
+        case 10 : 
+            _fmt = fmt[0];
+            _acc = /* Acc_flush */Block.__(7, [acc]);
+            continue ;
+            case 11 : 
+            _fmt = fmt[1];
+            _acc = /* Acc_string_literal */Block.__(2, [
+                acc,
+                fmt[0]
+              ]);
+            continue ;
+            case 12 : 
+            _fmt = fmt[1];
+            _acc = /* Acc_char_literal */Block.__(3, [
+                acc,
+                fmt[0]
+              ]);
+            continue ;
+            case 13 : 
+            var rest$3 = fmt[2];
+            var ty = string_of_fmtty(fmt[1]);
+            return (function(k,acc,rest$3,ty){
+            return function () {
+              return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                            acc,
+                            ty
+                          ]), rest$3);
+            }
+            }(k,acc,rest$3,ty));
+        case 14 : 
+            var rest$4 = fmt[2];
+            var fmtty = fmt[1];
+            return (function(k,acc,fmtty,rest$4){
+            return function (param) {
+              return make_printf(k, o, acc, CamlinternalFormatBasics.concat_fmt(recast(param[0], fmtty), rest$4));
+            }
+            }(k,acc,fmtty,rest$4));
+        case 15 : 
+            var rest$5 = fmt[0];
+            return (function(k,acc,rest$5){
+            return function (f, x) {
+              return make_printf(k, o, /* Acc_delay */Block.__(6, [
+                            acc,
+                            function (o) {
+                              return Curry._2(f, o, x);
+                            }
+                          ]), rest$5);
+            }
+            }(k,acc,rest$5));
+        case 16 : 
+            var rest$6 = fmt[0];
+            return (function(k,acc,rest$6){
+            return function (f) {
+              return make_printf(k, o, /* Acc_delay */Block.__(6, [
+                            acc,
+                            f
+                          ]), rest$6);
+            }
+            }(k,acc,rest$6));
+        case 17 : 
+            _fmt = fmt[1];
+            _acc = /* Acc_formatting_lit */Block.__(0, [
+                acc,
+                fmt[0]
+              ]);
+            continue ;
+            case 18 : 
+            var match = fmt[0];
+            if (match.tag) {
+              var rest$7 = fmt[1];
+              var k$prime = (function(k,acc,rest$7){
+              return function (koc, kacc) {
+                return make_printf(k, koc, /* Acc_formatting_gen */Block.__(1, [
+                              acc,
+                              /* Acc_open_box */Block.__(1, [kacc])
+                            ]), rest$7);
+              }
+              }(k,acc,rest$7));
+              _fmt = match[0][0];
+              _acc = /* End_of_acc */0;
+              _k = k$prime;
+              continue ;
+              
+            }
+            else {
+              var rest$8 = fmt[1];
+              var k$prime$1 = (function(k,acc,rest$8){
+              return function (koc, kacc) {
+                return make_printf(k, koc, /* Acc_formatting_gen */Block.__(1, [
+                              acc,
+                              /* Acc_open_tag */Block.__(0, [kacc])
+                            ]), rest$8);
+              }
+              }(k,acc,rest$8));
+              _fmt = match[0][0];
+              _acc = /* End_of_acc */0;
+              _k = k$prime$1;
+              continue ;
+              
+            }
+            break;
+        case 19 : 
+            throw [
+                  Caml_builtin_exceptions.assert_failure,
+                  [
+                    "camlinternalFormat.ml",
+                    1449,
+                    4
+                  ]
+                ];
+        case 20 : 
+            var rest$9 = fmt[2];
+            var new_acc = /* Acc_invalid_arg */Block.__(8, [
+                acc,
+                "Printf: bad conversion %["
+              ]);
+            return (function(k,rest$9,new_acc){
+            return function () {
+              return make_printf(k, o, new_acc, rest$9);
+            }
+            }(k,rest$9,new_acc));
+        case 21 : 
+            var rest$10 = fmt[1];
+            return (function(k,acc,rest$10){
+            return function (n) {
+              var new_acc_001 = Caml_format.caml_format_int("%u", n);
+              var new_acc = /* Acc_data_string */Block.__(4, [
+                  acc,
+                  new_acc_001
+                ]);
+              return make_printf(k, o, new_acc, rest$10);
+            }
+            }(k,acc,rest$10));
+        case 22 : 
+            var rest$11 = fmt[0];
+            return (function(k,acc,rest$11){
+            return function (c) {
+              var new_acc = /* Acc_data_char */Block.__(5, [
+                  acc,
+                  c
+                ]);
+              return make_printf(k, o, new_acc, rest$11);
+            }
+            }(k,acc,rest$11));
+        case 23 : 
+            var k$2 = k;
+            var o$2 = o;
+            var acc$2 = acc;
+            var ign = fmt[0];
+            var fmt$2 = fmt[1];
+            if (typeof ign === "number") {
+              switch (ign) {
+                case 3 : 
+                    throw [
+                          Caml_builtin_exceptions.assert_failure,
+                          [
+                            "camlinternalFormat.ml",
+                            1517,
+                            39
+                          ]
+                        ];
+                case 0 : 
+                case 1 : 
+                case 2 : 
+                case 4 : 
+                    return make_invalid_arg(k$2, o$2, acc$2, fmt$2);
+                
+              }
+            }
+            else {
+              switch (ign.tag | 0) {
+                case 8 : 
+                    return make_from_fmtty(k$2, o$2, acc$2, ign[1], fmt$2);
+                case 0 : 
+                case 1 : 
+                case 2 : 
+                case 3 : 
+                case 4 : 
+                case 5 : 
+                case 6 : 
+                case 7 : 
+                case 9 : 
+                case 10 : 
+                    return make_invalid_arg(k$2, o$2, acc$2, fmt$2);
+                
+              }
+            }
+        case 24 : 
+            return make_custom(k, o, acc, fmt[2], fmt[0], Curry._1(fmt[1], /* () */0));
+        
+      }
+    }
+  };
+}
+
+function make_from_fmtty(k, o, acc, fmtty, fmt) {
+  if (typeof fmtty === "number") {
+    return make_invalid_arg(k, o, acc, fmt);
+  }
+  else {
+    switch (fmtty.tag | 0) {
+      case 0 : 
+          var rest = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest, fmt);
+          };
+      case 1 : 
+          var rest$1 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$1, fmt);
+          };
+      case 2 : 
+          var rest$2 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$2, fmt);
+          };
+      case 3 : 
+          var rest$3 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$3, fmt);
+          };
+      case 4 : 
+          var rest$4 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$4, fmt);
+          };
+      case 5 : 
+          var rest$5 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$5, fmt);
+          };
+      case 6 : 
+          var rest$6 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$6, fmt);
+          };
+      case 7 : 
+          var rest$7 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$7, fmt);
+          };
+      case 8 : 
+          var rest$8 = fmtty[1];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$8, fmt);
+          };
+      case 9 : 
+          var rest$9 = fmtty[2];
+          var ty = trans(symm(fmtty[0]), fmtty[1]);
+          return function () {
+            return make_from_fmtty(k, o, acc, CamlinternalFormatBasics.concat_fmtty(ty, rest$9), fmt);
+          };
+      case 10 : 
+          var rest$10 = fmtty[0];
+          return function (_, _$1) {
+            return make_from_fmtty(k, o, acc, rest$10, fmt);
+          };
+      case 11 : 
+          var rest$11 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$11, fmt);
+          };
+      case 12 : 
+          var rest$12 = fmtty[0];
+          return function () {
+            return make_from_fmtty(k, o, acc, rest$12, fmt);
+          };
+      case 13 : 
+          throw [
+                Caml_builtin_exceptions.assert_failure,
+                [
+                  "camlinternalFormat.ml",
+                  1540,
+                  31
+                ]
+              ];
+      case 14 : 
+          throw [
+                Caml_builtin_exceptions.assert_failure,
+                [
+                  "camlinternalFormat.ml",
+                  1541,
+                  31
+                ]
+              ];
+      
+    }
+  }
+}
+
+function make_invalid_arg(k, o, acc, fmt) {
+  return make_printf(k, o, /* Acc_invalid_arg */Block.__(8, [
+                acc,
+                "Printf: bad conversion %_"
+              ]), fmt);
+}
+
+function make_string_padding(k, o, acc, fmt, pad, trans) {
+  if (typeof pad === "number") {
+    return function (x) {
+      var new_acc_001 = Curry._1(trans, x);
+      var new_acc = /* Acc_data_string */Block.__(4, [
+          acc,
+          new_acc_001
+        ]);
+      return make_printf(k, o, new_acc, fmt);
+    };
+  }
+  else if (pad.tag) {
+    var padty = pad[0];
+    return function (w, x) {
+      var new_acc_001 = fix_padding(padty, w, Curry._1(trans, x));
+      var new_acc = /* Acc_data_string */Block.__(4, [
+          acc,
+          new_acc_001
+        ]);
+      return make_printf(k, o, new_acc, fmt);
+    };
+  }
+  else {
+    var width = pad[1];
+    var padty$1 = pad[0];
+    return function (x) {
+      var new_acc_001 = fix_padding(padty$1, width, Curry._1(trans, x));
+      var new_acc = /* Acc_data_string */Block.__(4, [
+          acc,
+          new_acc_001
+        ]);
+      return make_printf(k, o, new_acc, fmt);
+    };
+  }
+}
+
+function make_int_padding_precision(k, o, acc, fmt, pad, prec, trans, iconv) {
+  if (typeof pad === "number") {
+    if (typeof prec === "number") {
+      if (prec !== 0) {
+        return function (p, x) {
+          var str = fix_int_precision(p, Curry._2(trans, iconv, x));
+          return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                        acc,
+                        str
+                      ]), fmt);
+        };
+      }
+      else {
+        return function (x) {
+          var str = Curry._2(trans, iconv, x);
+          return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                        acc,
+                        str
+                      ]), fmt);
+        };
+      }
+    }
+    else {
+      var p = prec[0];
+      return function (x) {
+        var str = fix_int_precision(p, Curry._2(trans, iconv, x));
+        return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                      acc,
+                      str
+                    ]), fmt);
+      };
+    }
+  }
+  else if (pad.tag) {
+    var padty = pad[0];
+    if (typeof prec === "number") {
+      if (prec !== 0) {
+        return function (w, p, x) {
+          var str = fix_padding(padty, w, fix_int_precision(p, Curry._2(trans, iconv, x)));
+          return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                        acc,
+                        str
+                      ]), fmt);
+        };
+      }
+      else {
+        return function (w, x) {
+          var str = fix_padding(padty, w, Curry._2(trans, iconv, x));
+          return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                        acc,
+                        str
+                      ]), fmt);
+        };
+      }
+    }
+    else {
+      var p$1 = prec[0];
+      return function (w, x) {
+        var str = fix_padding(padty, w, fix_int_precision(p$1, Curry._2(trans, iconv, x)));
+        return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                      acc,
+                      str
+                    ]), fmt);
+      };
+    }
+  }
+  else {
+    var w = pad[1];
+    var padty$1 = pad[0];
+    if (typeof prec === "number") {
+      if (prec !== 0) {
+        return function (p, x) {
+          var str = fix_padding(padty$1, w, fix_int_precision(p, Curry._2(trans, iconv, x)));
+          return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                        acc,
+                        str
+                      ]), fmt);
+        };
+      }
+      else {
+        return function (x) {
+          var str = fix_padding(padty$1, w, Curry._2(trans, iconv, x));
+          return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                        acc,
+                        str
+                      ]), fmt);
+        };
+      }
+    }
+    else {
+      var p$2 = prec[0];
+      return function (x) {
+        var str = fix_padding(padty$1, w, fix_int_precision(p$2, Curry._2(trans, iconv, x)));
+        return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                      acc,
+                      str
+                    ]), fmt);
+      };
+    }
+  }
+}
+
+function make_custom(k, o, acc, rest, arity, f) {
+  if (arity) {
+    var arity$1 = arity[0];
+    return function (x) {
+      return make_custom(k, o, acc, rest, arity$1, Curry._1(f, x));
+    };
+  }
+  else {
+    return make_printf(k, o, /* Acc_data_string */Block.__(4, [
+                  acc,
+                  f
+                ]), rest);
+  }
+}
+
+function output_acc(o, _acc) {
+  while(true) {
+    var acc = _acc;
+    var exit = 0;
+    if (typeof acc === "number") {
+      return /* () */0;
+    }
+    else {
+      switch (acc.tag | 0) {
+        case 0 : 
+            var s = string_of_formatting_lit(acc[1]);
+            output_acc(o, acc[0]);
+            return Pervasives.output_string(o, s);
+        case 1 : 
+            var match = acc[1];
+            var p = acc[0];
+            output_acc(o, p);
+            if (match.tag) {
+              Pervasives.output_string(o, "@[");
+              _acc = match[0];
+              continue ;
+              
+            }
+            else {
+              Pervasives.output_string(o, "@{");
+              _acc = match[0];
+              continue ;
+              
+            }
+            break;
+        case 2 : 
+        case 4 : 
+            exit = 1;
+            break;
+        case 3 : 
+        case 5 : 
+            exit = 2;
+            break;
+        case 6 : 
+            output_acc(o, acc[0]);
+            return Curry._1(acc[1], o);
+        case 7 : 
+            output_acc(o, acc[0]);
+            return Caml_io.caml_ml_flush(o);
+        case 8 : 
+            output_acc(o, acc[0]);
+            throw [
+                  Caml_builtin_exceptions.invalid_argument,
+                  acc[1]
+                ];
+        
+      }
+    }
+    switch (exit) {
+      case 1 : 
+          output_acc(o, acc[0]);
+          return Pervasives.output_string(o, acc[1]);
+      case 2 : 
+          output_acc(o, acc[0]);
+          return Caml_io.caml_ml_output_char(o, acc[1]);
+      
+    }
+  };
+}
+
+function bufput_acc(b, _acc) {
+  while(true) {
+    var acc = _acc;
+    var exit = 0;
+    if (typeof acc === "number") {
+      return /* () */0;
+    }
+    else {
+      switch (acc.tag | 0) {
+        case 0 : 
+            var s = string_of_formatting_lit(acc[1]);
+            bufput_acc(b, acc[0]);
+            return Buffer.add_string(b, s);
+        case 1 : 
+            var match = acc[1];
+            var p = acc[0];
+            bufput_acc(b, p);
+            if (match.tag) {
+              Buffer.add_string(b, "@[");
+              _acc = match[0];
+              continue ;
+              
+            }
+            else {
+              Buffer.add_string(b, "@{");
+              _acc = match[0];
+              continue ;
+              
+            }
+            break;
+        case 2 : 
+        case 4 : 
+            exit = 1;
+            break;
+        case 3 : 
+        case 5 : 
+            exit = 2;
+            break;
+        case 6 : 
+            bufput_acc(b, acc[0]);
+            return Curry._1(acc[1], b);
+        case 7 : 
+            _acc = acc[0];
+            continue ;
+            case 8 : 
+            bufput_acc(b, acc[0]);
+            throw [
+                  Caml_builtin_exceptions.invalid_argument,
+                  acc[1]
+                ];
+        
+      }
+    }
+    switch (exit) {
+      case 1 : 
+          bufput_acc(b, acc[0]);
+          return Buffer.add_string(b, acc[1]);
+      case 2 : 
+          bufput_acc(b, acc[0]);
+          return Buffer.add_char(b, acc[1]);
+      
+    }
+  };
+}
+
+function strput_acc(b, _acc) {
+  while(true) {
+    var acc = _acc;
+    var exit = 0;
+    if (typeof acc === "number") {
+      return /* () */0;
+    }
+    else {
+      switch (acc.tag | 0) {
+        case 0 : 
+            var s = string_of_formatting_lit(acc[1]);
+            strput_acc(b, acc[0]);
+            return Buffer.add_string(b, s);
+        case 1 : 
+            var match = acc[1];
+            var p = acc[0];
+            strput_acc(b, p);
+            if (match.tag) {
+              Buffer.add_string(b, "@[");
+              _acc = match[0];
+              continue ;
+              
+            }
+            else {
+              Buffer.add_string(b, "@{");
+              _acc = match[0];
+              continue ;
+              
+            }
+            break;
+        case 2 : 
+        case 4 : 
+            exit = 1;
+            break;
+        case 3 : 
+        case 5 : 
+            exit = 2;
+            break;
+        case 6 : 
+            strput_acc(b, acc[0]);
+            return Buffer.add_string(b, Curry._1(acc[1], /* () */0));
+        case 7 : 
+            _acc = acc[0];
+            continue ;
+            case 8 : 
+            strput_acc(b, acc[0]);
+            throw [
+                  Caml_builtin_exceptions.invalid_argument,
+                  acc[1]
+                ];
+        
+      }
+    }
+    switch (exit) {
+      case 1 : 
+          strput_acc(b, acc[0]);
+          return Buffer.add_string(b, acc[1]);
+      case 2 : 
+          strput_acc(b, acc[0]);
+          return Buffer.add_char(b, acc[1]);
+      
+    }
+  };
+}
+
+function failwith_message(param) {
+  var buf = Buffer.create(256);
+  var k = function (_, acc) {
+    strput_acc(buf, acc);
+    var s = Buffer.contents(buf);
+    throw [
+          Caml_builtin_exceptions.failure,
+          s
+        ];
+  };
+  return make_printf(k, /* () */0, /* End_of_acc */0, param[0]);
+}
+
+function open_box_of_string(str) {
+  if (str === "") {
+    return /* tuple */[
+            0,
+            /* Pp_box */4
+          ];
+  }
+  else {
+    var len = str.length;
+    var invalid_box = function () {
+      return Curry._1(failwith_message(/* Format */[
+                      /* String_literal */Block.__(11, [
+                          "invalid box description ",
+                          /* Caml_string */Block.__(3, [
+                              /* No_padding */0,
+                              /* End_of_format */0
+                            ])
+                        ]),
+                      "invalid box description %S"
+                    ]), str);
+    };
+    var parse_spaces = function (_i) {
+      while(true) {
+        var i = _i;
+        if (i === len) {
+          return i;
+        }
+        else {
+          var match = Caml_string.get(str, i);
+          if (match !== 9) {
+            if (match !== 32) {
+              return i;
+            }
+            else {
+              _i = i + 1 | 0;
+              continue ;
+              
+            }
+          }
+          else {
+            _i = i + 1 | 0;
+            continue ;
+            
+          }
+        }
+      };
+    };
+    var parse_lword = function (_, _j) {
+      while(true) {
+        var j = _j;
+        if (j === len) {
+          return j;
+        }
+        else {
+          var match = Caml_string.get(str, j);
+          if (match > 122 || match < 97) {
+            return j;
+          }
+          else {
+            _j = j + 1 | 0;
+            continue ;
+            
+          }
+        }
+      };
+    };
+    var parse_int = function (_, _j) {
+      while(true) {
+        var j = _j;
+        if (j === len) {
+          return j;
+        }
+        else {
+          var match = Caml_string.get(str, j);
+          if (match >= 48) {
+            if (match >= 58) {
+              return j;
+            }
+            else {
+              _j = j + 1 | 0;
+              continue ;
+              
+            }
+          }
+          else if (match !== 45) {
+            return j;
+          }
+          else {
+            _j = j + 1 | 0;
+            continue ;
+            
+          }
+        }
+      };
+    };
+    var wstart = parse_spaces(0);
+    var wend = parse_lword(wstart, wstart);
+    var box_name = $$String.sub(str, wstart, wend - wstart | 0);
+    var nstart = parse_spaces(wend);
+    var nend = parse_int(nstart, nstart);
+    var indent;
+    if (nstart === nend) {
+      indent = 0;
+    }
+    else {
+      try {
+        indent = Caml_format.caml_int_of_string($$String.sub(str, nstart, nend - nstart | 0));
+      }
+      catch (exn){
+        if (exn[0] === Caml_builtin_exceptions.failure) {
+          indent = invalid_box(/* () */0);
+        }
+        else {
+          throw exn;
+        }
+      }
+    }
+    var exp_end = parse_spaces(nend);
+    if (exp_end !== len) {
+      invalid_box(/* () */0);
+    }
+    var box_type;
+    switch (box_name) {
+      case "" : 
+      case "b" : 
+          box_type = /* Pp_box */4;
+          break;
+      case "h" : 
+          box_type = /* Pp_hbox */0;
+          break;
+      case "hov" : 
+          box_type = /* Pp_hovbox */3;
+          break;
+      case "hv" : 
+          box_type = /* Pp_hvbox */2;
+          break;
+      case "v" : 
+          box_type = /* Pp_vbox */1;
+          break;
+      default:
+        box_type = invalid_box(/* () */0);
+    }
+    return /* tuple */[
+            indent,
+            box_type
+          ];
+  }
+}
+
+function make_padding_fmt_ebb(pad, fmt) {
+  if (typeof pad === "number") {
+    return /* Padding_fmt_EBB */[
+            /* No_padding */0,
+            fmt
+          ];
+  }
+  else if (pad.tag) {
+    return /* Padding_fmt_EBB */[
+            /* Arg_padding */Block.__(1, [pad[0]]),
+            fmt
+          ];
+  }
+  else {
+    return /* Padding_fmt_EBB */[
+            /* Lit_padding */Block.__(0, [
+                pad[0],
+                pad[1]
+              ]),
+            fmt
+          ];
+  }
+}
+
+function make_precision_fmt_ebb(prec, fmt) {
+  if (typeof prec === "number") {
+    if (prec !== 0) {
+      return /* Precision_fmt_EBB */[
+              /* Arg_precision */1,
+              fmt
+            ];
+    }
+    else {
+      return /* Precision_fmt_EBB */[
+              /* No_precision */0,
+              fmt
+            ];
+    }
+  }
+  else {
+    return /* Precision_fmt_EBB */[
+            /* Lit_precision */[prec[0]],
+            fmt
+          ];
+  }
+}
+
+function make_padprec_fmt_ebb(pad, prec, fmt) {
+  var match = make_precision_fmt_ebb(prec, fmt);
+  var fmt$prime = match[1];
+  var prec$1 = match[0];
+  if (typeof pad === "number") {
+    return /* Padprec_fmt_EBB */[
+            /* No_padding */0,
+            prec$1,
+            fmt$prime
+          ];
+  }
+  else if (pad.tag) {
+    return /* Padprec_fmt_EBB */[
+            /* Arg_padding */Block.__(1, [pad[0]]),
+            prec$1,
+            fmt$prime
+          ];
+  }
+  else {
+    return /* Padprec_fmt_EBB */[
+            /* Lit_padding */Block.__(0, [
+                pad[0],
+                pad[1]
+              ]),
+            prec$1,
+            fmt$prime
+          ];
+  }
+}
+
+function fmt_ebb_of_string(legacy_behavior, str) {
+  var legacy_behavior$1 = legacy_behavior ? legacy_behavior[0] : /* true */1;
+  var invalid_format_message = function (str_ind, msg) {
+    return Curry._3(failwith_message(/* Format */[
+                    /* String_literal */Block.__(11, [
+                        "invalid format ",
+                        /* Caml_string */Block.__(3, [
+                            /* No_padding */0,
+                            /* String_literal */Block.__(11, [
+                                ": at character number ",
+                                /* Int */Block.__(4, [
+                                    /* Int_d */0,
+                                    /* No_padding */0,
+                                    /* No_precision */0,
+                                    /* String_literal */Block.__(11, [
+                                        ", ",
+                                        /* String */Block.__(2, [
+                                            /* No_padding */0,
+                                            /* End_of_format */0
+                                          ])
+                                      ])
+                                  ])
+                              ])
+                          ])
+                      ]),
+                    "invalid format %S: at character number %d, %s"
+                  ]), str, str_ind, msg);
+  };
+  var invalid_format_without = function (str_ind, c, s) {
+    return Curry._4(failwith_message(/* Format */[
+                    /* String_literal */Block.__(11, [
+                        "invalid format ",
+                        /* Caml_string */Block.__(3, [
+                            /* No_padding */0,
+                            /* String_literal */Block.__(11, [
+                                ": at character number ",
+                                /* Int */Block.__(4, [
+                                    /* Int_d */0,
+                                    /* No_padding */0,
+                                    /* No_precision */0,
+                                    /* String_literal */Block.__(11, [
+                                        ", '",
+                                        /* Char */Block.__(0, [/* String_literal */Block.__(11, [
+                                                "' without ",
+                                                /* String */Block.__(2, [
+                                                    /* No_padding */0,
+                                                    /* End_of_format */0
+                                                  ])
+                                              ])])
+                                      ])
+                                  ])
+                              ])
+                          ])
+                      ]),
+                    "invalid format %S: at character number %d, '%c' without %s"
+                  ]), str, str_ind, c, s);
+  };
+  var expected_character = function (str_ind, expected, read) {
+    return Curry._4(failwith_message(/* Format */[
+                    /* String_literal */Block.__(11, [
+                        "invalid format ",
+                        /* Caml_string */Block.__(3, [
+                            /* No_padding */0,
+                            /* String_literal */Block.__(11, [
+                                ": at character number ",
+                                /* Int */Block.__(4, [
+                                    /* Int_d */0,
+                                    /* No_padding */0,
+                                    /* No_precision */0,
+                                    /* String_literal */Block.__(11, [
+                                        ", ",
+                                        /* String */Block.__(2, [
+                                            /* No_padding */0,
+                                            /* String_literal */Block.__(11, [
+                                                " expected, read ",
+                                                /* Caml_char */Block.__(1, [/* End_of_format */0])
+                                              ])
+                                          ])
+                                      ])
+                                  ])
+                              ])
+                          ])
+                      ]),
+                    "invalid format %S: at character number %d, %s expected, read %C"
+                  ]), str, str_ind, expected, read);
+  };
+  var parse_literal = function (lit_start, _str_ind, end_ind) {
+    while(true) {
+      var str_ind = _str_ind;
+      if (str_ind === end_ind) {
+        return add_literal(lit_start, str_ind, /* End_of_format */0);
+      }
+      else {
+        var match = Caml_string.get(str, str_ind);
+        if (match !== 37) {
+          if (match !== 64) {
+            _str_ind = str_ind + 1 | 0;
+            continue ;
+            
+          }
+          else {
+            var match$1 = parse_after_at(str_ind + 1 | 0, end_ind);
+            return add_literal(lit_start, str_ind, match$1[0]);
+          }
+        }
+        else {
+          var match$2 = parse_format(str_ind, end_ind);
+          return add_literal(lit_start, str_ind, match$2[0]);
+        }
+      }
+    };
+  };
+  var parse_format = function (pct_ind, end_ind) {
+    var pct_ind$1 = pct_ind;
+    var str_ind = pct_ind + 1 | 0;
+    var end_ind$1 = end_ind;
+    if (str_ind === end_ind$1) {
+      invalid_format_message(end_ind$1, "unexpected end of format");
+    }
+    var match = Caml_string.get(str, str_ind);
+    if (match !== 95) {
+      return parse_flags(pct_ind$1, str_ind, end_ind$1, /* false */0);
+    }
+    else {
+      return parse_flags(pct_ind$1, str_ind + 1 | 0, end_ind$1, /* true */1);
+    }
+  };
+  var parse_flags = function (pct_ind, str_ind, end_ind, ign) {
+    var zero = [/* false */0];
+    var minus = [/* false */0];
+    var plus = [/* false */0];
+    var space = [/* false */0];
+    var sharp = [/* false */0];
+    var set_flag = function (str_ind, flag) {
+      if (flag[0] && !legacy_behavior$1) {
+        Curry._3(failwith_message(/* Format */[
+                  /* String_literal */Block.__(11, [
+                      "invalid format ",
+                      /* Caml_string */Block.__(3, [
+                          /* No_padding */0,
+                          /* String_literal */Block.__(11, [
+                              ": at character number ",
+                              /* Int */Block.__(4, [
+                                  /* Int_d */0,
+                                  /* No_padding */0,
+                                  /* No_precision */0,
+                                  /* String_literal */Block.__(11, [
+                                      ", duplicate flag ",
+                                      /* Caml_char */Block.__(1, [/* End_of_format */0])
+                                    ])
+                                ])
+                            ])
+                        ])
+                    ]),
+                  "invalid format %S: at character number %d, duplicate flag %C"
+                ]), str, str_ind, Caml_string.get(str, str_ind));
+      }
+      flag[0] = /* true */1;
+      return /* () */0;
+    };
+    var _str_ind = str_ind;
+    while(true) {
+      var str_ind$1 = _str_ind;
+      if (str_ind$1 === end_ind) {
+        invalid_format_message(end_ind, "unexpected end of format");
+      }
+      var match = Caml_string.get(str, str_ind$1);
+      var exit = 0;
+      var switcher = match - 32 | 0;
+      if (switcher > 16 || switcher < 0) {
+        exit = 1;
+      }
+      else {
+        switch (switcher) {
+          case 0 : 
+              set_flag(str_ind$1, space);
+              _str_ind = str_ind$1 + 1 | 0;
+              continue ;
+              case 3 : 
+              set_flag(str_ind$1, sharp);
+              _str_ind = str_ind$1 + 1 | 0;
+              continue ;
+              case 11 : 
+              set_flag(str_ind$1, plus);
+              _str_ind = str_ind$1 + 1 | 0;
+              continue ;
+              case 13 : 
+              set_flag(str_ind$1, minus);
+              _str_ind = str_ind$1 + 1 | 0;
+              continue ;
+              case 1 : 
+          case 2 : 
+          case 4 : 
+          case 5 : 
+          case 6 : 
+          case 7 : 
+          case 8 : 
+          case 9 : 
+          case 10 : 
+          case 12 : 
+          case 14 : 
+          case 15 : 
+              exit = 1;
+              break;
+          case 16 : 
+              set_flag(str_ind$1, zero);
+              _str_ind = str_ind$1 + 1 | 0;
+              continue ;
+              
+        }
+      }
+      if (exit === 1) {
+        var pct_ind$1 = pct_ind;
+        var str_ind$2 = str_ind$1;
+        var end_ind$1 = end_ind;
+        var zero$1 = zero[0];
+        var minus$1 = minus[0];
+        var plus$1 = plus[0];
+        var sharp$1 = sharp[0];
+        var space$1 = space[0];
+        var ign$1 = ign;
+        if (str_ind$2 === end_ind$1) {
+          invalid_format_message(end_ind$1, "unexpected end of format");
+        }
+        var padty = zero$1 !== 0 ? (
+            minus$1 !== 0 ? (
+                legacy_behavior$1 ? /* Left */0 : incompatible_flag(pct_ind$1, str_ind$2, /* "-" */45, "0")
+              ) : /* Zeros */2
+          ) : (
+            minus$1 !== 0 ? /* Left */0 : /* Right */1
+          );
+        var match$1 = Caml_string.get(str, str_ind$2);
+        var exit$1 = 0;
+        if (match$1 >= 48) {
+          if (match$1 >= 58) {
+            exit$1 = 1;
+          }
+          else {
+            var match$2 = parse_positive(str_ind$2, end_ind$1, 0);
+            return parse_after_padding(pct_ind$1, match$2[0], end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, /* Lit_padding */Block.__(0, [
+                          padty,
+                          match$2[1]
+                        ]));
+          }
+        }
+        else if (match$1 !== 42) {
+          exit$1 = 1;
+        }
+        else {
+          return parse_after_padding(pct_ind$1, str_ind$2 + 1 | 0, end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, /* Arg_padding */Block.__(1, [padty]));
+        }
+        if (exit$1 === 1) {
+          switch (padty) {
+            case 0 : 
+                if (!legacy_behavior$1) {
+                  invalid_format_without(str_ind$2 - 1 | 0, /* "-" */45, "padding");
+                }
+                return parse_after_padding(pct_ind$1, str_ind$2, end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, /* No_padding */0);
+            case 1 : 
+                return parse_after_padding(pct_ind$1, str_ind$2, end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, /* No_padding */0);
+            case 2 : 
+                return parse_after_padding(pct_ind$1, str_ind$2, end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, /* Lit_padding */Block.__(0, [
+                              /* Right */1,
+                              0
+                            ]));
+            
+          }
+        }
+        
+      }
+      
+    };
+  };
+  var parse_after_padding = function (pct_ind, str_ind, end_ind, minus, plus, sharp, space, ign, pad) {
+    if (str_ind === end_ind) {
+      invalid_format_message(end_ind, "unexpected end of format");
+    }
+    var symb = Caml_string.get(str, str_ind);
+    if (symb !== 46) {
+      return parse_conversion(pct_ind, str_ind + 1 | 0, end_ind, plus, sharp, space, ign, pad, /* No_precision */0, pad, symb);
+    }
+    else {
+      var pct_ind$1 = pct_ind;
+      var str_ind$1 = str_ind + 1 | 0;
+      var end_ind$1 = end_ind;
+      var minus$1 = minus;
+      var plus$1 = plus;
+      var sharp$1 = sharp;
+      var space$1 = space;
+      var ign$1 = ign;
+      var pad$1 = pad;
+      if (str_ind$1 === end_ind$1) {
+        invalid_format_message(end_ind$1, "unexpected end of format");
+      }
+      var parse_literal = function (minus, str_ind) {
+        var match = parse_positive(str_ind, end_ind$1, 0);
+        return parse_after_precision(pct_ind$1, match[0], end_ind$1, minus, plus$1, sharp$1, space$1, ign$1, pad$1, /* Lit_precision */[match[1]]);
+      };
+      var symb$1 = Caml_string.get(str, str_ind$1);
+      var exit = 0;
+      var exit$1 = 0;
+      if (symb$1 >= 48) {
+        if (symb$1 >= 58) {
+          exit = 1;
+        }
+        else {
+          return parse_literal(minus$1, str_ind$1);
+        }
+      }
+      else if (symb$1 >= 42) {
+        switch (symb$1 - 42 | 0) {
+          case 0 : 
+              return parse_after_precision(pct_ind$1, str_ind$1 + 1 | 0, end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, pad$1, /* Arg_precision */1);
+          case 1 : 
+          case 3 : 
+              exit$1 = 2;
+              break;
+          case 2 : 
+          case 4 : 
+          case 5 : 
+              exit = 1;
+              break;
+          
+        }
+      }
+      else {
+        exit = 1;
+      }
+      if (exit$1 === 2) {
+        if (legacy_behavior$1) {
+          return parse_literal(+(minus$1 || symb$1 === /* "-" */45), str_ind$1 + 1 | 0);
+        }
+        else {
+          exit = 1;
+        }
+      }
+      if (exit === 1) {
+        if (legacy_behavior$1) {
+          return parse_after_precision(pct_ind$1, str_ind$1, end_ind$1, minus$1, plus$1, sharp$1, space$1, ign$1, pad$1, /* Lit_precision */[0]);
+        }
+        else {
+          return invalid_format_without(str_ind$1 - 1 | 0, /* "." */46, "precision");
+        }
+      }
+      
+    }
+  };
+  var parse_after_precision = function (pct_ind, str_ind, end_ind, minus, plus, sharp, space, ign, pad, prec) {
+    if (str_ind === end_ind) {
+      invalid_format_message(end_ind, "unexpected end of format");
+    }
+    var parse_conv = function (padprec) {
+      return parse_conversion(pct_ind, str_ind + 1 | 0, end_ind, plus, sharp, space, ign, pad, prec, padprec, Caml_string.get(str, str_ind));
+    };
+    if (typeof pad === "number") {
+      var exit = 0;
+      if (typeof prec === "number") {
+        if (prec !== 0) {
+          exit = 1;
+        }
+        else {
+          return parse_conv(/* No_padding */0);
+        }
+      }
+      else {
+        exit = 1;
+      }
+      if (exit === 1) {
+        if (minus !== 0) {
+          if (typeof prec === "number") {
+            return parse_conv(/* Arg_padding */Block.__(1, [/* Left */0]));
+          }
+          else {
+            return parse_conv(/* Lit_padding */Block.__(0, [
+                          /* Left */0,
+                          prec[0]
+                        ]));
+          }
+        }
+        else if (typeof prec === "number") {
+          return parse_conv(/* Arg_padding */Block.__(1, [/* Right */1]));
+        }
+        else {
+          return parse_conv(/* Lit_padding */Block.__(0, [
+                        /* Right */1,
+                        prec[0]
+                      ]));
+        }
+      }
+      
+    }
+    else {
+      return parse_conv(pad);
+    }
+  };
+  var parse_conversion = function (pct_ind, str_ind, end_ind, plus, sharp, space, ign, pad, prec, padprec, symb) {
+    var plus_used = /* false */0;
+    var sharp_used = /* false */0;
+    var space_used = /* false */0;
+    var ign_used = [/* false */0];
+    var pad_used = /* false */0;
+    var prec_used = [/* false */0];
+    var check_no_0 = function (symb, pad) {
+      if (typeof pad === "number") {
+        return pad;
+      }
+      else if (pad.tag) {
+        if (pad[0] >= 2) {
+          if (legacy_behavior$1) {
+            return /* Arg_padding */Block.__(1, [/* Right */1]);
+          }
+          else {
+            return incompatible_flag(pct_ind, str_ind, symb, "0");
+          }
+        }
+        else {
+          return pad;
+        }
+      }
+      else if (pad[0] >= 2) {
+        if (legacy_behavior$1) {
+          return /* Lit_padding */Block.__(0, [
+                    /* Right */1,
+                    pad[1]
+                  ]);
+        }
+        else {
+          return incompatible_flag(pct_ind, str_ind, symb, "0");
+        }
+      }
+      else {
+        return pad;
+      }
+    };
+    var opt_of_pad = function (c, pad) {
+      if (typeof pad === "number") {
+        return /* None */0;
+      }
+      else if (pad.tag) {
+        return incompatible_flag(pct_ind, str_ind, c, "'*'");
+      }
+      else {
+        switch (pad[0]) {
+          case 0 : 
+              if (legacy_behavior$1) {
+                return /* Some */[pad[1]];
+              }
+              else {
+                return incompatible_flag(pct_ind, str_ind, c, "'-'");
+              }
+          case 1 : 
+              return /* Some */[pad[1]];
+          case 2 : 
+              if (legacy_behavior$1) {
+                return /* Some */[pad[1]];
+              }
+              else {
+                return incompatible_flag(pct_ind, str_ind, c, "'0'");
+              }
+          
+        }
+      }
+    };
+    var get_prec_opt = function () {
+      prec_used[0] = /* true */1;
+      if (typeof prec === "number") {
+        if (prec !== 0) {
+          return incompatible_flag(pct_ind, str_ind, /* "_" */95, "'*'");
+        }
+        else {
+          return /* None */0;
+        }
+      }
+      else {
+        return /* Some */[prec[0]];
+      }
+    };
+    var fmt_result;
+    var exit = 0;
+    var exit$1 = 0;
+    var exit$2 = 0;
+    if (symb >= 124) {
+      exit$1 = 6;
+    }
+    else {
+      switch (symb) {
+        case 33 : 
+            var match = parse_literal(str_ind, str_ind, end_ind);
+            fmt_result = /* Fmt_EBB */[/* Flush */Block.__(10, [match[0]])];
+            break;
+        case 40 : 
+            var sub_end = search_subformat_end(str_ind, end_ind, /* ")" */41);
+            var beg_ind = sub_end + 2 | 0;
+            var match$1 = parse_literal(beg_ind, beg_ind, end_ind);
+            var fmt_rest = match$1[0];
+            var match$2 = parse_literal(str_ind, str_ind, sub_end);
+            var sub_fmtty = fmtty_of_fmt(match$2[0]);
+            if (ign_used[0] = /* true */1, ign) {
+              pad_used = /* true */1;
+              var ignored_000 = opt_of_pad(/* "_" */95, pad);
+              var ignored = /* Ignored_format_subst */Block.__(8, [
+                  ignored_000,
+                  sub_fmtty
+                ]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored,
+                    fmt_rest
+                  ])];
+            }
+            else {
+              pad_used = /* true */1;
+              fmt_result = /* Fmt_EBB */[/* Format_subst */Block.__(14, [
+                    opt_of_pad(/* "(" */40, pad),
+                    sub_fmtty,
+                    fmt_rest
+                  ])];
+            }
+            break;
+        case 44 : 
+            fmt_result = parse_literal(str_ind, str_ind, end_ind);
+            break;
+        case 37 : 
+        case 64 : 
+            exit$1 = 4;
+            break;
+        case 67 : 
+            var match$3 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$1 = match$3[0];
+            fmt_result = (ign_used[0] = /* true */1, ign) ? /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    /* Ignored_caml_char */1,
+                    fmt_rest$1
+                  ])] : /* Fmt_EBB */[/* Caml_char */Block.__(1, [fmt_rest$1])];
+            break;
+        case 78 : 
+            var match$4 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$2 = match$4[0];
+            if (ign_used[0] = /* true */1, ign) {
+              var ignored$1 = /* Ignored_scan_get_counter */Block.__(10, [/* Token_counter */2]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$1,
+                    fmt_rest$2
+                  ])];
+            }
+            else {
+              fmt_result = /* Fmt_EBB */[/* Scan_get_counter */Block.__(21, [
+                    /* Token_counter */2,
+                    fmt_rest$2
+                  ])];
+            }
+            break;
+        case 83 : 
+            pad_used = /* true */1;
+            var pad$1 = check_no_0(symb, padprec);
+            var match$5 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$3 = match$5[0];
+            if (ign_used[0] = /* true */1, ign) {
+              pad_used = /* true */1;
+              var ignored$2 = /* Ignored_caml_string */Block.__(1, [opt_of_pad(/* "_" */95, padprec)]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$2,
+                    fmt_rest$3
+                  ])];
+            }
+            else {
+              var match$6 = make_padding_fmt_ebb(pad$1, fmt_rest$3);
+              fmt_result = /* Fmt_EBB */[/* Caml_string */Block.__(3, [
+                    match$6[0],
+                    match$6[1]
+                  ])];
+            }
+            break;
+        case 91 : 
+            var match$7 = parse_char_set(str_ind, end_ind);
+            var char_set = match$7[1];
+            var next_ind = match$7[0];
+            var match$8 = parse_literal(next_ind, next_ind, end_ind);
+            var fmt_rest$4 = match$8[0];
+            if (ign_used[0] = /* true */1, ign) {
+              pad_used = /* true */1;
+              var ignored_000$1 = opt_of_pad(/* "_" */95, pad);
+              var ignored$3 = /* Ignored_scan_char_set */Block.__(9, [
+                  ignored_000$1,
+                  char_set
+                ]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$3,
+                    fmt_rest$4
+                  ])];
+            }
+            else {
+              pad_used = /* true */1;
+              fmt_result = /* Fmt_EBB */[/* Scan_char_set */Block.__(20, [
+                    opt_of_pad(/* "[" */91, pad),
+                    char_set,
+                    fmt_rest$4
+                  ])];
+            }
+            break;
+        case 32 : 
+        case 35 : 
+        case 43 : 
+        case 45 : 
+        case 95 : 
+            exit$1 = 5;
+            break;
+        case 97 : 
+            var match$9 = parse_literal(str_ind, str_ind, end_ind);
+            fmt_result = /* Fmt_EBB */[/* Alpha */Block.__(15, [match$9[0]])];
+            break;
+        case 66 : 
+        case 98 : 
+            exit$1 = 3;
+            break;
+        case 99 : 
+            var char_format = function (fmt_rest) {
+              if (ign_used[0] = /* true */1, ign) {
+                return /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                            /* Ignored_char */0,
+                            fmt_rest
+                          ])];
+              }
+              else {
+                return /* Fmt_EBB */[/* Char */Block.__(0, [fmt_rest])];
+              }
+            };
+            var scan_format = function (fmt_rest) {
+              if (ign_used[0] = /* true */1, ign) {
+                return /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                            /* Ignored_scan_next_char */4,
+                            fmt_rest
+                          ])];
+              }
+              else {
+                return /* Fmt_EBB */[/* Scan_next_char */Block.__(22, [fmt_rest])];
+              }
+            };
+            var match$10 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$5 = match$10[0];
+            pad_used = /* true */1;
+            var match$11 = opt_of_pad(/* "c" */99, pad);
+            fmt_result = match$11 ? (
+                match$11[0] !== 0 ? (
+                    legacy_behavior$1 ? char_format(fmt_rest$5) : invalid_format_message(str_ind, "non-zero widths are unsupported for %c conversions")
+                  ) : scan_format(fmt_rest$5)
+              ) : char_format(fmt_rest$5);
+            break;
+        case 69 : 
+        case 70 : 
+        case 71 : 
+        case 101 : 
+        case 102 : 
+        case 103 : 
+            exit$1 = 2;
+            break;
+        case 76 : 
+        case 108 : 
+        case 110 : 
+            exit$2 = 8;
+            break;
+        case 114 : 
+            var match$12 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$6 = match$12[0];
+            fmt_result = (ign_used[0] = /* true */1, ign) ? /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    /* Ignored_reader */3,
+                    fmt_rest$6
+                  ])] : /* Fmt_EBB */[/* Reader */Block.__(19, [fmt_rest$6])];
+            break;
+        case 115 : 
+            pad_used = /* true */1;
+            var pad$2 = check_no_0(symb, padprec);
+            var match$13 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$7 = match$13[0];
+            if (ign_used[0] = /* true */1, ign) {
+              pad_used = /* true */1;
+              var ignored$4 = /* Ignored_string */Block.__(0, [opt_of_pad(/* "_" */95, padprec)]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$4,
+                    fmt_rest$7
+                  ])];
+            }
+            else {
+              var match$14 = make_padding_fmt_ebb(pad$2, fmt_rest$7);
+              fmt_result = /* Fmt_EBB */[/* String */Block.__(2, [
+                    match$14[0],
+                    match$14[1]
+                  ])];
+            }
+            break;
+        case 116 : 
+            var match$15 = parse_literal(str_ind, str_ind, end_ind);
+            fmt_result = /* Fmt_EBB */[/* Theta */Block.__(16, [match$15[0]])];
+            break;
+        case 88 : 
+        case 100 : 
+        case 105 : 
+        case 111 : 
+        case 117 : 
+        case 120 : 
+            exit$2 = 7;
+            break;
+        case 0 : 
+        case 1 : 
+        case 2 : 
+        case 3 : 
+        case 4 : 
+        case 5 : 
+        case 6 : 
+        case 7 : 
+        case 8 : 
+        case 9 : 
+        case 10 : 
+        case 11 : 
+        case 12 : 
+        case 13 : 
+        case 14 : 
+        case 15 : 
+        case 16 : 
+        case 17 : 
+        case 18 : 
+        case 19 : 
+        case 20 : 
+        case 21 : 
+        case 22 : 
+        case 23 : 
+        case 24 : 
+        case 25 : 
+        case 26 : 
+        case 27 : 
+        case 28 : 
+        case 29 : 
+        case 30 : 
+        case 31 : 
+        case 34 : 
+        case 36 : 
+        case 38 : 
+        case 39 : 
+        case 41 : 
+        case 42 : 
+        case 46 : 
+        case 47 : 
+        case 48 : 
+        case 49 : 
+        case 50 : 
+        case 51 : 
+        case 52 : 
+        case 53 : 
+        case 54 : 
+        case 55 : 
+        case 56 : 
+        case 57 : 
+        case 58 : 
+        case 59 : 
+        case 60 : 
+        case 61 : 
+        case 62 : 
+        case 63 : 
+        case 65 : 
+        case 68 : 
+        case 72 : 
+        case 73 : 
+        case 74 : 
+        case 75 : 
+        case 77 : 
+        case 79 : 
+        case 80 : 
+        case 81 : 
+        case 82 : 
+        case 84 : 
+        case 85 : 
+        case 86 : 
+        case 87 : 
+        case 89 : 
+        case 90 : 
+        case 92 : 
+        case 93 : 
+        case 94 : 
+        case 96 : 
+        case 104 : 
+        case 106 : 
+        case 107 : 
+        case 109 : 
+        case 112 : 
+        case 113 : 
+        case 118 : 
+        case 119 : 
+        case 121 : 
+        case 122 : 
+            exit$1 = 6;
+            break;
+        case 123 : 
+            var sub_end$1 = search_subformat_end(str_ind, end_ind, /* "}" */125);
+            var match$16 = parse_literal(str_ind, str_ind, sub_end$1);
+            var beg_ind$1 = sub_end$1 + 2 | 0;
+            var match$17 = parse_literal(beg_ind$1, beg_ind$1, end_ind);
+            var fmt_rest$8 = match$17[0];
+            var sub_fmtty$1 = fmtty_of_fmt(match$16[0]);
+            if (ign_used[0] = /* true */1, ign) {
+              pad_used = /* true */1;
+              var ignored_000$2 = opt_of_pad(/* "_" */95, pad);
+              var ignored$5 = /* Ignored_format_arg */Block.__(7, [
+                  ignored_000$2,
+                  sub_fmtty$1
+                ]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$5,
+                    fmt_rest$8
+                  ])];
+            }
+            else {
+              pad_used = /* true */1;
+              fmt_result = /* Fmt_EBB */[/* Format_arg */Block.__(13, [
+                    opt_of_pad(/* "{" */123, pad),
+                    sub_fmtty$1,
+                    fmt_rest$8
+                  ])];
+            }
+            break;
+        
+      }
+    }
+    switch (exit$2) {
+      case 7 : 
+          plus_used = /* true */1;
+          sharp_used = /* true */1;
+          space_used = /* true */1;
+          var iconv = compute_int_conv(pct_ind, str_ind, plus, sharp, space, symb);
+          var match$18 = parse_literal(str_ind, str_ind, end_ind);
+          var fmt_rest$9 = match$18[0];
+          if (ign_used[0] = /* true */1, ign) {
+            pad_used = /* true */1;
+            var ignored_001 = opt_of_pad(/* "_" */95, pad);
+            var ignored$6 = /* Ignored_int */Block.__(2, [
+                iconv,
+                ignored_001
+              ]);
+            fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                  ignored$6,
+                  fmt_rest$9
+                ])];
+          }
+          else {
+            pad_used = /* true */1;
+            prec_used[0] = /* true */1;
+            var pad$3;
+            var exit$3 = 0;
+            if (typeof prec === "number" && prec === 0) {
+              pad$3 = pad;
+            }
+            else {
+              exit$3 = 9;
+            }
+            if (exit$3 === 9) {
+              pad$3 = typeof pad === "number" ? /* No_padding */0 : (
+                  pad.tag ? (
+                      pad[0] >= 2 ? (
+                          legacy_behavior$1 ? /* Arg_padding */Block.__(1, [/* Right */1]) : incompatible_flag(pct_ind, str_ind, /* "0" */48, "precision")
+                        ) : pad
+                    ) : (
+                      pad[0] >= 2 ? (
+                          legacy_behavior$1 ? /* Lit_padding */Block.__(0, [
+                                /* Right */1,
+                                pad[1]
+                              ]) : incompatible_flag(pct_ind, str_ind, /* "0" */48, "precision")
+                        ) : pad
+                    )
+                );
+            }
+            var match$19 = make_padprec_fmt_ebb(pad$3, (prec_used[0] = /* true */1, prec), fmt_rest$9);
+            fmt_result = /* Fmt_EBB */[/* Int */Block.__(4, [
+                  iconv,
+                  match$19[0],
+                  match$19[1],
+                  match$19[2]
+                ])];
+          }
+          break;
+      case 8 : 
+          if (str_ind === end_ind || !is_int_base(Caml_string.get(str, str_ind))) {
+            var match$20 = parse_literal(str_ind, str_ind, end_ind);
+            var fmt_rest$10 = match$20[0];
+            var counter = counter_of_char(symb);
+            if (ign_used[0] = /* true */1, ign) {
+              var ignored$7 = /* Ignored_scan_get_counter */Block.__(10, [counter]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$7,
+                    fmt_rest$10
+                  ])];
+            }
+            else {
+              fmt_result = /* Fmt_EBB */[/* Scan_get_counter */Block.__(21, [
+                    counter,
+                    fmt_rest$10
+                  ])];
+            }
+          }
+          else {
+            exit$1 = 6;
+          }
+          break;
+      
+    }
+    switch (exit$1) {
+      case 2 : 
+          plus_used = /* true */1;
+          space_used = /* true */1;
+          var fconv = compute_float_conv(pct_ind, str_ind, plus, space, symb);
+          var match$21 = parse_literal(str_ind, str_ind, end_ind);
+          var fmt_rest$11 = match$21[0];
+          if (ign_used[0] = /* true */1, ign) {
+            pad_used = /* true */1;
+            var ignored_000$3 = opt_of_pad(/* "_" */95, pad);
+            var ignored_001$1 = get_prec_opt(/* () */0);
+            var ignored$8 = /* Ignored_float */Block.__(6, [
+                ignored_000$3,
+                ignored_001$1
+              ]);
+            fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                  ignored$8,
+                  fmt_rest$11
+                ])];
+          }
+          else {
+            pad_used = /* true */1;
+            var match$22 = make_padprec_fmt_ebb(pad, (prec_used[0] = /* true */1, prec), fmt_rest$11);
+            fmt_result = /* Fmt_EBB */[/* Float */Block.__(8, [
+                  fconv,
+                  match$22[0],
+                  match$22[1],
+                  match$22[2]
+                ])];
+          }
+          break;
+      case 3 : 
+          var match$23 = parse_literal(str_ind, str_ind, end_ind);
+          var fmt_rest$12 = match$23[0];
+          fmt_result = (ign_used[0] = /* true */1, ign) ? /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                  /* Ignored_bool */2,
+                  fmt_rest$12
+                ])] : /* Fmt_EBB */[/* Bool */Block.__(9, [fmt_rest$12])];
+          break;
+      case 4 : 
+          var match$24 = parse_literal(str_ind, str_ind, end_ind);
+          fmt_result = /* Fmt_EBB */[/* Char_literal */Block.__(12, [
+                symb,
+                match$24[0]
+              ])];
+          break;
+      case 5 : 
+          fmt_result = Curry._3(failwith_message(/* Format */[
+                    /* String_literal */Block.__(11, [
+                        "invalid format ",
+                        /* Caml_string */Block.__(3, [
+                            /* No_padding */0,
+                            /* String_literal */Block.__(11, [
+                                ": at character number ",
+                                /* Int */Block.__(4, [
+                                    /* Int_d */0,
+                                    /* No_padding */0,
+                                    /* No_precision */0,
+                                    /* String_literal */Block.__(11, [
+                                        ", flag ",
+                                        /* Caml_char */Block.__(1, [/* String_literal */Block.__(11, [
+                                                " is only allowed after the '",
+                                                /* Char_literal */Block.__(12, [
+                                                    /* "%" */37,
+                                                    /* String_literal */Block.__(11, [
+                                                        "', before padding and precision",
+                                                        /* End_of_format */0
+                                                      ])
+                                                  ])
+                                              ])])
+                                      ])
+                                  ])
+                              ])
+                          ])
+                      ]),
+                    "invalid format %S: at character number %d, flag %C is only allowed after the '%%', before padding and precision"
+                  ]), str, pct_ind, symb);
+          break;
+      case 6 : 
+          if (symb >= 108) {
+            if (symb >= 111) {
+              exit = 1;
+            }
+            else {
+              switch (symb - 108 | 0) {
+                case 0 : 
+                    plus_used = /* true */1;
+                    sharp_used = /* true */1;
+                    space_used = /* true */1;
+                    var iconv$1 = compute_int_conv(pct_ind, str_ind + 1 | 0, plus, sharp, space, Caml_string.get(str, str_ind));
+                    var beg_ind$2 = str_ind + 1 | 0;
+                    var match$25 = parse_literal(beg_ind$2, beg_ind$2, end_ind);
+                    var fmt_rest$13 = match$25[0];
+                    if (ign_used[0] = /* true */1, ign) {
+                      pad_used = /* true */1;
+                      var ignored_001$2 = opt_of_pad(/* "_" */95, pad);
+                      var ignored$9 = /* Ignored_int32 */Block.__(3, [
+                          iconv$1,
+                          ignored_001$2
+                        ]);
+                      fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                            ignored$9,
+                            fmt_rest$13
+                          ])];
+                    }
+                    else {
+                      pad_used = /* true */1;
+                      var match$26 = make_padprec_fmt_ebb(pad, (prec_used[0] = /* true */1, prec), fmt_rest$13);
+                      fmt_result = /* Fmt_EBB */[/* Int32 */Block.__(5, [
+                            iconv$1,
+                            match$26[0],
+                            match$26[1],
+                            match$26[2]
+                          ])];
+                    }
+                    break;
+                case 1 : 
+                    exit = 1;
+                    break;
+                case 2 : 
+                    plus_used = /* true */1;
+                    sharp_used = /* true */1;
+                    space_used = /* true */1;
+                    var iconv$2 = compute_int_conv(pct_ind, str_ind + 1 | 0, plus, sharp, space, Caml_string.get(str, str_ind));
+                    var beg_ind$3 = str_ind + 1 | 0;
+                    var match$27 = parse_literal(beg_ind$3, beg_ind$3, end_ind);
+                    var fmt_rest$14 = match$27[0];
+                    if (ign_used[0] = /* true */1, ign) {
+                      pad_used = /* true */1;
+                      var ignored_001$3 = opt_of_pad(/* "_" */95, pad);
+                      var ignored$10 = /* Ignored_nativeint */Block.__(4, [
+                          iconv$2,
+                          ignored_001$3
+                        ]);
+                      fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                            ignored$10,
+                            fmt_rest$14
+                          ])];
+                    }
+                    else {
+                      pad_used = /* true */1;
+                      var match$28 = make_padprec_fmt_ebb(pad, (prec_used[0] = /* true */1, prec), fmt_rest$14);
+                      fmt_result = /* Fmt_EBB */[/* Nativeint */Block.__(6, [
+                            iconv$2,
+                            match$28[0],
+                            match$28[1],
+                            match$28[2]
+                          ])];
+                    }
+                    break;
+                
+              }
+            }
+          }
+          else if (symb !== 76) {
+            exit = 1;
+          }
+          else {
+            plus_used = /* true */1;
+            sharp_used = /* true */1;
+            space_used = /* true */1;
+            var iconv$3 = compute_int_conv(pct_ind, str_ind + 1 | 0, plus, sharp, space, Caml_string.get(str, str_ind));
+            var beg_ind$4 = str_ind + 1 | 0;
+            var match$29 = parse_literal(beg_ind$4, beg_ind$4, end_ind);
+            var fmt_rest$15 = match$29[0];
+            if (ign_used[0] = /* true */1, ign) {
+              pad_used = /* true */1;
+              var ignored_001$4 = opt_of_pad(/* "_" */95, pad);
+              var ignored$11 = /* Ignored_int64 */Block.__(5, [
+                  iconv$3,
+                  ignored_001$4
+                ]);
+              fmt_result = /* Fmt_EBB */[/* Ignored_param */Block.__(23, [
+                    ignored$11,
+                    fmt_rest$15
+                  ])];
+            }
+            else {
+              pad_used = /* true */1;
+              var match$30 = make_padprec_fmt_ebb(pad, (prec_used[0] = /* true */1, prec), fmt_rest$15);
+              fmt_result = /* Fmt_EBB */[/* Int64 */Block.__(7, [
+                    iconv$3,
+                    match$30[0],
+                    match$30[1],
+                    match$30[2]
+                  ])];
+            }
+          }
+          break;
+      
+    }
+    if (exit === 1) {
+      fmt_result = Curry._3(failwith_message(/* Format */[
+                /* String_literal */Block.__(11, [
+                    "invalid format ",
+                    /* Caml_string */Block.__(3, [
+                        /* No_padding */0,
+                        /* String_literal */Block.__(11, [
+                            ": at character number ",
+                            /* Int */Block.__(4, [
+                                /* Int_d */0,
+                                /* No_padding */0,
+                                /* No_precision */0,
+                                /* String_literal */Block.__(11, [
+                                    ', invalid conversion "',
+                                    /* Char_literal */Block.__(12, [
+                                        /* "%" */37,
+                                        /* Char */Block.__(0, [/* Char_literal */Block.__(12, [
+                                                /* "\"" */34,
+                                                /* End_of_format */0
+                                              ])])
+                                      ])
+                                  ])
+                              ])
+                          ])
+                      ])
+                  ]),
+                'invalid format %S: at character number %d, invalid conversion "%%%c"'
+              ]), str, str_ind - 1 | 0, symb);
+    }
+    if (!legacy_behavior$1) {
+      if (!plus_used && plus) {
+        incompatible_flag(pct_ind, str_ind, symb, "'+'");
+      }
+      if (!sharp_used && sharp) {
+        incompatible_flag(pct_ind, str_ind, symb, "'#'");
+      }
+      if (!space_used && space) {
+        incompatible_flag(pct_ind, str_ind, symb, "' '");
+      }
+      if (!pad_used && Caml_obj.caml_notequal(/* Padding_EBB */[pad], /* Padding_EBB */[/* No_padding */0])) {
+        incompatible_flag(pct_ind, str_ind, symb, "`padding'");
+      }
+      if (!prec_used[0] && Caml_obj.caml_notequal(/* Precision_EBB */[prec], /* Precision_EBB */[/* No_precision */0])) {
+        incompatible_flag(pct_ind, str_ind, ign ? /* "_" */95 : symb, "`precision'");
+      }
+      if (ign && plus) {
+        incompatible_flag(pct_ind, str_ind, /* "_" */95, "'+'");
+      }
+      
+    }
+    if (!ign_used[0] && ign) {
+      var exit$4 = 0;
+      if (symb >= 38) {
+        if (symb !== 44) {
+          if (symb !== 64) {
+            exit$4 = 1;
+          }
+          else if (!legacy_behavior$1) {
+            exit$4 = 1;
+          }
+          
+        }
+        else if (!legacy_behavior$1) {
+          exit$4 = 1;
+        }
+        
+      }
+      else if (symb !== 33) {
+        if (symb >= 37) {
+          if (!legacy_behavior$1) {
+            exit$4 = 1;
+          }
+          
+        }
+        else {
+          exit$4 = 1;
+        }
+      }
+      else if (!legacy_behavior$1) {
+        exit$4 = 1;
+      }
+      if (exit$4 === 1) {
+        incompatible_flag(pct_ind, str_ind, symb, "'_'");
+      }
+      
+    }
+    return fmt_result;
+  };
+  var parse_after_at = function (str_ind, end_ind) {
+    if (str_ind === end_ind) {
+      return /* Fmt_EBB */[/* Char_literal */Block.__(12, [
+                  /* "@" */64,
+                  /* End_of_format */0
+                ])];
+    }
+    else {
+      var c = Caml_string.get(str, str_ind);
+      var exit = 0;
+      if (c >= 65) {
+        if (c >= 94) {
+          var switcher = c - 123 | 0;
+          if (switcher > 2 || switcher < 0) {
+            exit = 1;
+          }
+          else {
+            switch (switcher) {
+              case 0 : 
+                  return parse_tag(/* true */1, str_ind + 1 | 0, end_ind);
+              case 1 : 
+                  exit = 1;
+                  break;
+              case 2 : 
+                  var beg_ind = str_ind + 1 | 0;
+                  var match = parse_literal(beg_ind, beg_ind, end_ind);
+                  return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                              /* Close_tag */1,
+                              match[0]
+                            ])];
+              
+            }
+          }
+        }
+        else if (c >= 91) {
+          switch (c - 91 | 0) {
+            case 0 : 
+                return parse_tag(/* false */0, str_ind + 1 | 0, end_ind);
+            case 1 : 
+                exit = 1;
+                break;
+            case 2 : 
+                var beg_ind$1 = str_ind + 1 | 0;
+                var match$1 = parse_literal(beg_ind$1, beg_ind$1, end_ind);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            /* Close_box */0,
+                            match$1[0]
+                          ])];
+            
+          }
+        }
+        else {
+          exit = 1;
+        }
+      }
+      else if (c !== 10) {
+        if (c >= 32) {
+          switch (c - 32 | 0) {
+            case 0 : 
+                var beg_ind$2 = str_ind + 1 | 0;
+                var match$2 = parse_literal(beg_ind$2, beg_ind$2, end_ind);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            /* Break */Block.__(0, [
+                                "@ ",
+                                1,
+                                0
+                              ]),
+                            match$2[0]
+                          ])];
+            case 5 : 
+                if ((str_ind + 1 | 0) < end_ind && Caml_string.get(str, str_ind + 1 | 0) === /* "%" */37) {
+                  var beg_ind$3 = str_ind + 2 | 0;
+                  var match$3 = parse_literal(beg_ind$3, beg_ind$3, end_ind);
+                  return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                              /* Escaped_percent */6,
+                              match$3[0]
+                            ])];
+                }
+                else {
+                  var match$4 = parse_literal(str_ind, str_ind, end_ind);
+                  return /* Fmt_EBB */[/* Char_literal */Block.__(12, [
+                              /* "@" */64,
+                              match$4[0]
+                            ])];
+                }
+                break;
+            case 12 : 
+                var beg_ind$4 = str_ind + 1 | 0;
+                var match$5 = parse_literal(beg_ind$4, beg_ind$4, end_ind);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            /* Break */Block.__(0, [
+                                "@,",
+                                0,
+                                0
+                              ]),
+                            match$5[0]
+                          ])];
+            case 14 : 
+                var beg_ind$5 = str_ind + 1 | 0;
+                var match$6 = parse_literal(beg_ind$5, beg_ind$5, end_ind);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            /* Flush_newline */4,
+                            match$6[0]
+                          ])];
+            case 27 : 
+                var str_ind$1 = str_ind + 1 | 0;
+                var end_ind$1 = end_ind;
+                var match$7;
+                try {
+                  if (str_ind$1 === end_ind$1 || Caml_string.get(str, str_ind$1) !== /* "<" */60) {
+                    throw Caml_builtin_exceptions.not_found;
+                  }
+                  var str_ind_1 = parse_spaces(str_ind$1 + 1 | 0, end_ind$1);
+                  var match$8 = Caml_string.get(str, str_ind_1);
+                  var exit$1 = 0;
+                  if (match$8 >= 48) {
+                    if (match$8 >= 58) {
+                      throw Caml_builtin_exceptions.not_found;
+                    }
+                    else {
+                      exit$1 = 1;
+                    }
+                  }
+                  else if (match$8 !== 45) {
+                    throw Caml_builtin_exceptions.not_found;
+                  }
+                  else {
+                    exit$1 = 1;
+                  }
+                  if (exit$1 === 1) {
+                    var match$9 = parse_integer(str_ind_1, end_ind$1);
+                    var width = match$9[1];
+                    var str_ind_3 = parse_spaces(match$9[0], end_ind$1);
+                    var match$10 = Caml_string.get(str, str_ind_3);
+                    var switcher$1 = match$10 - 45 | 0;
+                    if (switcher$1 > 12 || switcher$1 < 0) {
+                      if (switcher$1 !== 17) {
+                        throw Caml_builtin_exceptions.not_found;
+                      }
+                      else {
+                        var s = $$String.sub(str, str_ind$1 - 2 | 0, (str_ind_3 - str_ind$1 | 0) + 3 | 0);
+                        match$7 = /* tuple */[
+                          str_ind_3 + 1 | 0,
+                          /* Break */Block.__(0, [
+                              s,
+                              width,
+                              0
+                            ])
+                        ];
+                      }
+                    }
+                    else if (switcher$1 === 2 || switcher$1 === 1) {
+                      throw Caml_builtin_exceptions.not_found;
+                    }
+                    else {
+                      var match$11 = parse_integer(str_ind_3, end_ind$1);
+                      var str_ind_5 = parse_spaces(match$11[0], end_ind$1);
+                      if (Caml_string.get(str, str_ind_5) !== /* ">" */62) {
+                        throw Caml_builtin_exceptions.not_found;
+                      }
+                      var s$1 = $$String.sub(str, str_ind$1 - 2 | 0, (str_ind_5 - str_ind$1 | 0) + 3 | 0);
+                      match$7 = /* tuple */[
+                        str_ind_5 + 1 | 0,
+                        /* Break */Block.__(0, [
+                            s$1,
+                            width,
+                            match$11[1]
+                          ])
+                      ];
+                    }
+                  }
+                  
+                }
+                catch (exn){
+                  if (exn === Caml_builtin_exceptions.not_found) {
+                    match$7 = /* tuple */[
+                      str_ind$1,
+                      /* Break */Block.__(0, [
+                          "@;",
+                          1,
+                          0
+                        ])
+                    ];
+                  }
+                  else if (exn[0] === Caml_builtin_exceptions.failure) {
+                    match$7 = /* tuple */[
+                      str_ind$1,
+                      /* Break */Block.__(0, [
+                          "@;",
+                          1,
+                          0
+                        ])
+                    ];
+                  }
+                  else {
+                    throw exn;
+                  }
+                }
+                var next_ind = match$7[0];
+                var match$12 = parse_literal(next_ind, next_ind, end_ind$1);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            match$7[1],
+                            match$12[0]
+                          ])];
+            case 28 : 
+                var str_ind$2 = str_ind + 1 | 0;
+                var end_ind$2 = end_ind;
+                var match$13;
+                try {
+                  var str_ind_1$1 = parse_spaces(str_ind$2, end_ind$2);
+                  var match$14 = Caml_string.get(str, str_ind_1$1);
+                  var exit$2 = 0;
+                  if (match$14 >= 48) {
+                    if (match$14 >= 58) {
+                      match$13 = /* None */0;
+                    }
+                    else {
+                      exit$2 = 1;
+                    }
+                  }
+                  else if (match$14 !== 45) {
+                    match$13 = /* None */0;
+                  }
+                  else {
+                    exit$2 = 1;
+                  }
+                  if (exit$2 === 1) {
+                    var match$15 = parse_integer(str_ind_1$1, end_ind$2);
+                    var str_ind_3$1 = parse_spaces(match$15[0], end_ind$2);
+                    if (Caml_string.get(str, str_ind_3$1) !== /* ">" */62) {
+                      throw Caml_builtin_exceptions.not_found;
+                    }
+                    var s$2 = $$String.sub(str, str_ind$2 - 2 | 0, (str_ind_3$1 - str_ind$2 | 0) + 3 | 0);
+                    match$13 = /* Some */[/* tuple */[
+                        str_ind_3$1 + 1 | 0,
+                        /* Magic_size */Block.__(1, [
+                            s$2,
+                            match$15[1]
+                          ])
+                      ]];
+                  }
+                  
+                }
+                catch (exn$1){
+                  if (exn$1 === Caml_builtin_exceptions.not_found) {
+                    match$13 = /* None */0;
+                  }
+                  else if (exn$1[0] === Caml_builtin_exceptions.failure) {
+                    match$13 = /* None */0;
+                  }
+                  else {
+                    throw exn$1;
+                  }
+                }
+                if (match$13) {
+                  var match$16 = match$13[0];
+                  var next_ind$1 = match$16[0];
+                  var match$17 = parse_literal(next_ind$1, next_ind$1, end_ind$2);
+                  return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                              match$16[1],
+                              match$17[0]
+                            ])];
+                }
+                else {
+                  var match$18 = parse_literal(str_ind$2, str_ind$2, end_ind$2);
+                  return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                              /* Scan_indic */Block.__(2, [/* "<" */60]),
+                              match$18[0]
+                            ])];
+                }
+            case 1 : 
+            case 2 : 
+            case 3 : 
+            case 4 : 
+            case 6 : 
+            case 7 : 
+            case 8 : 
+            case 9 : 
+            case 10 : 
+            case 11 : 
+            case 13 : 
+            case 15 : 
+            case 16 : 
+            case 17 : 
+            case 18 : 
+            case 19 : 
+            case 20 : 
+            case 21 : 
+            case 22 : 
+            case 23 : 
+            case 24 : 
+            case 25 : 
+            case 26 : 
+            case 29 : 
+            case 30 : 
+                exit = 1;
+                break;
+            case 31 : 
+                var beg_ind$6 = str_ind + 1 | 0;
+                var match$19 = parse_literal(beg_ind$6, beg_ind$6, end_ind);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            /* FFlush */2,
+                            match$19[0]
+                          ])];
+            case 32 : 
+                var beg_ind$7 = str_ind + 1 | 0;
+                var match$20 = parse_literal(beg_ind$7, beg_ind$7, end_ind);
+                return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                            /* Escaped_at */5,
+                            match$20[0]
+                          ])];
+            
+          }
+        }
+        else {
+          exit = 1;
+        }
+      }
+      else {
+        var beg_ind$8 = str_ind + 1 | 0;
+        var match$21 = parse_literal(beg_ind$8, beg_ind$8, end_ind);
+        return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                    /* Force_newline */3,
+                    match$21[0]
+                  ])];
+      }
+      if (exit === 1) {
+        var beg_ind$9 = str_ind + 1 | 0;
+        var match$22 = parse_literal(beg_ind$9, beg_ind$9, end_ind);
+        return /* Fmt_EBB */[/* Formatting_lit */Block.__(17, [
+                    /* Scan_indic */Block.__(2, [c]),
+                    match$22[0]
+                  ])];
+      }
+      
+    }
+  };
+  var check_open_box = function (fmt) {
+    if (typeof fmt === "number") {
+      return /* () */0;
+    }
+    else if (fmt.tag === 11) {
+      if (typeof fmt[1] === "number") {
+        try {
+          open_box_of_string(fmt[0]);
+          return /* () */0;
+        }
+        catch (exn){
+          if (exn[0] === Caml_builtin_exceptions.failure) {
+            return /* () */0;
+          }
+          else {
+            throw exn;
+          }
+        }
+      }
+      else {
+        return /* () */0;
+      }
+    }
+    else {
+      return /* () */0;
+    }
+  };
+  var parse_tag = function (is_open_tag, str_ind, end_ind) {
+    try {
+      if (str_ind === end_ind) {
+        throw Caml_builtin_exceptions.not_found;
+      }
+      var match = Caml_string.get(str, str_ind);
+      if (match !== 60) {
+        throw Caml_builtin_exceptions.not_found;
+      }
+      else {
+        var ind = $$String.index_from(str, str_ind + 1 | 0, /* ">" */62);
+        if (ind >= end_ind) {
+          throw Caml_builtin_exceptions.not_found;
+        }
+        var sub_str = $$String.sub(str, str_ind, (ind - str_ind | 0) + 1 | 0);
+        var beg_ind = ind + 1 | 0;
+        var match$1 = parse_literal(beg_ind, beg_ind, end_ind);
+        var match$2 = parse_literal(str_ind, str_ind, ind + 1 | 0);
+        var sub_fmt = match$2[0];
+        var sub_format = /* Format */[
+          sub_fmt,
+          sub_str
+        ];
+        var formatting = is_open_tag ? /* Open_tag */Block.__(0, [sub_format]) : (check_open_box(sub_fmt), /* Open_box */Block.__(1, [sub_format]));
+        return /* Fmt_EBB */[/* Formatting_gen */Block.__(18, [
+                    formatting,
+                    match$1[0]
+                  ])];
+      }
+    }
+    catch (exn){
+      if (exn === Caml_builtin_exceptions.not_found) {
+        var match$3 = parse_literal(str_ind, str_ind, end_ind);
+        var sub_format$1 = /* Format */[
+          /* End_of_format */0,
+          ""
+        ];
+        var formatting$1 = is_open_tag ? /* Open_tag */Block.__(0, [sub_format$1]) : /* Open_box */Block.__(1, [sub_format$1]);
+        return /* Fmt_EBB */[/* Formatting_gen */Block.__(18, [
+                    formatting$1,
+                    match$3[0]
+                  ])];
+      }
+      else {
+        throw exn;
+      }
+    }
+  };
+  var parse_char_set = function (str_ind, end_ind) {
+    if (str_ind === end_ind) {
+      invalid_format_message(end_ind, "unexpected end of format");
+    }
+    var char_set = Bytes.make(32, /* "\000" */0);
+    var add_range = function (c, c$prime) {
+      for(var i = c; i <= c$prime; ++i){
+        add_in_char_set(char_set, Pervasives.char_of_int(i));
+      }
+      return /* () */0;
+    };
+    var fail_single_percent = function (str_ind) {
+      return Curry._2(failwith_message(/* Format */[
+                      /* String_literal */Block.__(11, [
+                          "invalid format ",
+                          /* Caml_string */Block.__(3, [
+                              /* No_padding */0,
+                              /* String_literal */Block.__(11, [
+                                  ": '",
+                                  /* Char_literal */Block.__(12, [
+                                      /* "%" */37,
+                                      /* String_literal */Block.__(11, [
+                                          "' alone is not accepted in character sets, use ",
+                                          /* Char_literal */Block.__(12, [
+                                              /* "%" */37,
+                                              /* Char_literal */Block.__(12, [
+                                                  /* "%" */37,
+                                                  /* String_literal */Block.__(11, [
+                                                      " instead at position ",
+                                                      /* Int */Block.__(4, [
+                                                          /* Int_d */0,
+                                                          /* No_padding */0,
+                                                          /* No_precision */0,
+                                                          /* Char_literal */Block.__(12, [
+                                                              /* "." */46,
+                                                              /* End_of_format */0
+                                                            ])
+                                                        ])
+                                                    ])
+                                                ])
+                                            ])
+                                        ])
+                                    ])
+                                ])
+                            ])
+                        ]),
+                      "invalid format %S: '%%' alone is not accepted in character sets, use %%%% instead at position %d."
+                    ]), str, str_ind);
+    };
+    var parse_char_set_start = function (str_ind, end_ind) {
+      if (str_ind === end_ind) {
+        invalid_format_message(end_ind, "unexpected end of format");
+      }
+      var c = Caml_string.get(str, str_ind);
+      return parse_char_set_after_char(str_ind + 1 | 0, end_ind, c);
+    };
+    var parse_char_set_content = function (_str_ind, end_ind) {
+      while(true) {
+        var str_ind = _str_ind;
+        if (str_ind === end_ind) {
+          invalid_format_message(end_ind, "unexpected end of format");
+        }
+        var c = Caml_string.get(str, str_ind);
+        if (c !== 45) {
+          if (c !== 93) {
+            return parse_char_set_after_char(str_ind + 1 | 0, end_ind, c);
+          }
+          else {
+            return str_ind + 1 | 0;
+          }
+        }
+        else {
+          add_in_char_set(char_set, /* "-" */45);
+          _str_ind = str_ind + 1 | 0;
+          continue ;
+          
+        }
+      };
+    };
+    var parse_char_set_after_char = function (_str_ind, end_ind, _c) {
+      while(true) {
+        var c = _c;
+        var str_ind = _str_ind;
+        if (str_ind === end_ind) {
+          invalid_format_message(end_ind, "unexpected end of format");
+        }
+        var c$prime = Caml_string.get(str, str_ind);
+        var exit = 0;
+        var exit$1 = 0;
+        if (c$prime >= 46) {
+          if (c$prime !== 64) {
+            if (c$prime !== 93) {
+              exit = 1;
+            }
+            else {
+              add_in_char_set(char_set, c);
+              return str_ind + 1 | 0;
+            }
+          }
+          else {
+            exit$1 = 2;
+          }
+        }
+        else if (c$prime !== 37) {
+          if (c$prime >= 45) {
+            var str_ind$1 = str_ind + 1 | 0;
+            var end_ind$1 = end_ind;
+            var c$1 = c;
+            if (str_ind$1 === end_ind$1) {
+              invalid_format_message(end_ind$1, "unexpected end of format");
+            }
+            var c$prime$1 = Caml_string.get(str, str_ind$1);
+            if (c$prime$1 !== 37) {
+              if (c$prime$1 !== 93) {
+                add_range(c$1, c$prime$1);
+                return parse_char_set_content(str_ind$1 + 1 | 0, end_ind$1);
+              }
+              else {
+                add_in_char_set(char_set, c$1);
+                add_in_char_set(char_set, /* "-" */45);
+                return str_ind$1 + 1 | 0;
+              }
+            }
+            else {
+              if ((str_ind$1 + 1 | 0) === end_ind$1) {
+                invalid_format_message(end_ind$1, "unexpected end of format");
+              }
+              var c$prime$2 = Caml_string.get(str, str_ind$1 + 1 | 0);
+              var exit$2 = 0;
+              if (c$prime$2 !== 37) {
+                if (c$prime$2 !== 64) {
+                  return fail_single_percent(str_ind$1);
+                }
+                else {
+                  exit$2 = 1;
+                }
+              }
+              else {
+                exit$2 = 1;
+              }
+              if (exit$2 === 1) {
+                add_range(c$1, c$prime$2);
+                return parse_char_set_content(str_ind$1 + 2 | 0, end_ind$1);
+              }
+              
+            }
+          }
+          else {
+            exit = 1;
+          }
+        }
+        else {
+          exit$1 = 2;
+        }
+        if (exit$1 === 2) {
+          if (c === /* "%" */37) {
+            add_in_char_set(char_set, c$prime);
+            return parse_char_set_content(str_ind + 1 | 0, end_ind);
+          }
+          else {
+            exit = 1;
+          }
+        }
+        if (exit === 1) {
+          if (c === /* "%" */37) {
+            fail_single_percent(str_ind);
+          }
+          add_in_char_set(char_set, c);
+          _c = c$prime;
+          _str_ind = str_ind + 1 | 0;
+          continue ;
+          
+        }
+        
+      };
+    };
+    if (str_ind === end_ind) {
+      invalid_format_message(end_ind, "unexpected end of format");
+    }
+    var match = Caml_string.get(str, str_ind);
+    var match$1 = match !== 94 ? /* tuple */[
+        str_ind,
+        /* false */0
+      ] : /* tuple */[
+        str_ind + 1 | 0,
+        /* true */1
+      ];
+    var next_ind = parse_char_set_start(match$1[0], end_ind);
+    var char_set$1 = Bytes.to_string(char_set);
+    return /* tuple */[
+            next_ind,
+            match$1[1] ? rev_char_set(char_set$1) : char_set$1
+          ];
+  };
+  var parse_spaces = function (_str_ind, end_ind) {
+    while(true) {
+      var str_ind = _str_ind;
+      if (str_ind === end_ind) {
+        invalid_format_message(end_ind, "unexpected end of format");
+      }
+      if (Caml_string.get(str, str_ind) === /* " " */32) {
+        _str_ind = str_ind + 1 | 0;
+        continue ;
+        
+      }
+      else {
+        return str_ind;
+      }
+    };
+  };
+  var parse_positive = function (_str_ind, end_ind, _acc) {
+    while(true) {
+      var acc = _acc;
+      var str_ind = _str_ind;
+      if (str_ind === end_ind) {
+        invalid_format_message(end_ind, "unexpected end of format");
+      }
+      var c = Caml_string.get(str, str_ind);
+      if (c > 57 || c < 48) {
+        return /* tuple */[
+                str_ind,
+                acc
+              ];
+      }
+      else {
+        var new_acc = Caml_int32.imul(acc, 10) + (c - /* "0" */48 | 0) | 0;
+        if (new_acc > Sys.max_string_length) {
+          return Curry._3(failwith_message(/* Format */[
+                          /* String_literal */Block.__(11, [
+                              "invalid format ",
+                              /* Caml_string */Block.__(3, [
+                                  /* No_padding */0,
+                                  /* String_literal */Block.__(11, [
+                                      ": integer ",
+                                      /* Int */Block.__(4, [
+                                          /* Int_d */0,
+                                          /* No_padding */0,
+                                          /* No_precision */0,
+                                          /* String_literal */Block.__(11, [
+                                              " is greater than the limit ",
+                                              /* Int */Block.__(4, [
+                                                  /* Int_d */0,
+                                                  /* No_padding */0,
+                                                  /* No_precision */0,
+                                                  /* End_of_format */0
+                                                ])
+                                            ])
+                                        ])
+                                    ])
+                                ])
+                            ]),
+                          "invalid format %S: integer %d is greater than the limit %d"
+                        ]), str, new_acc, Sys.max_string_length);
+        }
+        else {
+          _acc = new_acc;
+          _str_ind = str_ind + 1 | 0;
+          continue ;
+          
+        }
+      }
+    };
+  };
+  var parse_integer = function (str_ind, end_ind) {
+    if (str_ind === end_ind) {
+      invalid_format_message(end_ind, "unexpected end of format");
+    }
+    var match = Caml_string.get(str, str_ind);
+    if (match >= 48) {
+      if (match >= 58) {
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                2621,
+                11
+              ]
+            ];
+      }
+      else {
+        return parse_positive(str_ind, end_ind, 0);
+      }
+    }
+    else if (match !== 45) {
+      throw [
+            Caml_builtin_exceptions.assert_failure,
+            [
+              "camlinternalFormat.ml",
+              2621,
+              11
+            ]
+          ];
+    }
+    else {
+      if ((str_ind + 1 | 0) === end_ind) {
+        invalid_format_message(end_ind, "unexpected end of format");
+      }
+      var c = Caml_string.get(str, str_ind + 1 | 0);
+      if (c > 57 || c < 48) {
+        return expected_character(str_ind + 1 | 0, "digit", c);
+      }
+      else {
+        var match$1 = parse_positive(str_ind + 1 | 0, end_ind, 0);
+        return /* tuple */[
+                match$1[0],
+                -match$1[1]
+              ];
+      }
+    }
+  };
+  var add_literal = function (lit_start, str_ind, fmt) {
+    var size = str_ind - lit_start | 0;
+    if (size !== 0) {
+      if (size !== 1) {
+        return /* Fmt_EBB */[/* String_literal */Block.__(11, [
+                    $$String.sub(str, lit_start, size),
+                    fmt
+                  ])];
+      }
+      else {
+        return /* Fmt_EBB */[/* Char_literal */Block.__(12, [
+                    Caml_string.get(str, lit_start),
+                    fmt
+                  ])];
+      }
+    }
+    else {
+      return /* Fmt_EBB */[fmt];
+    }
+  };
+  var search_subformat_end = function (_str_ind, end_ind, c) {
+    while(true) {
+      var str_ind = _str_ind;
+      if (str_ind === end_ind) {
+        Curry._3(failwith_message(/* Format */[
+                  /* String_literal */Block.__(11, [
+                      "invalid format ",
+                      /* Caml_string */Block.__(3, [
+                          /* No_padding */0,
+                          /* String_literal */Block.__(11, [
+                              ': unclosed sub-format, expected "',
+                              /* Char_literal */Block.__(12, [
+                                  /* "%" */37,
+                                  /* Char */Block.__(0, [/* String_literal */Block.__(11, [
+                                          '" at character number ',
+                                          /* Int */Block.__(4, [
+                                              /* Int_d */0,
+                                              /* No_padding */0,
+                                              /* No_precision */0,
+                                              /* End_of_format */0
+                                            ])
+                                        ])])
+                                ])
+                            ])
+                        ])
+                    ]),
+                  'invalid format %S: unclosed sub-format, expected "%%%c" at character number %d'
+                ]), str, c, end_ind);
+      }
+      var match = Caml_string.get(str, str_ind);
+      if (match !== 37) {
+        _str_ind = str_ind + 1 | 0;
+        continue ;
+        
+      }
+      else {
+        if ((str_ind + 1 | 0) === end_ind) {
+          invalid_format_message(end_ind, "unexpected end of format");
+        }
+        if (Caml_string.get(str, str_ind + 1 | 0) === c) {
+          return str_ind;
+        }
+        else {
+          var match$1 = Caml_string.get(str, str_ind + 1 | 0);
+          var exit = 0;
+          if (match$1 >= 95) {
+            if (match$1 >= 123) {
+              if (match$1 >= 126) {
+                exit = 1;
+              }
+              else {
+                switch (match$1 - 123 | 0) {
+                  case 0 : 
+                      var sub_end = search_subformat_end(str_ind + 2 | 0, end_ind, /* "}" */125);
+                      _str_ind = sub_end + 2 | 0;
+                      continue ;
+                      case 1 : 
+                      exit = 1;
+                      break;
+                  case 2 : 
+                      return expected_character(str_ind + 1 | 0, "character ')'", /* "}" */125);
+                  
+                }
+              }
+            }
+            else if (match$1 >= 96) {
+              exit = 1;
+            }
+            else {
+              if ((str_ind + 2 | 0) === end_ind) {
+                invalid_format_message(end_ind, "unexpected end of format");
+              }
+              var match$2 = Caml_string.get(str, str_ind + 2 | 0);
+              if (match$2 !== 40) {
+                if (match$2 !== 123) {
+                  _str_ind = str_ind + 3 | 0;
+                  continue ;
+                  
+                }
+                else {
+                  var sub_end$1 = search_subformat_end(str_ind + 3 | 0, end_ind, /* "}" */125);
+                  _str_ind = sub_end$1 + 2 | 0;
+                  continue ;
+                  
+                }
+              }
+              else {
+                var sub_end$2 = search_subformat_end(str_ind + 3 | 0, end_ind, /* ")" */41);
+                _str_ind = sub_end$2 + 2 | 0;
+                continue ;
+                
+              }
+            }
+          }
+          else if (match$1 !== 40) {
+            if (match$1 !== 41) {
+              exit = 1;
+            }
+            else {
+              return expected_character(str_ind + 1 | 0, "character '}'", /* ")" */41);
+            }
+          }
+          else {
+            var sub_end$3 = search_subformat_end(str_ind + 2 | 0, end_ind, /* ")" */41);
+            _str_ind = sub_end$3 + 2 | 0;
+            continue ;
+            
+          }
+          if (exit === 1) {
+            _str_ind = str_ind + 2 | 0;
+            continue ;
+            
+          }
+          
+        }
+      }
+    };
+  };
+  var is_int_base = function (symb) {
+    var switcher = symb - 88 | 0;
+    if (switcher > 32 || switcher < 0) {
+      return /* false */0;
+    }
+    else {
+      switch (switcher) {
+        case 1 : 
+        case 2 : 
+        case 3 : 
+        case 4 : 
+        case 5 : 
+        case 6 : 
+        case 7 : 
+        case 8 : 
+        case 9 : 
+        case 10 : 
+        case 11 : 
+        case 13 : 
+        case 14 : 
+        case 15 : 
+        case 16 : 
+        case 18 : 
+        case 19 : 
+        case 20 : 
+        case 21 : 
+        case 22 : 
+        case 24 : 
+        case 25 : 
+        case 26 : 
+        case 27 : 
+        case 28 : 
+        case 30 : 
+        case 31 : 
+            return /* false */0;
+        case 0 : 
+        case 12 : 
+        case 17 : 
+        case 23 : 
+        case 29 : 
+        case 32 : 
+            return /* true */1;
+        
+      }
+    }
+  };
+  var counter_of_char = function (symb) {
+    var exit = 0;
+    if (symb >= 108) {
+      if (symb >= 111) {
+        exit = 1;
+      }
+      else {
+        switch (symb - 108 | 0) {
+          case 0 : 
+              return /* Line_counter */0;
+          case 1 : 
+              exit = 1;
+              break;
+          case 2 : 
+              return /* Char_counter */1;
+          
+        }
+      }
+    }
+    else if (symb !== 76) {
+      exit = 1;
+    }
+    else {
+      return /* Token_counter */2;
+    }
+    if (exit === 1) {
+      throw [
+            Caml_builtin_exceptions.assert_failure,
+            [
+              "camlinternalFormat.ml",
+              2683,
+              34
+            ]
+          ];
+    }
+    
+  };
+  var compute_int_conv = function (pct_ind, str_ind, _plus, _sharp, _space, symb) {
+    while(true) {
+      var space = _space;
+      var sharp = _sharp;
+      var plus = _plus;
+      var exit = 0;
+      var exit$1 = 0;
+      if (plus !== 0) {
+        if (sharp !== 0) {
+          exit$1 = 2;
+        }
+        else if (space !== 0) {
+          exit = 1;
+        }
+        else if (symb !== 100) {
+          if (symb !== 105) {
+            exit = 1;
+          }
+          else {
+            return /* Int_pi */4;
+          }
+        }
+        else {
+          return /* Int_pd */1;
+        }
+      }
+      else if (sharp !== 0) {
+        if (space !== 0) {
+          exit$1 = 2;
+        }
+        else if (symb !== 88) {
+          if (symb !== 111) {
+            if (symb !== 120) {
+              exit$1 = 2;
+            }
+            else {
+              return /* Int_Cx */7;
+            }
+          }
+          else {
+            return /* Int_Co */11;
+          }
+        }
+        else {
+          return /* Int_CX */9;
+        }
+      }
+      else if (space !== 0) {
+        if (symb !== 100) {
+          if (symb !== 105) {
+            exit = 1;
+          }
+          else {
+            return /* Int_si */5;
+          }
+        }
+        else {
+          return /* Int_sd */2;
+        }
+      }
+      else {
+        var switcher = symb - 88 | 0;
+        if (switcher > 32 || switcher < 0) {
+          exit = 1;
+        }
+        else {
+          switch (switcher) {
+            case 0 : 
+                return /* Int_X */8;
+            case 12 : 
+                return /* Int_d */0;
+            case 17 : 
+                return /* Int_i */3;
+            case 23 : 
+                return /* Int_o */10;
+            case 29 : 
+                return /* Int_u */12;
+            case 1 : 
+            case 2 : 
+            case 3 : 
+            case 4 : 
+            case 5 : 
+            case 6 : 
+            case 7 : 
+            case 8 : 
+            case 9 : 
+            case 10 : 
+            case 11 : 
+            case 13 : 
+            case 14 : 
+            case 15 : 
+            case 16 : 
+            case 18 : 
+            case 19 : 
+            case 20 : 
+            case 21 : 
+            case 22 : 
+            case 24 : 
+            case 25 : 
+            case 26 : 
+            case 27 : 
+            case 28 : 
+            case 30 : 
+            case 31 : 
+                exit = 1;
+                break;
+            case 32 : 
+                return /* Int_x */6;
+            
+          }
+        }
+      }
+      if (exit$1 === 2) {
+        var exit$2 = 0;
+        var switcher$1 = symb - 88 | 0;
+        if (switcher$1 > 32 || switcher$1 < 0) {
+          exit = 1;
+        }
+        else {
+          switch (switcher$1) {
+            case 0 : 
+                if (legacy_behavior$1) {
+                  return /* Int_CX */9;
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            case 23 : 
+                if (legacy_behavior$1) {
+                  return /* Int_Co */11;
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            case 12 : 
+            case 17 : 
+            case 29 : 
+                exit$2 = 3;
+                break;
+            case 1 : 
+            case 2 : 
+            case 3 : 
+            case 4 : 
+            case 5 : 
+            case 6 : 
+            case 7 : 
+            case 8 : 
+            case 9 : 
+            case 10 : 
+            case 11 : 
+            case 13 : 
+            case 14 : 
+            case 15 : 
+            case 16 : 
+            case 18 : 
+            case 19 : 
+            case 20 : 
+            case 21 : 
+            case 22 : 
+            case 24 : 
+            case 25 : 
+            case 26 : 
+            case 27 : 
+            case 28 : 
+            case 30 : 
+            case 31 : 
+                exit = 1;
+                break;
+            case 32 : 
+                if (legacy_behavior$1) {
+                  return /* Int_Cx */7;
+                }
+                else {
+                  exit = 1;
+                }
+                break;
+            
+          }
+        }
+        if (exit$2 === 3) {
+          if (legacy_behavior$1) {
+            _sharp = /* false */0;
+            continue ;
+            
+          }
+          else {
+            return incompatible_flag(pct_ind, str_ind, symb, "'#'");
+          }
+        }
+        
+      }
+      if (exit === 1) {
+        if (plus !== 0) {
+          if (space !== 0) {
+            if (legacy_behavior$1) {
+              _space = /* false */0;
+              continue ;
+              
+            }
+            else {
+              return incompatible_flag(pct_ind, str_ind, /* " " */32, "'+'");
+            }
+          }
+          else if (legacy_behavior$1) {
+            _plus = /* false */0;
+            continue ;
+            
+          }
+          else {
+            return incompatible_flag(pct_ind, str_ind, symb, "'+'");
+          }
+        }
+        else if (space !== 0) {
+          if (legacy_behavior$1) {
+            _space = /* false */0;
+            continue ;
+            
+          }
+          else {
+            return incompatible_flag(pct_ind, str_ind, symb, "' '");
+          }
+        }
+        else {
+          throw [
+                Caml_builtin_exceptions.assert_failure,
+                [
+                  "camlinternalFormat.ml",
+                  2716,
+                  28
+                ]
+              ];
+        }
+      }
+      
+    };
+  };
+  var compute_float_conv = function (pct_ind, str_ind, _plus, _space, symb) {
+    while(true) {
+      var space = _space;
+      var plus = _plus;
+      if (plus !== 0) {
+        if (space !== 0) {
+          if (legacy_behavior$1) {
+            _space = /* false */0;
+            continue ;
+            
+          }
+          else {
+            return incompatible_flag(pct_ind, str_ind, /* " " */32, "'+'");
+          }
+        }
+        else {
+          var exit = 0;
+          if (symb >= 72) {
+            var switcher = symb - 101 | 0;
+            if (switcher > 2 || switcher < 0) {
+              exit = 1;
+            }
+            else {
+              switch (switcher) {
+                case 0 : 
+                    return /* Float_pe */4;
+                case 1 : 
+                    return /* Float_pf */1;
+                case 2 : 
+                    return /* Float_pg */10;
+                
+              }
+            }
+          }
+          else if (symb >= 69) {
+            switch (symb - 69 | 0) {
+              case 0 : 
+                  return /* Float_pE */7;
+              case 1 : 
+                  exit = 1;
+                  break;
+              case 2 : 
+                  return /* Float_pG */13;
+              
+            }
+          }
+          else {
+            exit = 1;
+          }
+          if (exit === 1) {
+            if (legacy_behavior$1) {
+              _plus = /* false */0;
+              continue ;
+              
+            }
+            else {
+              return incompatible_flag(pct_ind, str_ind, symb, "'+'");
+            }
+          }
+          
+        }
+      }
+      else if (space !== 0) {
+        var exit$1 = 0;
+        if (symb >= 72) {
+          var switcher$1 = symb - 101 | 0;
+          if (switcher$1 > 2 || switcher$1 < 0) {
+            exit$1 = 1;
+          }
+          else {
+            switch (switcher$1) {
+              case 0 : 
+                  return /* Float_se */5;
+              case 1 : 
+                  return /* Float_sf */2;
+              case 2 : 
+                  return /* Float_sg */11;
+              
+            }
+          }
+        }
+        else if (symb >= 69) {
+          switch (symb - 69 | 0) {
+            case 0 : 
+                return /* Float_sE */8;
+            case 1 : 
+                exit$1 = 1;
+                break;
+            case 2 : 
+                return /* Float_sG */14;
+            
+          }
+        }
+        else {
+          exit$1 = 1;
+        }
+        if (exit$1 === 1) {
+          if (legacy_behavior$1) {
+            _space = /* false */0;
+            continue ;
+            
+          }
+          else {
+            return incompatible_flag(pct_ind, str_ind, symb, "' '");
+          }
+        }
+        
+      }
+      else if (symb >= 72) {
+        var switcher$2 = symb - 101 | 0;
+        if (switcher$2 > 2 || switcher$2 < 0) {
+          throw [
+                Caml_builtin_exceptions.assert_failure,
+                [
+                  "camlinternalFormat.ml",
+                  2744,
+                  25
+                ]
+              ];
+        }
+        else {
+          switch (switcher$2) {
+            case 0 : 
+                return /* Float_e */3;
+            case 1 : 
+                return /* Float_f */0;
+            case 2 : 
+                return /* Float_g */9;
+            
+          }
+        }
+      }
+      else if (symb >= 69) {
+        switch (symb - 69 | 0) {
+          case 0 : 
+              return /* Float_E */6;
+          case 1 : 
+              return /* Float_F */15;
+          case 2 : 
+              return /* Float_G */12;
+          
+        }
+      }
+      else {
+        throw [
+              Caml_builtin_exceptions.assert_failure,
+              [
+                "camlinternalFormat.ml",
+                2744,
+                25
+              ]
+            ];
+      }
+    };
+  };
+  var incompatible_flag = function (pct_ind, str_ind, symb, option) {
+    var subfmt = $$String.sub(str, pct_ind, str_ind - pct_ind | 0);
+    return Curry._5(failwith_message(/* Format */[
+                    /* String_literal */Block.__(11, [
+                        "invalid format ",
+                        /* Caml_string */Block.__(3, [
+                            /* No_padding */0,
+                            /* String_literal */Block.__(11, [
+                                ": at character number ",
+                                /* Int */Block.__(4, [
+                                    /* Int_d */0,
+                                    /* No_padding */0,
+                                    /* No_precision */0,
+                                    /* String_literal */Block.__(11, [
+                                        ", ",
+                                        /* String */Block.__(2, [
+                                            /* No_padding */0,
+                                            /* String_literal */Block.__(11, [
+                                                " is incompatible with '",
+                                                /* Char */Block.__(0, [/* String_literal */Block.__(11, [
+                                                        "' in sub-format ",
+                                                        /* Caml_string */Block.__(3, [
+                                                            /* No_padding */0,
+                                                            /* End_of_format */0
+                                                          ])
+                                                      ])])
+                                              ])
+                                          ])
+                                      ])
+                                  ])
+                              ])
+                          ])
+                      ]),
+                    "invalid format %S: at character number %d, %s is incompatible with '%c' in sub-format %S"
+                  ]), str, pct_ind, option, symb, subfmt);
+  };
+  return parse_literal(0, 0, str.length);
+}
+
+function format_of_string_fmtty(str, fmtty) {
+  var match = fmt_ebb_of_string(/* None */0, str);
+  try {
+    return /* Format */[
+            type_format(match[0], fmtty),
+            str
+          ];
+  }
+  catch (exn){
+    if (exn === Type_mismatch) {
+      return Curry._2(failwith_message(/* Format */[
+                      /* String_literal */Block.__(11, [
+                          "bad input: format type mismatch between ",
+                          /* Caml_string */Block.__(3, [
+                              /* No_padding */0,
+                              /* String_literal */Block.__(11, [
+                                  " and ",
+                                  /* Caml_string */Block.__(3, [
+                                      /* No_padding */0,
+                                      /* End_of_format */0
+                                    ])
+                                ])
+                            ])
+                        ]),
+                      "bad input: format type mismatch between %S and %S"
+                    ]), str, string_of_fmtty(fmtty));
+    }
+    else {
+      throw exn;
+    }
+  }
+}
+
+function format_of_string_format(str, param) {
+  var match = fmt_ebb_of_string(/* None */0, str);
+  try {
+    return /* Format */[
+            type_format(match[0], fmtty_of_fmt(param[0])),
+            str
+          ];
+  }
+  catch (exn){
+    if (exn === Type_mismatch) {
+      return Curry._2(failwith_message(/* Format */[
+                      /* String_literal */Block.__(11, [
+                          "bad input: format type mismatch between ",
+                          /* Caml_string */Block.__(3, [
+                              /* No_padding */0,
+                              /* String_literal */Block.__(11, [
+                                  " and ",
+                                  /* Caml_string */Block.__(3, [
+                                      /* No_padding */0,
+                                      /* End_of_format */0
+                                    ])
+                                ])
+                            ])
+                        ]),
+                      "bad input: format type mismatch between %S and %S"
+                    ]), str, param[1]);
+    }
+    else {
+      throw exn;
+    }
+  }
+}
+
+exports.is_in_char_set                 = is_in_char_set;
+exports.rev_char_set                   = rev_char_set;
+exports.create_char_set                = create_char_set;
+exports.add_in_char_set                = add_in_char_set;
+exports.freeze_char_set                = freeze_char_set;
+exports.param_format_of_ignored_format = param_format_of_ignored_format;
+exports.make_printf                    = make_printf;
+exports.output_acc                     = output_acc;
+exports.bufput_acc                     = bufput_acc;
+exports.strput_acc                     = strput_acc;
+exports.type_format                    = type_format;
+exports.fmt_ebb_of_string              = fmt_ebb_of_string;
+exports.format_of_string_fmtty         = format_of_string_fmtty;
+exports.format_of_string_format        = format_of_string_format;
+exports.char_of_iconv                  = char_of_iconv;
+exports.string_of_formatting_lit       = string_of_formatting_lit;
+exports.string_of_formatting_gen       = string_of_formatting_gen;
+exports.string_of_fmtty                = string_of_fmtty;
+exports.string_of_fmt                  = string_of_fmt;
+exports.open_box_of_string             = open_box_of_string;
+exports.symm                           = symm;
+exports.trans                          = trans;
+exports.recast                         = recast;
+/* No side effect */
   })();
 });
 
@@ -8046,6 +15709,95 @@ exports.do_at_exit          = do_at_exit;
   })();
 });
 
+require.register("bs-platform/lib/js/printf.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "bs-platform");
+  var _Buffer = require('buffer'); var Buffer = _Buffer && _Buffer.Buffer;
+(function() {
+    'use strict';
+
+var Pervasives         = require("bs-platform/lib/js/pervasives");
+var Curry              = require("bs-platform/lib/js/curry");
+var Buffer             = require("bs-platform/lib/js/buffer");
+var CamlinternalFormat = require("bs-platform/lib/js/camlinternalFormat");
+
+function kfprintf(k, o, param) {
+  return CamlinternalFormat.make_printf(function (o, acc) {
+              CamlinternalFormat.output_acc(o, acc);
+              return Curry._1(k, o);
+            }, o, /* End_of_acc */0, param[0]);
+}
+
+function kbprintf(k, b, param) {
+  return CamlinternalFormat.make_printf(function (b, acc) {
+              CamlinternalFormat.bufput_acc(b, acc);
+              return Curry._1(k, b);
+            }, b, /* End_of_acc */0, param[0]);
+}
+
+function ikfprintf(k, oc, param) {
+  return CamlinternalFormat.make_printf(function (oc, _) {
+              return Curry._1(k, oc);
+            }, oc, /* End_of_acc */0, param[0]);
+}
+
+function fprintf(oc, fmt) {
+  return kfprintf(function () {
+              return /* () */0;
+            }, oc, fmt);
+}
+
+function bprintf(b, fmt) {
+  return kbprintf(function () {
+              return /* () */0;
+            }, b, fmt);
+}
+
+function ifprintf(oc, fmt) {
+  return ikfprintf(function () {
+              return /* () */0;
+            }, oc, fmt);
+}
+
+function printf(fmt) {
+  return fprintf(Pervasives.stdout, fmt);
+}
+
+function eprintf(fmt) {
+  return fprintf(Pervasives.stderr, fmt);
+}
+
+function ksprintf(k, param) {
+  var k$prime = function (_, acc) {
+    var buf = Buffer.create(64);
+    CamlinternalFormat.strput_acc(buf, acc);
+    return Curry._1(k, Buffer.contents(buf));
+  };
+  return CamlinternalFormat.make_printf(k$prime, /* () */0, /* End_of_acc */0, param[0]);
+}
+
+function sprintf(fmt) {
+  return ksprintf(function (s) {
+              return s;
+            }, fmt);
+}
+
+var kprintf = ksprintf;
+
+exports.fprintf   = fprintf;
+exports.printf    = printf;
+exports.eprintf   = eprintf;
+exports.sprintf   = sprintf;
+exports.bprintf   = bprintf;
+exports.ifprintf  = ifprintf;
+exports.kfprintf  = kfprintf;
+exports.ikfprintf = ikfprintf;
+exports.ksprintf  = ksprintf;
+exports.kbprintf  = kbprintf;
+exports.kprintf   = kprintf;
+/* No side effect */
+  })();
+});
+
 require.register("bs-platform/lib/js/random.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "bs-platform");
   (function() {
@@ -8713,6 +16465,1569 @@ exports.Break             = Break;
 exports.catch_break       = catch_break;
 exports.ocaml_version     = ocaml_version;
 /* No side effect */
+  })();
+});
+
+require.register("buffer/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "buffer");
+  var _Buffer = require('buffer'); var Buffer = _Buffer && _Buffer.Buffer;
+(function() {
+    /*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
+ * @license  MIT
+ */
+/* eslint-disable no-proto */
+
+'use strict'
+
+var base64 = require('base64-js')
+var ieee754 = require('ieee754')
+var isArray = require('isarray')
+
+exports.Buffer = Buffer
+exports.SlowBuffer = SlowBuffer
+exports.INSPECT_MAX_BYTES = 50
+Buffer.poolSize = 8192 // not used by this implementation
+
+var rootParent = {}
+
+/**
+ * If `Buffer.TYPED_ARRAY_SUPPORT`:
+ *   === true    Use Uint8Array implementation (fastest)
+ *   === false   Use Object implementation (most compatible, even IE6)
+ *
+ * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
+ * Opera 11.6+, iOS 4.2+.
+ *
+ * Due to various browser bugs, sometimes the Object implementation will be used even
+ * when the browser supports typed arrays.
+ *
+ * Note:
+ *
+ *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
+ *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
+ *
+ *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
+ *
+ *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
+ *     incorrect length in some situations.
+
+ * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
+ * get the Object implementation, which is slower but behaves correctly.
+ */
+Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
+  ? global.TYPED_ARRAY_SUPPORT
+  : typedArraySupport()
+
+function typedArraySupport () {
+  try {
+    var arr = new Uint8Array(1)
+    arr.foo = function () { return 42 }
+    return arr.foo() === 42 && // typed array instances can be augmented
+        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
+        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
+  } catch (e) {
+    return false
+  }
+}
+
+function kMaxLength () {
+  return Buffer.TYPED_ARRAY_SUPPORT
+    ? 0x7fffffff
+    : 0x3fffffff
+}
+
+/**
+ * The Buffer constructor returns instances of `Uint8Array` that have their
+ * prototype changed to `Buffer.prototype`. Furthermore, `Buffer` is a subclass of
+ * `Uint8Array`, so the returned instances will have all the node `Buffer` methods
+ * and the `Uint8Array` methods. Square bracket notation works as expected -- it
+ * returns a single octet.
+ *
+ * The `Uint8Array` prototype remains unmodified.
+ */
+function Buffer (arg) {
+  if (!(this instanceof Buffer)) {
+    // Avoid going through an ArgumentsAdaptorTrampoline in the common case.
+    if (arguments.length > 1) return new Buffer(arg, arguments[1])
+    return new Buffer(arg)
+  }
+
+  if (!Buffer.TYPED_ARRAY_SUPPORT) {
+    this.length = 0
+    this.parent = undefined
+  }
+
+  // Common case.
+  if (typeof arg === 'number') {
+    return fromNumber(this, arg)
+  }
+
+  // Slightly less common case.
+  if (typeof arg === 'string') {
+    return fromString(this, arg, arguments.length > 1 ? arguments[1] : 'utf8')
+  }
+
+  // Unusual.
+  return fromObject(this, arg)
+}
+
+// TODO: Legacy, not needed anymore. Remove in next major version.
+Buffer._augment = function (arr) {
+  arr.__proto__ = Buffer.prototype
+  return arr
+}
+
+function fromNumber (that, length) {
+  that = allocate(that, length < 0 ? 0 : checked(length) | 0)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) {
+    for (var i = 0; i < length; i++) {
+      that[i] = 0
+    }
+  }
+  return that
+}
+
+function fromString (that, string, encoding) {
+  if (typeof encoding !== 'string' || encoding === '') encoding = 'utf8'
+
+  // Assumption: byteLength() return value is always < kMaxLength.
+  var length = byteLength(string, encoding) | 0
+  that = allocate(that, length)
+
+  that.write(string, encoding)
+  return that
+}
+
+function fromObject (that, object) {
+  if (Buffer.isBuffer(object)) return fromBuffer(that, object)
+
+  if (isArray(object)) return fromArray(that, object)
+
+  if (object == null) {
+    throw new TypeError('must start with number, buffer, array or string')
+  }
+
+  if (typeof ArrayBuffer !== 'undefined') {
+    if (object.buffer instanceof ArrayBuffer) {
+      return fromTypedArray(that, object)
+    }
+    if (object instanceof ArrayBuffer) {
+      return fromArrayBuffer(that, object)
+    }
+  }
+
+  if (object.length) return fromArrayLike(that, object)
+
+  return fromJsonObject(that, object)
+}
+
+function fromBuffer (that, buffer) {
+  var length = checked(buffer.length) | 0
+  that = allocate(that, length)
+  buffer.copy(that, 0, 0, length)
+  return that
+}
+
+function fromArray (that, array) {
+  var length = checked(array.length) | 0
+  that = allocate(that, length)
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+// Duplicate of fromArray() to keep fromArray() monomorphic.
+function fromTypedArray (that, array) {
+  var length = checked(array.length) | 0
+  that = allocate(that, length)
+  // Truncating the elements is probably not what people expect from typed
+  // arrays with BYTES_PER_ELEMENT > 1 but it's compatible with the behavior
+  // of the old Buffer constructor.
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+function fromArrayBuffer (that, array) {
+  array.byteLength // this throws if `array` is not a valid ArrayBuffer
+
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = new Uint8Array(array)
+    that.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    that = fromTypedArray(that, new Uint8Array(array))
+  }
+  return that
+}
+
+function fromArrayLike (that, array) {
+  var length = checked(array.length) | 0
+  that = allocate(that, length)
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+// Deserialize { type: 'Buffer', data: [1,2,3,...] } into a Buffer object.
+// Returns a zero-length buffer for inputs that don't conform to the spec.
+function fromJsonObject (that, object) {
+  var array
+  var length = 0
+
+  if (object.type === 'Buffer' && isArray(object.data)) {
+    array = object.data
+    length = checked(array.length) | 0
+  }
+  that = allocate(that, length)
+
+  for (var i = 0; i < length; i += 1) {
+    that[i] = array[i] & 255
+  }
+  return that
+}
+
+if (Buffer.TYPED_ARRAY_SUPPORT) {
+  Buffer.prototype.__proto__ = Uint8Array.prototype
+  Buffer.__proto__ = Uint8Array
+} else {
+  // pre-set for values that may exist in the future
+  Buffer.prototype.length = undefined
+  Buffer.prototype.parent = undefined
+}
+
+function allocate (that, length) {
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    // Return an augmented `Uint8Array` instance, for best performance
+    that = new Uint8Array(length)
+    that.__proto__ = Buffer.prototype
+  } else {
+    // Fallback: Return an object instance of the Buffer class
+    that.length = length
+  }
+
+  var fromPool = length !== 0 && length <= Buffer.poolSize >>> 1
+  if (fromPool) that.parent = rootParent
+
+  return that
+}
+
+function checked (length) {
+  // Note: cannot use `length < kMaxLength` here because that fails when
+  // length is NaN (which is otherwise coerced to zero.)
+  if (length >= kMaxLength()) {
+    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
+                         'size: 0x' + kMaxLength().toString(16) + ' bytes')
+  }
+  return length | 0
+}
+
+function SlowBuffer (subject, encoding) {
+  if (!(this instanceof SlowBuffer)) return new SlowBuffer(subject, encoding)
+
+  var buf = new Buffer(subject, encoding)
+  delete buf.parent
+  return buf
+}
+
+Buffer.isBuffer = function isBuffer (b) {
+  return !!(b != null && b._isBuffer)
+}
+
+Buffer.compare = function compare (a, b) {
+  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
+    throw new TypeError('Arguments must be Buffers')
+  }
+
+  if (a === b) return 0
+
+  var x = a.length
+  var y = b.length
+
+  var i = 0
+  var len = Math.min(x, y)
+  while (i < len) {
+    if (a[i] !== b[i]) break
+
+    ++i
+  }
+
+  if (i !== len) {
+    x = a[i]
+    y = b[i]
+  }
+
+  if (x < y) return -1
+  if (y < x) return 1
+  return 0
+}
+
+Buffer.isEncoding = function isEncoding (encoding) {
+  switch (String(encoding).toLowerCase()) {
+    case 'hex':
+    case 'utf8':
+    case 'utf-8':
+    case 'ascii':
+    case 'binary':
+    case 'base64':
+    case 'raw':
+    case 'ucs2':
+    case 'ucs-2':
+    case 'utf16le':
+    case 'utf-16le':
+      return true
+    default:
+      return false
+  }
+}
+
+Buffer.concat = function concat (list, length) {
+  if (!isArray(list)) throw new TypeError('list argument must be an Array of Buffers.')
+
+  if (list.length === 0) {
+    return new Buffer(0)
+  }
+
+  var i
+  if (length === undefined) {
+    length = 0
+    for (i = 0; i < list.length; i++) {
+      length += list[i].length
+    }
+  }
+
+  var buf = new Buffer(length)
+  var pos = 0
+  for (i = 0; i < list.length; i++) {
+    var item = list[i]
+    item.copy(buf, pos)
+    pos += item.length
+  }
+  return buf
+}
+
+function byteLength (string, encoding) {
+  if (typeof string !== 'string') string = '' + string
+
+  var len = string.length
+  if (len === 0) return 0
+
+  // Use a for loop to avoid recursion
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'ascii':
+      case 'binary':
+      // Deprecated
+      case 'raw':
+      case 'raws':
+        return len
+      case 'utf8':
+      case 'utf-8':
+        return utf8ToBytes(string).length
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return len * 2
+      case 'hex':
+        return len >>> 1
+      case 'base64':
+        return base64ToBytes(string).length
+      default:
+        if (loweredCase) return utf8ToBytes(string).length // assume utf8
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+Buffer.byteLength = byteLength
+
+function slowToString (encoding, start, end) {
+  var loweredCase = false
+
+  start = start | 0
+  end = end === undefined || end === Infinity ? this.length : end | 0
+
+  if (!encoding) encoding = 'utf8'
+  if (start < 0) start = 0
+  if (end > this.length) end = this.length
+  if (end <= start) return ''
+
+  while (true) {
+    switch (encoding) {
+      case 'hex':
+        return hexSlice(this, start, end)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Slice(this, start, end)
+
+      case 'ascii':
+        return asciiSlice(this, start, end)
+
+      case 'binary':
+        return binarySlice(this, start, end)
+
+      case 'base64':
+        return base64Slice(this, start, end)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return utf16leSlice(this, start, end)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = (encoding + '').toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+// The property is used by `Buffer.isBuffer` and `is-buffer` (in Safari 5-7) to detect
+// Buffer instances.
+Buffer.prototype._isBuffer = true
+
+Buffer.prototype.toString = function toString () {
+  var length = this.length | 0
+  if (length === 0) return ''
+  if (arguments.length === 0) return utf8Slice(this, 0, length)
+  return slowToString.apply(this, arguments)
+}
+
+Buffer.prototype.equals = function equals (b) {
+  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  if (this === b) return true
+  return Buffer.compare(this, b) === 0
+}
+
+Buffer.prototype.inspect = function inspect () {
+  var str = ''
+  var max = exports.INSPECT_MAX_BYTES
+  if (this.length > 0) {
+    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
+    if (this.length > max) str += ' ... '
+  }
+  return '<Buffer ' + str + '>'
+}
+
+Buffer.prototype.compare = function compare (b) {
+  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
+  if (this === b) return 0
+  return Buffer.compare(this, b)
+}
+
+Buffer.prototype.indexOf = function indexOf (val, byteOffset) {
+  if (byteOffset > 0x7fffffff) byteOffset = 0x7fffffff
+  else if (byteOffset < -0x80000000) byteOffset = -0x80000000
+  byteOffset >>= 0
+
+  if (this.length === 0) return -1
+  if (byteOffset >= this.length) return -1
+
+  // Negative offsets start from the end of the buffer
+  if (byteOffset < 0) byteOffset = Math.max(this.length + byteOffset, 0)
+
+  if (typeof val === 'string') {
+    if (val.length === 0) return -1 // special case: looking for empty string always fails
+    return String.prototype.indexOf.call(this, val, byteOffset)
+  }
+  if (Buffer.isBuffer(val)) {
+    return arrayIndexOf(this, val, byteOffset)
+  }
+  if (typeof val === 'number') {
+    if (Buffer.TYPED_ARRAY_SUPPORT && Uint8Array.prototype.indexOf === 'function') {
+      return Uint8Array.prototype.indexOf.call(this, val, byteOffset)
+    }
+    return arrayIndexOf(this, [ val ], byteOffset)
+  }
+
+  function arrayIndexOf (arr, val, byteOffset) {
+    var foundIndex = -1
+    for (var i = 0; byteOffset + i < arr.length; i++) {
+      if (arr[byteOffset + i] === val[foundIndex === -1 ? 0 : i - foundIndex]) {
+        if (foundIndex === -1) foundIndex = i
+        if (i - foundIndex + 1 === val.length) return byteOffset + foundIndex
+      } else {
+        foundIndex = -1
+      }
+    }
+    return -1
+  }
+
+  throw new TypeError('val must be string, number or Buffer')
+}
+
+function hexWrite (buf, string, offset, length) {
+  offset = Number(offset) || 0
+  var remaining = buf.length - offset
+  if (!length) {
+    length = remaining
+  } else {
+    length = Number(length)
+    if (length > remaining) {
+      length = remaining
+    }
+  }
+
+  // must be an even number of digits
+  var strLen = string.length
+  if (strLen % 2 !== 0) throw new Error('Invalid hex string')
+
+  if (length > strLen / 2) {
+    length = strLen / 2
+  }
+  for (var i = 0; i < length; i++) {
+    var parsed = parseInt(string.substr(i * 2, 2), 16)
+    if (isNaN(parsed)) throw new Error('Invalid hex string')
+    buf[offset + i] = parsed
+  }
+  return i
+}
+
+function utf8Write (buf, string, offset, length) {
+  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+function asciiWrite (buf, string, offset, length) {
+  return blitBuffer(asciiToBytes(string), buf, offset, length)
+}
+
+function binaryWrite (buf, string, offset, length) {
+  return asciiWrite(buf, string, offset, length)
+}
+
+function base64Write (buf, string, offset, length) {
+  return blitBuffer(base64ToBytes(string), buf, offset, length)
+}
+
+function ucs2Write (buf, string, offset, length) {
+  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
+}
+
+Buffer.prototype.write = function write (string, offset, length, encoding) {
+  // Buffer#write(string)
+  if (offset === undefined) {
+    encoding = 'utf8'
+    length = this.length
+    offset = 0
+  // Buffer#write(string, encoding)
+  } else if (length === undefined && typeof offset === 'string') {
+    encoding = offset
+    length = this.length
+    offset = 0
+  // Buffer#write(string, offset[, length][, encoding])
+  } else if (isFinite(offset)) {
+    offset = offset | 0
+    if (isFinite(length)) {
+      length = length | 0
+      if (encoding === undefined) encoding = 'utf8'
+    } else {
+      encoding = length
+      length = undefined
+    }
+  // legacy write(string, encoding, offset, length) - remove in v0.13
+  } else {
+    var swap = encoding
+    encoding = offset
+    offset = length | 0
+    length = swap
+  }
+
+  var remaining = this.length - offset
+  if (length === undefined || length > remaining) length = remaining
+
+  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
+    throw new RangeError('attempt to write outside buffer bounds')
+  }
+
+  if (!encoding) encoding = 'utf8'
+
+  var loweredCase = false
+  for (;;) {
+    switch (encoding) {
+      case 'hex':
+        return hexWrite(this, string, offset, length)
+
+      case 'utf8':
+      case 'utf-8':
+        return utf8Write(this, string, offset, length)
+
+      case 'ascii':
+        return asciiWrite(this, string, offset, length)
+
+      case 'binary':
+        return binaryWrite(this, string, offset, length)
+
+      case 'base64':
+        // Warning: maxLength not taken into account in base64Write
+        return base64Write(this, string, offset, length)
+
+      case 'ucs2':
+      case 'ucs-2':
+      case 'utf16le':
+      case 'utf-16le':
+        return ucs2Write(this, string, offset, length)
+
+      default:
+        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
+        encoding = ('' + encoding).toLowerCase()
+        loweredCase = true
+    }
+  }
+}
+
+Buffer.prototype.toJSON = function toJSON () {
+  return {
+    type: 'Buffer',
+    data: Array.prototype.slice.call(this._arr || this, 0)
+  }
+}
+
+function base64Slice (buf, start, end) {
+  if (start === 0 && end === buf.length) {
+    return base64.fromByteArray(buf)
+  } else {
+    return base64.fromByteArray(buf.slice(start, end))
+  }
+}
+
+function utf8Slice (buf, start, end) {
+  end = Math.min(buf.length, end)
+  var res = []
+
+  var i = start
+  while (i < end) {
+    var firstByte = buf[i]
+    var codePoint = null
+    var bytesPerSequence = (firstByte > 0xEF) ? 4
+      : (firstByte > 0xDF) ? 3
+      : (firstByte > 0xBF) ? 2
+      : 1
+
+    if (i + bytesPerSequence <= end) {
+      var secondByte, thirdByte, fourthByte, tempCodePoint
+
+      switch (bytesPerSequence) {
+        case 1:
+          if (firstByte < 0x80) {
+            codePoint = firstByte
+          }
+          break
+        case 2:
+          secondByte = buf[i + 1]
+          if ((secondByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F)
+            if (tempCodePoint > 0x7F) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 3:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
+            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
+              codePoint = tempCodePoint
+            }
+          }
+          break
+        case 4:
+          secondByte = buf[i + 1]
+          thirdByte = buf[i + 2]
+          fourthByte = buf[i + 3]
+          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
+            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
+            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
+              codePoint = tempCodePoint
+            }
+          }
+      }
+    }
+
+    if (codePoint === null) {
+      // we did not generate a valid codePoint so insert a
+      // replacement char (U+FFFD) and advance only 1 byte
+      codePoint = 0xFFFD
+      bytesPerSequence = 1
+    } else if (codePoint > 0xFFFF) {
+      // encode to utf16 (surrogate pair dance)
+      codePoint -= 0x10000
+      res.push(codePoint >>> 10 & 0x3FF | 0xD800)
+      codePoint = 0xDC00 | codePoint & 0x3FF
+    }
+
+    res.push(codePoint)
+    i += bytesPerSequence
+  }
+
+  return decodeCodePointsArray(res)
+}
+
+// Based on http://stackoverflow.com/a/22747272/680742, the browser with
+// the lowest limit is Chrome, with 0x10000 args.
+// We go 1 magnitude less, for safety
+var MAX_ARGUMENTS_LENGTH = 0x1000
+
+function decodeCodePointsArray (codePoints) {
+  var len = codePoints.length
+  if (len <= MAX_ARGUMENTS_LENGTH) {
+    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
+  }
+
+  // Decode in chunks to avoid "call stack size exceeded".
+  var res = ''
+  var i = 0
+  while (i < len) {
+    res += String.fromCharCode.apply(
+      String,
+      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
+    )
+  }
+  return res
+}
+
+function asciiSlice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; i++) {
+    ret += String.fromCharCode(buf[i] & 0x7F)
+  }
+  return ret
+}
+
+function binarySlice (buf, start, end) {
+  var ret = ''
+  end = Math.min(buf.length, end)
+
+  for (var i = start; i < end; i++) {
+    ret += String.fromCharCode(buf[i])
+  }
+  return ret
+}
+
+function hexSlice (buf, start, end) {
+  var len = buf.length
+
+  if (!start || start < 0) start = 0
+  if (!end || end < 0 || end > len) end = len
+
+  var out = ''
+  for (var i = start; i < end; i++) {
+    out += toHex(buf[i])
+  }
+  return out
+}
+
+function utf16leSlice (buf, start, end) {
+  var bytes = buf.slice(start, end)
+  var res = ''
+  for (var i = 0; i < bytes.length; i += 2) {
+    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256)
+  }
+  return res
+}
+
+Buffer.prototype.slice = function slice (start, end) {
+  var len = this.length
+  start = ~~start
+  end = end === undefined ? len : ~~end
+
+  if (start < 0) {
+    start += len
+    if (start < 0) start = 0
+  } else if (start > len) {
+    start = len
+  }
+
+  if (end < 0) {
+    end += len
+    if (end < 0) end = 0
+  } else if (end > len) {
+    end = len
+  }
+
+  if (end < start) end = start
+
+  var newBuf
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    newBuf = this.subarray(start, end)
+    newBuf.__proto__ = Buffer.prototype
+  } else {
+    var sliceLen = end - start
+    newBuf = new Buffer(sliceLen, undefined)
+    for (var i = 0; i < sliceLen; i++) {
+      newBuf[i] = this[i + start]
+    }
+  }
+
+  if (newBuf.length) newBuf.parent = this.parent || this
+
+  return newBuf
+}
+
+/*
+ * Need to make sure that buffer isn't trying to write out of bounds.
+ */
+function checkOffset (offset, ext, length) {
+  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
+  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
+}
+
+Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var val = this[offset]
+  var mul = 1
+  var i = 0
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul
+  }
+
+  return val
+}
+
+Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) {
+    checkOffset(offset, byteLength, this.length)
+  }
+
+  var val = this[offset + --byteLength]
+  var mul = 1
+  while (byteLength > 0 && (mul *= 0x100)) {
+    val += this[offset + --byteLength] * mul
+  }
+
+  return val
+}
+
+Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  return this[offset]
+}
+
+Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  return this[offset] | (this[offset + 1] << 8)
+}
+
+Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  return (this[offset] << 8) | this[offset + 1]
+}
+
+Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return ((this[offset]) |
+      (this[offset + 1] << 8) |
+      (this[offset + 2] << 16)) +
+      (this[offset + 3] * 0x1000000)
+}
+
+Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset] * 0x1000000) +
+    ((this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    this[offset + 3])
+}
+
+Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var val = this[offset]
+  var mul = 1
+  var i = 0
+  while (++i < byteLength && (mul *= 0x100)) {
+    val += this[offset + i] * mul
+  }
+  mul *= 0x80
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
+
+  return val
+}
+
+Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkOffset(offset, byteLength, this.length)
+
+  var i = byteLength
+  var mul = 1
+  var val = this[offset + --i]
+  while (i > 0 && (mul *= 0x100)) {
+    val += this[offset + --i] * mul
+  }
+  mul *= 0x80
+
+  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
+
+  return val
+}
+
+Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 1, this.length)
+  if (!(this[offset] & 0x80)) return (this[offset])
+  return ((0xff - this[offset] + 1) * -1)
+}
+
+Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  var val = this[offset] | (this[offset + 1] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+}
+
+Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 2, this.length)
+  var val = this[offset + 1] | (this[offset] << 8)
+  return (val & 0x8000) ? val | 0xFFFF0000 : val
+}
+
+Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset]) |
+    (this[offset + 1] << 8) |
+    (this[offset + 2] << 16) |
+    (this[offset + 3] << 24)
+}
+
+Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+
+  return (this[offset] << 24) |
+    (this[offset + 1] << 16) |
+    (this[offset + 2] << 8) |
+    (this[offset + 3])
+}
+
+Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, true, 23, 4)
+}
+
+Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 4, this.length)
+  return ieee754.read(this, offset, false, 23, 4)
+}
+
+Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, true, 52, 8)
+}
+
+Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
+  if (!noAssert) checkOffset(offset, 8, this.length)
+  return ieee754.read(this, offset, false, 52, 8)
+}
+
+function checkInt (buf, value, offset, ext, max, min) {
+  if (!Buffer.isBuffer(buf)) throw new TypeError('buffer must be a Buffer instance')
+  if (value > max || value < min) throw new RangeError('value is out of bounds')
+  if (offset + ext > buf.length) throw new RangeError('index out of range')
+}
+
+Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
+
+  var mul = 1
+  var i = 0
+  this[offset] = value & 0xFF
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  byteLength = byteLength | 0
+  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
+
+  var i = byteLength - 1
+  var mul = 1
+  this[offset + i] = value & 0xFF
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = (value / mul) & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
+  this[offset] = (value & 0xff)
+  return offset + 1
+}
+
+function objectWriteUInt16 (buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffff + value + 1
+  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; i++) {
+    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
+      (littleEndian ? i : 1 - i) * 8
+  }
+}
+
+Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value & 0xff)
+    this[offset + 1] = (value >>> 8)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
+  return offset + 2
+}
+
+Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 8)
+    this[offset + 1] = (value & 0xff)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
+  return offset + 2
+}
+
+function objectWriteUInt32 (buf, value, offset, littleEndian) {
+  if (value < 0) value = 0xffffffff + value + 1
+  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; i++) {
+    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
+  }
+}
+
+Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset + 3] = (value >>> 24)
+    this[offset + 2] = (value >>> 16)
+    this[offset + 1] = (value >>> 8)
+    this[offset] = (value & 0xff)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
+  return offset + 4
+}
+
+Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 24)
+    this[offset + 1] = (value >>> 16)
+    this[offset + 2] = (value >>> 8)
+    this[offset + 3] = (value & 0xff)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
+  return offset + 4
+}
+
+Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
+  }
+
+  var i = 0
+  var mul = 1
+  var sub = value < 0 ? 1 : 0
+  this[offset] = value & 0xFF
+  while (++i < byteLength && (mul *= 0x100)) {
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) {
+    var limit = Math.pow(2, 8 * byteLength - 1)
+
+    checkInt(this, value, offset, byteLength, limit - 1, -limit)
+  }
+
+  var i = byteLength - 1
+  var mul = 1
+  var sub = value < 0 ? 1 : 0
+  this[offset + i] = value & 0xFF
+  while (--i >= 0 && (mul *= 0x100)) {
+    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
+  }
+
+  return offset + byteLength
+}
+
+Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
+  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
+  if (value < 0) value = 0xff + value + 1
+  this[offset] = (value & 0xff)
+  return offset + 1
+}
+
+Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value & 0xff)
+    this[offset + 1] = (value >>> 8)
+  } else {
+    objectWriteUInt16(this, value, offset, true)
+  }
+  return offset + 2
+}
+
+Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 8)
+    this[offset + 1] = (value & 0xff)
+  } else {
+    objectWriteUInt16(this, value, offset, false)
+  }
+  return offset + 2
+}
+
+Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value & 0xff)
+    this[offset + 1] = (value >>> 8)
+    this[offset + 2] = (value >>> 16)
+    this[offset + 3] = (value >>> 24)
+  } else {
+    objectWriteUInt32(this, value, offset, true)
+  }
+  return offset + 4
+}
+
+Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
+  value = +value
+  offset = offset | 0
+  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
+  if (value < 0) value = 0xffffffff + value + 1
+  if (Buffer.TYPED_ARRAY_SUPPORT) {
+    this[offset] = (value >>> 24)
+    this[offset + 1] = (value >>> 16)
+    this[offset + 2] = (value >>> 8)
+    this[offset + 3] = (value & 0xff)
+  } else {
+    objectWriteUInt32(this, value, offset, false)
+  }
+  return offset + 4
+}
+
+function checkIEEE754 (buf, value, offset, ext, max, min) {
+  if (value > max || value < min) throw new RangeError('value is out of bounds')
+  if (offset + ext > buf.length) throw new RangeError('index out of range')
+  if (offset < 0) throw new RangeError('index out of range')
+}
+
+function writeFloat (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
+  }
+  ieee754.write(buf, value, offset, littleEndian, 23, 4)
+  return offset + 4
+}
+
+Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
+  return writeFloat(this, value, offset, false, noAssert)
+}
+
+function writeDouble (buf, value, offset, littleEndian, noAssert) {
+  if (!noAssert) {
+    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
+  }
+  ieee754.write(buf, value, offset, littleEndian, 52, 8)
+  return offset + 8
+}
+
+Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, true, noAssert)
+}
+
+Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
+  return writeDouble(this, value, offset, false, noAssert)
+}
+
+// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
+Buffer.prototype.copy = function copy (target, targetStart, start, end) {
+  if (!start) start = 0
+  if (!end && end !== 0) end = this.length
+  if (targetStart >= target.length) targetStart = target.length
+  if (!targetStart) targetStart = 0
+  if (end > 0 && end < start) end = start
+
+  // Copy 0 bytes; we're done
+  if (end === start) return 0
+  if (target.length === 0 || this.length === 0) return 0
+
+  // Fatal error conditions
+  if (targetStart < 0) {
+    throw new RangeError('targetStart out of bounds')
+  }
+  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
+  if (end < 0) throw new RangeError('sourceEnd out of bounds')
+
+  // Are we oob?
+  if (end > this.length) end = this.length
+  if (target.length - targetStart < end - start) {
+    end = target.length - targetStart + start
+  }
+
+  var len = end - start
+  var i
+
+  if (this === target && start < targetStart && targetStart < end) {
+    // descending copy from end
+    for (i = len - 1; i >= 0; i--) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
+    // ascending copy from start
+    for (i = 0; i < len; i++) {
+      target[i + targetStart] = this[i + start]
+    }
+  } else {
+    Uint8Array.prototype.set.call(
+      target,
+      this.subarray(start, start + len),
+      targetStart
+    )
+  }
+
+  return len
+}
+
+// fill(value, start=0, end=buffer.length)
+Buffer.prototype.fill = function fill (value, start, end) {
+  if (!value) value = 0
+  if (!start) start = 0
+  if (!end) end = this.length
+
+  if (end < start) throw new RangeError('end < start')
+
+  // Fill 0 bytes; we're done
+  if (end === start) return
+  if (this.length === 0) return
+
+  if (start < 0 || start >= this.length) throw new RangeError('start out of bounds')
+  if (end < 0 || end > this.length) throw new RangeError('end out of bounds')
+
+  var i
+  if (typeof value === 'number') {
+    for (i = start; i < end; i++) {
+      this[i] = value
+    }
+  } else {
+    var bytes = utf8ToBytes(value.toString())
+    var len = bytes.length
+    for (i = start; i < end; i++) {
+      this[i] = bytes[i % len]
+    }
+  }
+
+  return this
+}
+
+// HELPER FUNCTIONS
+// ================
+
+var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g
+
+function base64clean (str) {
+  // Node strips out invalid characters like \n and \t from the string, base64-js does not
+  str = stringtrim(str).replace(INVALID_BASE64_RE, '')
+  // Node converts strings with length < 2 to ''
+  if (str.length < 2) return ''
+  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
+  while (str.length % 4 !== 0) {
+    str = str + '='
+  }
+  return str
+}
+
+function stringtrim (str) {
+  if (str.trim) return str.trim()
+  return str.replace(/^\s+|\s+$/g, '')
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
+}
+
+function utf8ToBytes (string, units) {
+  units = units || Infinity
+  var codePoint
+  var length = string.length
+  var leadSurrogate = null
+  var bytes = []
+
+  for (var i = 0; i < length; i++) {
+    codePoint = string.charCodeAt(i)
+
+    // is surrogate component
+    if (codePoint > 0xD7FF && codePoint < 0xE000) {
+      // last char was a lead
+      if (!leadSurrogate) {
+        // no lead yet
+        if (codePoint > 0xDBFF) {
+          // unexpected trail
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        } else if (i + 1 === length) {
+          // unpaired lead
+          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+          continue
+        }
+
+        // valid lead
+        leadSurrogate = codePoint
+
+        continue
+      }
+
+      // 2 leads in a row
+      if (codePoint < 0xDC00) {
+        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+        leadSurrogate = codePoint
+        continue
+      }
+
+      // valid surrogate pair
+      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000
+    } else if (leadSurrogate) {
+      // valid bmp char, but last char was a lead
+      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
+    }
+
+    leadSurrogate = null
+
+    // encode utf8
+    if (codePoint < 0x80) {
+      if ((units -= 1) < 0) break
+      bytes.push(codePoint)
+    } else if (codePoint < 0x800) {
+      if ((units -= 2) < 0) break
+      bytes.push(
+        codePoint >> 0x6 | 0xC0,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x10000) {
+      if ((units -= 3) < 0) break
+      bytes.push(
+        codePoint >> 0xC | 0xE0,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else if (codePoint < 0x110000) {
+      if ((units -= 4) < 0) break
+      bytes.push(
+        codePoint >> 0x12 | 0xF0,
+        codePoint >> 0xC & 0x3F | 0x80,
+        codePoint >> 0x6 & 0x3F | 0x80,
+        codePoint & 0x3F | 0x80
+      )
+    } else {
+      throw new Error('Invalid code point')
+    }
+  }
+
+  return bytes
+}
+
+function asciiToBytes (str) {
+  var byteArray = []
+  for (var i = 0; i < str.length; i++) {
+    // Node's code seems to be doing this and not & 0x7F..
+    byteArray.push(str.charCodeAt(i) & 0xFF)
+  }
+  return byteArray
+}
+
+function utf16leToBytes (str, units) {
+  var c, hi, lo
+  var byteArray = []
+  for (var i = 0; i < str.length; i++) {
+    if ((units -= 2) < 0) break
+
+    c = str.charCodeAt(i)
+    hi = c >> 8
+    lo = c % 256
+    byteArray.push(lo)
+    byteArray.push(hi)
+  }
+
+  return byteArray
+}
+
+function base64ToBytes (str) {
+  return base64.toByteArray(base64clean(str))
+}
+
+function blitBuffer (src, dst, offset, length) {
+  for (var i = 0; i < length; i++) {
+    if ((i + offset >= dst.length) || (i >= src.length)) break
+    dst[i + offset] = src[i]
+  }
+  return i
+}
+  })();
+});
+
+require.register("ieee754/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "ieee754");
+  (function() {
+    exports.read = function (buffer, offset, isLE, mLen, nBytes) {
+  var e, m
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var nBits = -7
+  var i = isLE ? (nBytes - 1) : 0
+  var d = isLE ? -1 : 1
+  var s = buffer[offset + i]
+
+  i += d
+
+  e = s & ((1 << (-nBits)) - 1)
+  s >>= (-nBits)
+  nBits += eLen
+  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  m = e & ((1 << (-nBits)) - 1)
+  e >>= (-nBits)
+  nBits += mLen
+  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
+
+  if (e === 0) {
+    e = 1 - eBias
+  } else if (e === eMax) {
+    return m ? NaN : ((s ? -1 : 1) * Infinity)
+  } else {
+    m = m + Math.pow(2, mLen)
+    e = e - eBias
+  }
+  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
+}
+
+exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
+  var e, m, c
+  var eLen = nBytes * 8 - mLen - 1
+  var eMax = (1 << eLen) - 1
+  var eBias = eMax >> 1
+  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
+  var i = isLE ? 0 : (nBytes - 1)
+  var d = isLE ? 1 : -1
+  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
+
+  value = Math.abs(value)
+
+  if (isNaN(value) || value === Infinity) {
+    m = isNaN(value) ? 1 : 0
+    e = eMax
+  } else {
+    e = Math.floor(Math.log(value) / Math.LN2)
+    if (value * (c = Math.pow(2, -e)) < 1) {
+      e--
+      c *= 2
+    }
+    if (e + eBias >= 1) {
+      value += rt / c
+    } else {
+      value += rt * Math.pow(2, 1 - eBias)
+    }
+    if (value * c >= 2) {
+      e++
+      c /= 2
+    }
+
+    if (e + eBias >= eMax) {
+      m = 0
+      e = eMax
+    } else if (e + eBias >= 1) {
+      m = (value * c - 1) * Math.pow(2, mLen)
+      e = e + eBias
+    } else {
+      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
+      e = 0
+    }
+  }
+
+  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
+
+  e = (e << mLen) | m
+  eLen += mLen
+  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
+
+  buffer[offset + i - d] |= s * 128
+}
+  })();
+});
+
+require.register("isarray/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "isarray");
+  (function() {
+    var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
   })();
 });
 
@@ -11898,6 +21213,1016 @@ exports.update         = update;
 exports.viewValidation = viewValidation;
 exports.view           = view;
 exports.main           = main;
+/* Tea_app Not a pure module */
+
+});
+
+;require.register("src/main_gtpollute.ml", function(exports, require, module) {
+// Generated by BUCKLESCRIPT VERSION 1.2.1 , PLEASE EDIT WITH CARE
+'use strict';
+
+var Caml_builtin_exceptions = require("bs-platform/lib/js/caml_builtin_exceptions");
+var Caml_obj                = require("bs-platform/lib/js/caml_obj");
+var Tea_app                 = require("./tea_app");
+var Tea_html                = require("./tea_html");
+var Caml_format             = require("bs-platform/lib/js/caml_format");
+var Caml_int32              = require("bs-platform/lib/js/caml_int32");
+var Block                   = require("bs-platform/lib/js/block");
+var Tea_svg                 = require("./tea_svg");
+var Tea_time                = require("./tea_time");
+var Tea_svg_attributes      = require("./tea_svg_attributes");
+var Curry                   = require("bs-platform/lib/js/curry");
+var Printf                  = require("bs-platform/lib/js/printf");
+var Tea                     = require("./tea");
+var $$Array                 = require("bs-platform/lib/js/array");
+var Vdom                    = require("./vdom");
+var List                    = require("bs-platform/lib/js/list");
+var Tea_cmd                 = require("./tea_cmd");
+
+function height(param) {
+  if (param) {
+    return param[4];
+  }
+  else {
+    return 0;
+  }
+}
+
+function create(l, x, d, r) {
+  var hl = height(l);
+  var hr = height(r);
+  return /* Node */[
+          l,
+          x,
+          d,
+          r,
+          hl >= hr ? hl + 1 | 0 : hr + 1 | 0
+        ];
+}
+
+function singleton(x, d) {
+  return /* Node */[
+          /* Empty */0,
+          x,
+          d,
+          /* Empty */0,
+          1
+        ];
+}
+
+function bal(l, x, d, r) {
+  var hl = l ? l[4] : 0;
+  var hr = r ? r[4] : 0;
+  if (hl > (hr + 2 | 0)) {
+    if (l) {
+      var lr = l[3];
+      var ld = l[2];
+      var lv = l[1];
+      var ll = l[0];
+      if (height(ll) >= height(lr)) {
+        return create(ll, lv, ld, create(lr, x, d, r));
+      }
+      else if (lr) {
+        return create(create(ll, lv, ld, lr[0]), lr[1], lr[2], create(lr[3], x, d, r));
+      }
+      else {
+        throw [
+              Caml_builtin_exceptions.invalid_argument,
+              "Map.bal"
+            ];
+      }
+    }
+    else {
+      throw [
+            Caml_builtin_exceptions.invalid_argument,
+            "Map.bal"
+          ];
+    }
+  }
+  else if (hr > (hl + 2 | 0)) {
+    if (r) {
+      var rr = r[3];
+      var rd = r[2];
+      var rv = r[1];
+      var rl = r[0];
+      if (height(rr) >= height(rl)) {
+        return create(create(l, x, d, rl), rv, rd, rr);
+      }
+      else if (rl) {
+        return create(create(l, x, d, rl[0]), rl[1], rl[2], create(rl[3], rv, rd, rr));
+      }
+      else {
+        throw [
+              Caml_builtin_exceptions.invalid_argument,
+              "Map.bal"
+            ];
+      }
+    }
+    else {
+      throw [
+            Caml_builtin_exceptions.invalid_argument,
+            "Map.bal"
+          ];
+    }
+  }
+  else {
+    return /* Node */[
+            l,
+            x,
+            d,
+            r,
+            hl >= hr ? hl + 1 | 0 : hr + 1 | 0
+          ];
+  }
+}
+
+function is_empty(param) {
+  if (param) {
+    return /* false */0;
+  }
+  else {
+    return /* true */1;
+  }
+}
+
+function add(x, data, param) {
+  if (param) {
+    var r = param[3];
+    var d = param[2];
+    var v = param[1];
+    var l = param[0];
+    var c = Caml_obj.caml_compare(x, v);
+    if (c) {
+      if (c < 0) {
+        return bal(add(x, data, l), v, d, r);
+      }
+      else {
+        return bal(l, v, d, add(x, data, r));
+      }
+    }
+    else {
+      return /* Node */[
+              l,
+              x,
+              data,
+              r,
+              param[4]
+            ];
+    }
+  }
+  else {
+    return /* Node */[
+            /* Empty */0,
+            x,
+            data,
+            /* Empty */0,
+            1
+          ];
+  }
+}
+
+function find(x, _param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      var c = Caml_obj.caml_compare(x, param[1]);
+      if (c) {
+        _param = c < 0 ? param[0] : param[3];
+        continue ;
+        
+      }
+      else {
+        return param[2];
+      }
+    }
+    else {
+      throw Caml_builtin_exceptions.not_found;
+    }
+  };
+}
+
+function mem(x, _param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      var c = Caml_obj.caml_compare(x, param[1]);
+      if (c) {
+        _param = c < 0 ? param[0] : param[3];
+        continue ;
+        
+      }
+      else {
+        return /* true */1;
+      }
+    }
+    else {
+      return /* false */0;
+    }
+  };
+}
+
+function min_binding(_param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      var l = param[0];
+      if (l) {
+        _param = l;
+        continue ;
+        
+      }
+      else {
+        return /* tuple */[
+                param[1],
+                param[2]
+              ];
+      }
+    }
+    else {
+      throw Caml_builtin_exceptions.not_found;
+    }
+  };
+}
+
+function max_binding(_param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      var r = param[3];
+      if (r) {
+        _param = r;
+        continue ;
+        
+      }
+      else {
+        return /* tuple */[
+                param[1],
+                param[2]
+              ];
+      }
+    }
+    else {
+      throw Caml_builtin_exceptions.not_found;
+    }
+  };
+}
+
+function remove_min_binding(param) {
+  if (param) {
+    var l = param[0];
+    if (l) {
+      return bal(remove_min_binding(l), param[1], param[2], param[3]);
+    }
+    else {
+      return param[3];
+    }
+  }
+  else {
+    throw [
+          Caml_builtin_exceptions.invalid_argument,
+          "Map.remove_min_elt"
+        ];
+  }
+}
+
+function remove(x, param) {
+  if (param) {
+    var r = param[3];
+    var d = param[2];
+    var v = param[1];
+    var l = param[0];
+    var c = Caml_obj.caml_compare(x, v);
+    if (c) {
+      if (c < 0) {
+        return bal(remove(x, l), v, d, r);
+      }
+      else {
+        return bal(l, v, d, remove(x, r));
+      }
+    }
+    else {
+      var t1 = l;
+      var t2 = r;
+      if (t1) {
+        if (t2) {
+          var match = min_binding(t2);
+          return bal(t1, match[0], match[1], remove_min_binding(t2));
+        }
+        else {
+          return t1;
+        }
+      }
+      else {
+        return t2;
+      }
+    }
+  }
+  else {
+    return /* Empty */0;
+  }
+}
+
+function iter(f, _param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      iter(f, param[0]);
+      Curry._2(f, param[1], param[2]);
+      _param = param[3];
+      continue ;
+      
+    }
+    else {
+      return /* () */0;
+    }
+  };
+}
+
+function map(f, param) {
+  if (param) {
+    var l$prime = map(f, param[0]);
+    var d$prime = Curry._1(f, param[2]);
+    var r$prime = map(f, param[3]);
+    return /* Node */[
+            l$prime,
+            param[1],
+            d$prime,
+            r$prime,
+            param[4]
+          ];
+  }
+  else {
+    return /* Empty */0;
+  }
+}
+
+function mapi(f, param) {
+  if (param) {
+    var v = param[1];
+    var l$prime = mapi(f, param[0]);
+    var d$prime = Curry._2(f, v, param[2]);
+    var r$prime = mapi(f, param[3]);
+    return /* Node */[
+            l$prime,
+            v,
+            d$prime,
+            r$prime,
+            param[4]
+          ];
+  }
+  else {
+    return /* Empty */0;
+  }
+}
+
+function fold(f, _m, _accu) {
+  while(true) {
+    var accu = _accu;
+    var m = _m;
+    if (m) {
+      _accu = Curry._3(f, m[1], m[2], fold(f, m[0], accu));
+      _m = m[3];
+      continue ;
+      
+    }
+    else {
+      return accu;
+    }
+  };
+}
+
+function for_all(p, _param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      if (Curry._2(p, param[1], param[2])) {
+        if (for_all(p, param[0])) {
+          _param = param[3];
+          continue ;
+          
+        }
+        else {
+          return /* false */0;
+        }
+      }
+      else {
+        return /* false */0;
+      }
+    }
+    else {
+      return /* true */1;
+    }
+  };
+}
+
+function exists(p, _param) {
+  while(true) {
+    var param = _param;
+    if (param) {
+      if (Curry._2(p, param[1], param[2])) {
+        return /* true */1;
+      }
+      else if (exists(p, param[0])) {
+        return /* true */1;
+      }
+      else {
+        _param = param[3];
+        continue ;
+        
+      }
+    }
+    else {
+      return /* false */0;
+    }
+  };
+}
+
+function add_min_binding(k, v, param) {
+  if (param) {
+    return bal(add_min_binding(k, v, param[0]), param[1], param[2], param[3]);
+  }
+  else {
+    return singleton(k, v);
+  }
+}
+
+function add_max_binding(k, v, param) {
+  if (param) {
+    return bal(param[0], param[1], param[2], add_max_binding(k, v, param[3]));
+  }
+  else {
+    return singleton(k, v);
+  }
+}
+
+function join(l, v, d, r) {
+  if (l) {
+    if (r) {
+      var rh = r[4];
+      var lh = l[4];
+      if (lh > (rh + 2 | 0)) {
+        return bal(l[0], l[1], l[2], join(l[3], v, d, r));
+      }
+      else if (rh > (lh + 2 | 0)) {
+        return bal(join(l, v, d, r[0]), r[1], r[2], r[3]);
+      }
+      else {
+        return create(l, v, d, r);
+      }
+    }
+    else {
+      return add_max_binding(v, d, l);
+    }
+  }
+  else {
+    return add_min_binding(v, d, r);
+  }
+}
+
+function concat(t1, t2) {
+  if (t1) {
+    if (t2) {
+      var match = min_binding(t2);
+      return join(t1, match[0], match[1], remove_min_binding(t2));
+    }
+    else {
+      return t1;
+    }
+  }
+  else {
+    return t2;
+  }
+}
+
+function concat_or_join(t1, v, d, t2) {
+  if (d) {
+    return join(t1, v, d[0], t2);
+  }
+  else {
+    return concat(t1, t2);
+  }
+}
+
+function split(x, param) {
+  if (param) {
+    var r = param[3];
+    var d = param[2];
+    var v = param[1];
+    var l = param[0];
+    var c = Caml_obj.caml_compare(x, v);
+    if (c) {
+      if (c < 0) {
+        var match = split(x, l);
+        return /* tuple */[
+                match[0],
+                match[1],
+                join(match[2], v, d, r)
+              ];
+      }
+      else {
+        var match$1 = split(x, r);
+        return /* tuple */[
+                join(l, v, d, match$1[0]),
+                match$1[1],
+                match$1[2]
+              ];
+      }
+    }
+    else {
+      return /* tuple */[
+              l,
+              /* Some */[d],
+              r
+            ];
+    }
+  }
+  else {
+    return /* tuple */[
+            /* Empty */0,
+            /* None */0,
+            /* Empty */0
+          ];
+  }
+}
+
+function merge(f, s1, s2) {
+  var exit = 0;
+  if (s1) {
+    var v1 = s1[1];
+    if (s1[4] >= height(s2)) {
+      var match = split(v1, s2);
+      return concat_or_join(merge(f, s1[0], match[0]), v1, Curry._3(f, v1, /* Some */[s1[2]], match[1]), merge(f, s1[3], match[2]));
+    }
+    else {
+      exit = 1;
+    }
+  }
+  else if (s2) {
+    exit = 1;
+  }
+  else {
+    return /* Empty */0;
+  }
+  if (exit === 1) {
+    if (s2) {
+      var v2 = s2[1];
+      var match$1 = split(v2, s1);
+      return concat_or_join(merge(f, match$1[0], s2[0]), v2, Curry._3(f, v2, match$1[1], /* Some */[s2[2]]), merge(f, match$1[2], s2[3]));
+    }
+    else {
+      throw [
+            Caml_builtin_exceptions.assert_failure,
+            [
+              "map.ml",
+              270,
+              10
+            ]
+          ];
+    }
+  }
+  
+}
+
+function filter(p, param) {
+  if (param) {
+    var d = param[2];
+    var v = param[1];
+    var l$prime = filter(p, param[0]);
+    var pvd = Curry._2(p, v, d);
+    var r$prime = filter(p, param[3]);
+    if (pvd) {
+      return join(l$prime, v, d, r$prime);
+    }
+    else {
+      return concat(l$prime, r$prime);
+    }
+  }
+  else {
+    return /* Empty */0;
+  }
+}
+
+function partition(p, param) {
+  if (param) {
+    var d = param[2];
+    var v = param[1];
+    var match = partition(p, param[0]);
+    var lf = match[1];
+    var lt = match[0];
+    var pvd = Curry._2(p, v, d);
+    var match$1 = partition(p, param[3]);
+    var rf = match$1[1];
+    var rt = match$1[0];
+    if (pvd) {
+      return /* tuple */[
+              join(lt, v, d, rt),
+              concat(lf, rf)
+            ];
+    }
+    else {
+      return /* tuple */[
+              concat(lt, rt),
+              join(lf, v, d, rf)
+            ];
+    }
+  }
+  else {
+    return /* tuple */[
+            /* Empty */0,
+            /* Empty */0
+          ];
+  }
+}
+
+function cons_enum(_m, _e) {
+  while(true) {
+    var e = _e;
+    var m = _m;
+    if (m) {
+      _e = /* More */[
+        m[1],
+        m[2],
+        m[3],
+        e
+      ];
+      _m = m[0];
+      continue ;
+      
+    }
+    else {
+      return e;
+    }
+  };
+}
+
+function compare(cmp, m1, m2) {
+  var _e1 = cons_enum(m1, /* End */0);
+  var _e2 = cons_enum(m2, /* End */0);
+  while(true) {
+    var e2 = _e2;
+    var e1 = _e1;
+    if (e1) {
+      if (e2) {
+        var c = Caml_obj.caml_compare(e1[0], e2[0]);
+        if (c !== 0) {
+          return c;
+        }
+        else {
+          var c$1 = Curry._2(cmp, e1[1], e2[1]);
+          if (c$1 !== 0) {
+            return c$1;
+          }
+          else {
+            _e2 = cons_enum(e2[2], e2[3]);
+            _e1 = cons_enum(e1[2], e1[3]);
+            continue ;
+            
+          }
+        }
+      }
+      else {
+        return 1;
+      }
+    }
+    else if (e2) {
+      return -1;
+    }
+    else {
+      return 0;
+    }
+  };
+}
+
+function equal(cmp, m1, m2) {
+  var _e1 = cons_enum(m1, /* End */0);
+  var _e2 = cons_enum(m2, /* End */0);
+  while(true) {
+    var e2 = _e2;
+    var e1 = _e1;
+    if (e1) {
+      if (e2) {
+        if (Caml_obj.caml_compare(e1[0], e2[0])) {
+          return /* false */0;
+        }
+        else if (Curry._2(cmp, e1[1], e2[1])) {
+          _e2 = cons_enum(e2[2], e2[3]);
+          _e1 = cons_enum(e1[2], e1[3]);
+          continue ;
+          
+        }
+        else {
+          return /* false */0;
+        }
+      }
+      else {
+        return /* false */0;
+      }
+    }
+    else if (e2) {
+      return /* false */0;
+    }
+    else {
+      return /* true */1;
+    }
+  };
+}
+
+function cardinal(param) {
+  if (param) {
+    return (cardinal(param[0]) + 1 | 0) + cardinal(param[3]) | 0;
+  }
+  else {
+    return 0;
+  }
+}
+
+function bindings_aux(_accu, _param) {
+  while(true) {
+    var param = _param;
+    var accu = _accu;
+    if (param) {
+      _param = param[0];
+      _accu = /* :: */[
+        /* tuple */[
+          param[1],
+          param[2]
+        ],
+        bindings_aux(accu, param[3])
+      ];
+      continue ;
+      
+    }
+    else {
+      return accu;
+    }
+  };
+}
+
+function bindings(s) {
+  return bindings_aux(/* [] */0, s);
+}
+
+var Int2TupleMap = [
+  /* Empty */0,
+  is_empty,
+  mem,
+  add,
+  singleton,
+  remove,
+  merge,
+  compare,
+  equal,
+  iter,
+  fold,
+  for_all,
+  exists,
+  filter,
+  partition,
+  cardinal,
+  bindings,
+  min_binding,
+  max_binding,
+  min_binding,
+  split,
+  find,
+  map,
+  mapi
+];
+
+function init() {
+  return /* tuple */[
+          /* record */[
+            /* data */$$Array.make_matrix(31, 31, 0),
+            /* maxValue */1,
+            /* value */0
+          ],
+          /* NoCmd */0
+        ];
+}
+
+function update(model, param) {
+  if (param.tag) {
+    var data = model[/* data */0];
+    var fullX = data.length;
+    var fullY = data[0].length;
+    var halfX = fullX / 2 | 0;
+    var halfY = fullY / 2 | 0;
+    data[halfX][halfY] = model[/* value */2];
+    $$Array.fill(data[0], 0, fullY, 0);
+    $$Array.fill(data[fullX - 2 | 0], 0, fullY, 0);
+    for(var x = 1 ,x_finish = data.length - 2 | 0; x <= x_finish; ++x){
+      data[x][0] = 0;
+      data[x][fullY - 2 | 0] = 0;
+      (function(x){
+      for(var y = 1 ,y_finish = data[0].length - 2 | 0; y <= y_finish; ++y){
+        data[x][y] = data[x][y] - 3000 | 0;
+        if (data[x][y] < 0) {
+          data[x][y] = 0;
+        }
+        var processSide = (function(y){
+        return function (xx, yy) {
+          if (Caml_int32.imul(data[xx][yy], 12) < Caml_int32.imul(data[x][y], 10)) {
+            var diff = data[x][y] - data[xx][yy] | 0;
+            var diff$1 = diff / 20 | 0;
+            data[xx][yy] = data[xx][yy] + diff$1 | 0;
+            data[x][y] = data[x][y] - diff$1 | 0;
+            return /* () */0;
+          }
+          else {
+            return /* () */0;
+          }
+        }
+        }(y));
+        processSide(x - 1 | 0, y);
+        processSide(x + 1 | 0, y);
+        processSide(x, y - 1 | 0);
+        processSide(x, y + 1 | 0);
+      }
+      }(x));
+    }
+    var inner = function (value, arr) {
+      return $$Array.fold_left(function (maxValue, value) {
+                  if (Caml_obj.caml_greaterthan(maxValue, value)) {
+                    return maxValue;
+                  }
+                  else {
+                    return value;
+                  }
+                }, value, arr);
+    };
+    var maxValue = $$Array.fold_left(inner, 1, data);
+    return /* tuple */[
+            /* record */[
+              /* data */data,
+              /* maxValue */maxValue,
+              /* value */model[/* value */2]
+            ],
+            /* NoCmd */0
+          ];
+  }
+  else {
+    var value;
+    try {
+      value = Caml_format.caml_int_of_string(param[0]);
+    }
+    catch (exn){
+      value = model[/* value */2];
+    }
+    return /* tuple */[
+            /* record */[
+              /* data */model[/* data */0],
+              /* maxValue */model[/* maxValue */1],
+              /* value */value
+            ],
+            /* NoCmd */0
+          ];
+  }
+}
+
+function subscriptions() {
+  return Tea_time.every(50.0, function (t) {
+              return /* DoUpdate */Block.__(1, [t]);
+            });
+}
+
+function view(model) {
+  var mapperX = function (coordX, value) {
+    return $$Array.to_list($$Array.mapi(function (param, param$1) {
+                    var coordX$1 = coordX;
+                    var coordY = param;
+                    var value = param$1;
+                    var red = value > 2000000 ? "FF" : (
+                        value > 1000000 ? "40" : "00"
+                      );
+                    var green = value > 750000 ? "FF" : (
+                        value > 550000 ? "80" : "00"
+                      );
+                    var bVal = Caml_int32.div(Caml_int32.imul(value, 255), model[/* maxValue */1]);
+                    var blue = bVal > 255 ? "FF" : (
+                        bVal < 0 ? "00" : (
+                            bVal < 16 ? "0" + Curry._1(Printf.sprintf(/* Format */[
+                                        /* Int */Block.__(4, [
+                                            /* Int_X */8,
+                                            /* No_padding */0,
+                                            /* No_precision */0,
+                                            /* End_of_format */0
+                                          ]),
+                                        "%X"
+                                      ]), bVal) : Curry._1(Printf.sprintf(/* Format */[
+                                        /* Int */Block.__(4, [
+                                            /* Int_X */8,
+                                            /* No_padding */0,
+                                            /* No_precision */0,
+                                            /* End_of_format */0
+                                          ]),
+                                        "%X"
+                                      ]), bVal)
+                          )
+                      );
+                    var colorHex = "#" + (red + (green + blue));
+                    var strokeHex = value > 0 ? "#FFFFFF" : "#000000";
+                    var param$2 = "" + Caml_int32.imul(coordX$1, 10);
+                    var param$3 = "" + Caml_int32.imul(coordY, 10);
+                    return Tea_svg.rect(/* None */0, /* None */0, /* :: */[
+                                /* Attribute */Block.__(1, [
+                                    "",
+                                    "x",
+                                    param$2
+                                  ]),
+                                /* :: */[
+                                  /* Attribute */Block.__(1, [
+                                      "",
+                                      "y",
+                                      param$3
+                                    ]),
+                                  /* :: */[
+                                    /* Attribute */Block.__(1, [
+                                        "",
+                                        "width",
+                                        "10"
+                                      ]),
+                                    /* :: */[
+                                      /* Attribute */Block.__(1, [
+                                          "",
+                                          "height",
+                                          "10"
+                                        ]),
+                                      /* :: */[
+                                        /* Attribute */Block.__(1, [
+                                            "",
+                                            "fill",
+                                            colorHex
+                                          ]),
+                                        /* :: */[
+                                          /* Attribute */Block.__(1, [
+                                              "",
+                                              "stroke",
+                                              strokeHex
+                                            ]),
+                                          /* [] */0
+                                        ]
+                                      ]
+                                    ]
+                                  ]
+                                ]
+                              ], /* [] */0);
+                  }, value));
+  };
+  var valueArray = $$Array.mapi(mapperX, model[/* data */0]);
+  return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
+              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
+                    /* RawProp */Block.__(0, [
+                        "placeholder",
+                        "Integer value"
+                      ]),
+                    /* :: */[
+                      Tea_html.onInput(/* None */0, function (s) {
+                            return /* UpdateValue */Block.__(0, [s]);
+                          }),
+                      /* [] */0
+                    ]
+                  ], /* [] */0),
+              /* :: */[
+                Tea_html.br(/* [] */0),
+                /* :: */[
+                  Tea_svg.svg(/* None */0, /* None */0, /* :: */[
+                        /* Attribute */Block.__(1, [
+                            "",
+                            "viewBox",
+                            "0 0 300 300"
+                          ]),
+                        /* :: */[
+                          /* Attribute */Block.__(1, [
+                              "",
+                              "width",
+                              "300px"
+                            ]),
+                          /* [] */0
+                        ]
+                      ], List.concat($$Array.to_list(valueArray))),
+                  /* [] */0
+                ]
+              ]
+            ]);
+}
+
+var partial_arg = /* record */[
+  /* init */init,
+  /* update */update,
+  /* view */view,
+  /* subscriptions */subscriptions
+];
+
+function main(param, param$1) {
+  return Tea_app.standardProgram(partial_arg, param, param$1);
+}
+
+exports.Int2TupleMap  = Int2TupleMap;
+exports.init          = init;
+exports.update        = update;
+exports.subscriptions = subscriptions;
+exports.view          = view;
+exports.main          = main;
 /* Tea_app Not a pure module */
 
 });
@@ -26784,7 +37109,8 @@ exports.get_onloadend               = get_onloadend;
 
 });
 
-;require.alias("process/browser.js", "process");require.register("___globals___", function(exports, require, module) {
+;require.alias("base64-js/lib/b64.js", "base64-js");
+require.alias("process/browser.js", "process");require.register("___globals___", function(exports, require, module) {
   
 });})();require('___globals___');
 
