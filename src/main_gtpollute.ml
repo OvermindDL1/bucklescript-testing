@@ -1,5 +1,7 @@
 open Tea
 
+(* This is a direct conversion from other code, not made to be pretty or to demonstrate how things should be done *)
+(* I.E.  Ignore this. *)
 
 type model =
   { data : int array array
@@ -83,8 +85,7 @@ let view model =
         let bVal = (value * 255) / model.maxValue in
         if bVal > 255 then "FF"
         else if bVal < 0 then "00"
-        else if bVal < 16 then "0" ^ Printf.sprintf "%X" bVal
-        else Printf.sprintf "%X" bVal in
+        else Printf.sprintf "%02X" bVal in
       "#" ^ red ^ green ^ blue in
     let strokeHex =
       if value > 0
