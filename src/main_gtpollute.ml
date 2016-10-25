@@ -1,8 +1,6 @@
 open Tea
 
 
-module Int2TupleMap = Map.Make(struct type t = int * int let compare = compare end)
-
 type model =
   { data : int array array
   ; maxValue : int
