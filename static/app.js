@@ -21256,7 +21256,7 @@ function update(model, param) {
     var fullY = data[0].length;
     var halfX = fullX / 2 | 0;
     var halfY = fullY / 2 | 0;
-    data[halfX][halfY] = model[/* value */2];
+    data[halfX][halfY] = data[halfX][halfY] + model[/* value */2] | 0;
     $$Array.fill(data[0], 0, fullY, 0);
     $$Array.fill(data[fullX - 2 | 0], 0, fullY, 0);
     for(var x = 1 ,x_finish = data.length - 2 | 0; x <= x_finish; ++x){
