@@ -18253,7 +18253,7 @@ function view_button(title, $staropt$star, msg) {
               Tea_html.onClick(/* Some */[key], msg),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [title]),
+              /* Text */Block.__(1, [title]),
               /* [] */0
             ]);
 }
@@ -18279,7 +18279,7 @@ function view(lift, model) {
                     Vdom.style("text-weight", "bold"),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, ["" + model]),
+                    /* Text */Block.__(1, ["" + model]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -19149,7 +19149,7 @@ function view_button(title, $staropt$star, msg) {
               Tea_html.onClick(/* Some */[key], msg),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [title]),
+              /* Text */Block.__(1, [title]),
               /* [] */0
             ]);
 }
@@ -19177,7 +19177,7 @@ function view(id, model) {
                     Vdom.style("text-weight", "bold"),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, ["" + value]),
+                    /* Text */Block.__(1, ["" + value]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -19482,7 +19482,7 @@ function inputRadio(labelText, url) {
                           ]
                         ], /* [] */0),
                     /* :: */[
-                      /* Text */Block.__(0, [labelText]),
+                      /* Text */Block.__(1, [labelText]),
                       /* [] */0
                     ]
                   ]),
@@ -19493,7 +19493,7 @@ function inputRadio(labelText, url) {
 function progressView(loaded) {
   return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
               Tea_html.span(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["Progress: "]),
+                    /* Text */Block.__(1, ["Progress: "]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -19507,11 +19507,11 @@ function progressView(loaded) {
                         /* [] */0
                       ]
                     ], /* :: */[
-                      /* Text */Block.__(0, [loaded + "%"]),
+                      /* Text */Block.__(1, [loaded + "%"]),
                       /* [] */0
                     ]),
                 /* :: */[
-                  /* Text */Block.__(0, [loaded + "%"]),
+                  /* Text */Block.__(1, [loaded + "%"]),
                   /* [] */0
                 ]
               ]
@@ -19530,7 +19530,7 @@ function progressLoaded(progress) {
 }
 
 var footerView = Tea_html.span(/* None */0, /* None */0, /* [] */0, /* :: */[
-      /* Text */Block.__(0, ["Books from "]),
+      /* Text */Block.__(1, ["Books from "]),
       /* :: */[
         Tea_html.a(/* None */0, /* None */0, /* :: */[
               /* RawProp */Block.__(0, [
@@ -19545,7 +19545,7 @@ var footerView = Tea_html.span(/* None */0, /* None */0, /* [] */0, /* :: */[
                 /* [] */0
               ]
             ], /* :: */[
-              /* Text */Block.__(0, ["Project Gutenberg"]),
+              /* Text */Block.__(1, ["Project Gutenberg"]),
               /* [] */0
             ]),
         /* [] */0
@@ -19577,12 +19577,12 @@ function view(model) {
               /* [] */0
             ], /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["Book Reader"]),
+                    /* Text */Block.__(1, ["Book Reader"]),
                     /* [] */0
                   ]),
               /* :: */[
                 Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                      /* Text */Block.__(0, ["Select a book:"]),
+                      /* Text */Block.__(1, ["Select a book:"]),
                       /* :: */[
                         inputRadio("Essays - Ralph Waldo Emerson", "https://s3-sa-east-1.amazonaws.com/estadistas/Essays-Ralph-Waldo-Emerson.txt"),
                         /* :: */[
@@ -20007,7 +20007,7 @@ function subscriptions(model) {
 }
 
 function worthStringText(worth) {
-  return /* Text */Block.__(0, [Pervasives.string_of_float(worth)]);
+  return /* Text */Block.__(1, [Pervasives.string_of_float(worth)]);
 }
 
 var css_topContainer = /* Style */Block.__(4, [/* :: */[
@@ -20092,7 +20092,7 @@ function view_topBar(model) {
               /* [] */0
             ], /* :: */[
               Tea_html.td(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, [Pervasives.string_of_float(model[/* credits */3])]),
+                    /* Text */Block.__(1, [Pervasives.string_of_float(model[/* credits */3])]),
                     /* [] */0
                   ]),
               /* [] */0
@@ -20106,7 +20106,7 @@ function view_botBar(model) {
             ], /* :: */[
               Tea_html.td(/* None */0, /* None */0, /* [] */0, List.map(function (message) {
                         return Tea_html.div(/* Some */[message], /* None */0, /* [] */0, /* :: */[
-                                    /* Text */Block.__(0, [message]),
+                                    /* Text */Block.__(1, [message]),
                                     /* [] */0
                                   ]);
                       }, model[/* messages */7])),
@@ -20123,7 +20123,7 @@ function view_upgrades(model, param) {
                     Tea_html.onClick(/* None */0, /* DoUpgrade */Block.__(1, [upgrade[/* name */1]])),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, [upgrade[/* name */1]]),
+                    /* Text */Block.__(1, [upgrade[/* name */1]]),
                     /* [] */0
                   ]),
               view_upgrades(model, param[1])
@@ -20148,7 +20148,7 @@ function view_center(model) {
                           Tea_html.onClick(/* None */0, /* Click */0),
                           /* [] */0
                         ], /* :: */[
-                          /* Text */Block.__(0, ["Click"]),
+                          /* Text */Block.__(1, ["Click"]),
                           /* [] */0
                         ]),
                     view_upgrades(model, model[/* upgradesRemaining */5])
@@ -20269,7 +20269,7 @@ function view(model) {
   var hrs$prime = min$prime / 60 | 0;
   var hrs = hrs$prime % 24;
   return Tea_html.span(/* None */0, /* None */0, /* [] */0, /* :: */[
-              /* Text */Block.__(0, [hrs + (":" + (min + (":" + (sec + ("." + ms)))))]),
+              /* Text */Block.__(1, [hrs + (":" + (min + (":" + (sec + ("." + ms)))))]),
               /* [] */0
             ]);
 }
@@ -20481,7 +20481,7 @@ function view_button(title, msg) {
               Tea_html.onClick(/* None */0, msg),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [title]),
+              /* Text */Block.__(1, [title]),
               /* [] */0
             ]);
 }
@@ -20492,7 +20492,7 @@ function view(model) {
                     Vdom.style("text-weight", "bold"),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, ["" + model]),
+                    /* Text */Block.__(1, ["" + model]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -20617,7 +20617,7 @@ function view_button(title, msg) {
               Tea_html.onClick(/* None */0, msg),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [title]),
+              /* Text */Block.__(1, [title]),
               /* [] */0
             ]);
 }
@@ -20628,7 +20628,7 @@ function view(model) {
                     Vdom.style("text-weight", "bold"),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, ["" + model]),
+                    /* Text */Block.__(1, ["" + model]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -20752,7 +20752,7 @@ function view_button(title, $staropt$star, msg) {
               Tea_html.onClick(/* Some */[key], msg),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [title]),
+              /* Text */Block.__(1, [title]),
               /* [] */0
             ]);
 }
@@ -20763,7 +20763,7 @@ function view(model) {
                     Tea_html.onClick(/* None */0, /* AddCounter */0),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, ["Prepend a Counter"]),
+                    /* Text */Block.__(1, ["Prepend a Counter"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -20771,7 +20771,7 @@ function view(model) {
                         Tea_html.onClick(/* None */0, /* RemoveCounter */1),
                         /* [] */0
                       ], /* :: */[
-                        /* Text */Block.__(0, ["Delete a Counter"]),
+                        /* Text */Block.__(1, ["Delete a Counter"]),
                         /* [] */0
                       ]) : Tea_html.noNode,
                 /* :: */[
@@ -20880,7 +20880,7 @@ function view_button(title, $staropt$star, msg) {
               Tea_html.onClick(/* Some */[key], msg),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [title]),
+              /* Text */Block.__(1, [title]),
               /* [] */0
             ]);
 }
@@ -20912,7 +20912,7 @@ function view(model) {
                     Tea_html.onClick(/* None */0, /* AddCounter */0),
                     /* [] */0
                   ], /* :: */[
-                    /* Text */Block.__(0, ["Append a Counter"]),
+                    /* Text */Block.__(1, ["Append a Counter"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -20920,7 +20920,7 @@ function view(model) {
                         Tea_html.onClick(/* None */0, /* RemoveCounter */1),
                         /* [] */0
                       ], /* :: */[
-                        /* Text */Block.__(0, ["Delete a Counter"]),
+                        /* Text */Block.__(1, ["Delete a Counter"]),
                         /* [] */0
                       ]) : Tea_html.noNode,
                 /* :: */[
@@ -21042,7 +21042,7 @@ function view(content) {
                       myStyle,
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, [string_rev(content)]),
+                      /* Text */Block.__(1, [string_rev(content)]),
                       /* [] */0
                     ]),
                 /* [] */0
@@ -21126,7 +21126,7 @@ function viewValidation(model) {
                   ]]),
               /* [] */0
             ], /* :: */[
-              /* Text */Block.__(0, [match[1]]),
+              /* Text */Block.__(1, [match[1]]),
               /* [] */0
             ]);
 }
@@ -21637,18 +21637,18 @@ function view(jsonString) {
   newReEncodedString = newReEncoded.tag ? "ERROR:  " + newReEncoded[0] : newReEncoded[0];
   var $js;
   $js = kvPairsResult.tag ? /* :: */[
-      /* Text */Block.__(0, ["ERROR: " + kvPairsResult[0]]),
+      /* Text */Block.__(1, ["ERROR: " + kvPairsResult[0]]),
       /* [] */0
     ] : List.rev(List.fold_left(function (p, param) {
               return /* :: */[
-                      /* Text */Block.__(0, [param[0] + (": " + param[1])]),
+                      /* Text */Block.__(1, [param[0] + (": " + param[1])]),
                       /* :: */[
                         Tea_html.br(/* [] */0),
                         p
                       ]
                     ];
             }, /* :: */[
-              /* Text */Block.__(0, ["Values:"]),
+              /* Text */Block.__(1, ["Values:"]),
               /* [] */0
             ], kvPairsResult[0]));
   return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
@@ -21677,34 +21677,34 @@ function view(jsonString) {
                         myStyle,
                         /* [] */0
                       ], /* :: */[
-                        /* Text */Block.__(0, ["Encoded again:"]),
+                        /* Text */Block.__(1, ["Encoded again:"]),
                         /* :: */[
                           Tea_html.br(/* [] */0),
                           /* :: */[
                             Tea_html.pre(/* None */0, /* None */0, /* [] */0, /* :: */[
-                                  /* Text */Block.__(0, [reEncoded]),
+                                  /* Text */Block.__(1, [reEncoded]),
                                   /* [] */0
                                 ]),
                             /* :: */[
                               Tea_html.br(/* [] */0),
                               /* :: */[
-                                /* Text */Block.__(0, ["Encoding an object of various things to test:"]),
+                                /* Text */Block.__(1, ["Encoding an object of various things to test:"]),
                                 /* :: */[
                                   Tea_html.br(/* [] */0),
                                   /* :: */[
                                     Tea_html.pre(/* None */0, /* None */0, /* [] */0, /* :: */[
-                                          /* Text */Block.__(0, [newEncoded]),
+                                          /* Text */Block.__(1, [newEncoded]),
                                           /* [] */0
                                         ]),
                                     /* :: */[
                                       Tea_html.br(/* [] */0),
                                       /* :: */[
-                                        /* Text */Block.__(0, ["Parsing out parts of the encoded test object from the json string"]),
+                                        /* Text */Block.__(1, ["Parsing out parts of the encoded test object from the json string"]),
                                         /* :: */[
                                           Tea_html.br(/* [] */0),
                                           /* :: */[
                                             Tea_html.pre(/* None */0, /* None */0, /* [] */0, /* :: */[
-                                                  /* Text */Block.__(0, [newReEncodedString]),
+                                                  /* Text */Block.__(1, [newReEncodedString]),
                                                   /* [] */0
                                                 ]),
                                             /* [] */0
@@ -21786,7 +21786,7 @@ function subscriptions() {
 function view(model) {
   return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["" + model[/* dieFace */0]]),
+                    /* Text */Block.__(1, ["" + model[/* dieFace */0]]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -21794,7 +21794,7 @@ function view(model) {
                       Tea_html.onClick(/* None */0, /* Roll */0),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Roll"]),
+                      /* Text */Block.__(1, ["Roll"]),
                       /* [] */0
                     ]),
                 /* [] */0
@@ -21895,7 +21895,7 @@ function view(model) {
                       /* [] */0
                     ]
                   ], /* :: */[
-                    /* Text */Block.__(0, [rgb]),
+                    /* Text */Block.__(1, [rgb]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -21903,7 +21903,7 @@ function view(model) {
                       Tea_html.onClick(/* None */0, /* Roll */0),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Roll"]),
+                      /* Text */Block.__(1, ["Roll"]),
                       /* [] */0
                     ]),
                 /* [] */0
@@ -22212,7 +22212,7 @@ function viewEntry(todo) {
                                   ])),
                             /* [] */0
                           ], /* :: */[
-                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* Text */Block.__(1, [todo[/* description */0]]),
                             /* [] */0
                           ]),
                       /* :: */[
@@ -22339,7 +22339,7 @@ function viewEntries(visibility, entries) {
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* Text */Block.__(1, ["Mark all as complete"]),
                       /* [] */0
                     ]),
                 /* :: */[
@@ -22365,7 +22365,7 @@ function viewInput(task) {
               /* [] */0
             ], /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["todos"]),
+                    /* Text */Block.__(1, ["todos"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -22420,11 +22420,11 @@ function viewControlsCount(entriesLeft) {
               /* [] */0
             ], /* :: */[
               Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["" + entriesLeft]),
+                    /* Text */Block.__(1, ["" + entriesLeft]),
                     /* [] */0
                   ]),
               /* :: */[
-                /* Text */Block.__(0, [item_ + " left"]),
+                /* Text */Block.__(1, [item_ + " left"]),
                 /* [] */0
               ]
             ]);
@@ -22451,7 +22451,7 @@ function visibilitySwap(uri, visibility, actualVisibility) {
                       /* [] */0
                     ]
                   ], /* :: */[
-                    /* Text */Block.__(0, [visibility]),
+                    /* Text */Block.__(1, [visibility]),
                     /* [] */0
                   ]),
               /* [] */0
@@ -22468,11 +22468,11 @@ function viewControlsFilters(visibility) {
             ], /* :: */[
               visibilitySwap("#/", "All", visibility),
               /* :: */[
-                /* Text */Block.__(0, [" "]),
+                /* Text */Block.__(1, [" "]),
                 /* :: */[
                   visibilitySwap("#/active", "Active", visibility),
                   /* :: */[
-                    /* Text */Block.__(0, [" "]),
+                    /* Text */Block.__(1, [" "]),
                     /* :: */[
                       visibilitySwap("#/completed", "Completed", visibility),
                       /* [] */0
@@ -22497,7 +22497,7 @@ function viewControlsClear(entriesCompleted) {
                 ]
               ]
             ], /* :: */[
-              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* Text */Block.__(1, ["Clear completed (" + (entriesCompleted + ")")]),
               /* [] */0
             ]);
 }
@@ -22536,12 +22536,12 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
       /* [] */0
     ], /* :: */[
       Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-            /* Text */Block.__(0, ["Double-click to edit a todo"]),
+            /* Text */Block.__(1, ["Double-click to edit a todo"]),
             /* [] */0
           ]),
       /* :: */[
         Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-              /* Text */Block.__(0, ["Written by "]),
+              /* Text */Block.__(1, ["Written by "]),
               /* :: */[
                 Tea_html.a(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
@@ -22550,11 +22550,11 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Evan Czaplicki"]),
+                      /* Text */Block.__(1, ["Evan Czaplicki"]),
                       /* [] */0
                     ]),
                 /* :: */[
-                  /* Text */Block.__(0, [" and converted by "]),
+                  /* Text */Block.__(1, [" and converted by "]),
                   /* :: */[
                     Tea_html.a(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
@@ -22563,7 +22563,7 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
                             ]),
                           /* [] */0
                         ], /* :: */[
-                          /* Text */Block.__(0, ["OvermindDL1"]),
+                          /* Text */Block.__(1, ["OvermindDL1"]),
                           /* [] */0
                         ]),
                     /* [] */0
@@ -22573,7 +22573,7 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
             ]),
         /* :: */[
           Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                /* Text */Block.__(0, ["Part of "]),
+                /* Text */Block.__(1, ["Part of "]),
                 /* :: */[
                   Tea_html.a(/* None */0, /* None */0, /* :: */[
                         /* RawProp */Block.__(0, [
@@ -22582,7 +22582,7 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
                           ]),
                         /* [] */0
                       ], /* :: */[
-                        /* Text */Block.__(0, ["TodoMVC"]),
+                        /* Text */Block.__(1, ["TodoMVC"]),
                         /* [] */0
                       ]),
                   /* [] */0
@@ -22940,7 +22940,7 @@ function viewEntry(todo, _) {
                                   ])),
                             /* [] */0
                           ], /* :: */[
-                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* Text */Block.__(1, [todo[/* description */0]]),
                             /* [] */0
                           ]),
                       /* :: */[
@@ -23067,7 +23067,7 @@ function viewEntries(visibility, entries) {
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* Text */Block.__(1, ["Mark all as complete"]),
                       /* [] */0
                     ]),
                 /* :: */[
@@ -23105,7 +23105,7 @@ function viewInput(task, _) {
               /* [] */0
             ], /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["todos"]),
+                    /* Text */Block.__(1, ["todos"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -23161,11 +23161,11 @@ function viewControlsCount(entriesLeft) {
               /* [] */0
             ], /* :: */[
               Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, [left]),
+                    /* Text */Block.__(1, [left]),
                     /* [] */0
                   ]),
               /* :: */[
-                /* Text */Block.__(0, [item_ + " left"]),
+                /* Text */Block.__(1, [item_ + " left"]),
                 /* [] */0
               ]
             ]);
@@ -23192,7 +23192,7 @@ function visibilitySwap(uri, visibility, actualVisibility) {
                       /* [] */0
                     ]
                   ], /* :: */[
-                    /* Text */Block.__(0, [visibility]),
+                    /* Text */Block.__(1, [visibility]),
                     /* [] */0
                   ]),
               /* [] */0
@@ -23209,11 +23209,11 @@ function viewControlsFilters(visibility) {
             ], /* :: */[
               visibilitySwap("#/", "All", visibility),
               /* :: */[
-                /* Text */Block.__(0, [" "]),
+                /* Text */Block.__(1, [" "]),
                 /* :: */[
                   visibilitySwap("#/active", "Active", visibility),
                   /* :: */[
-                    /* Text */Block.__(0, [" "]),
+                    /* Text */Block.__(1, [" "]),
                     /* :: */[
                       visibilitySwap("#/completed", "Completed", visibility),
                       /* [] */0
@@ -23238,7 +23238,7 @@ function viewControlsClear(entriesCompleted) {
                 ]
               ]
             ], /* :: */[
-              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* Text */Block.__(1, ["Clear completed (" + (entriesCompleted + ")")]),
               /* [] */0
             ]);
 }
@@ -23278,12 +23278,12 @@ function infoFooter() {
               /* [] */0
             ], /* :: */[
               Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["Double-click to edit a todo"]),
+                    /* Text */Block.__(1, ["Double-click to edit a todo"]),
                     /* [] */0
                   ]),
               /* :: */[
                 Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                      /* Text */Block.__(0, ["Written by "]),
+                      /* Text */Block.__(1, ["Written by "]),
                       /* :: */[
                         Tea_html.a(/* None */0, /* None */0, /* :: */[
                               /* RawProp */Block.__(0, [
@@ -23292,11 +23292,11 @@ function infoFooter() {
                                 ]),
                               /* [] */0
                             ], /* :: */[
-                              /* Text */Block.__(0, ["Evan Czaplicki"]),
+                              /* Text */Block.__(1, ["Evan Czaplicki"]),
                               /* [] */0
                             ]),
                         /* :: */[
-                          /* Text */Block.__(0, [" and converted by "]),
+                          /* Text */Block.__(1, [" and converted by "]),
                           /* :: */[
                             Tea_html.a(/* None */0, /* None */0, /* :: */[
                                   /* RawProp */Block.__(0, [
@@ -23305,7 +23305,7 @@ function infoFooter() {
                                     ]),
                                   /* [] */0
                                 ], /* :: */[
-                                  /* Text */Block.__(0, ["OvermindDL1"]),
+                                  /* Text */Block.__(1, ["OvermindDL1"]),
                                   /* [] */0
                                 ]),
                             /* [] */0
@@ -23315,7 +23315,7 @@ function infoFooter() {
                     ]),
                 /* :: */[
                   Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                        /* Text */Block.__(0, ["Part of "]),
+                        /* Text */Block.__(1, ["Part of "]),
                         /* :: */[
                           Tea_html.a(/* None */0, /* None */0, /* :: */[
                                 /* RawProp */Block.__(0, [
@@ -23324,7 +23324,7 @@ function infoFooter() {
                                   ]),
                                 /* [] */0
                               ], /* :: */[
-                                /* Text */Block.__(0, ["TodoMVC"]),
+                                /* Text */Block.__(1, ["TodoMVC"]),
                                 /* [] */0
                               ]),
                           /* [] */0
@@ -23695,7 +23695,7 @@ function viewEntry(todo, _) {
                                   ])),
                             /* [] */0
                           ], /* :: */[
-                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* Text */Block.__(1, [todo[/* description */0]]),
                             /* [] */0
                           ]),
                       /* :: */[
@@ -23827,7 +23827,7 @@ function viewEntries(visibility, entries) {
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* Text */Block.__(1, ["Mark all as complete"]),
                       /* [] */0
                     ]),
                 /* :: */[
@@ -23870,7 +23870,7 @@ function viewInput(task, _) {
               /* [] */0
             ], /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["todos"]),
+                    /* Text */Block.__(1, ["todos"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -23926,11 +23926,11 @@ function viewControlsCount(entriesLeft) {
               /* [] */0
             ], /* :: */[
               Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, [left]),
+                    /* Text */Block.__(1, [left]),
                     /* [] */0
                   ]),
               /* :: */[
-                /* Text */Block.__(0, [item_ + " left"]),
+                /* Text */Block.__(1, [item_ + " left"]),
                 /* [] */0
               ]
             ]);
@@ -23957,7 +23957,7 @@ function visibilitySwap(uri, visibility, actualVisibility) {
                       /* [] */0
                     ]
                   ], /* :: */[
-                    /* Text */Block.__(0, [visibility]),
+                    /* Text */Block.__(1, [visibility]),
                     /* [] */0
                   ]),
               /* [] */0
@@ -23974,11 +23974,11 @@ function viewControlsFilters(visibility) {
             ], /* :: */[
               visibilitySwap("#/", "All", visibility),
               /* :: */[
-                /* Text */Block.__(0, [" "]),
+                /* Text */Block.__(1, [" "]),
                 /* :: */[
                   visibilitySwap("#/active", "Active", visibility),
                   /* :: */[
-                    /* Text */Block.__(0, [" "]),
+                    /* Text */Block.__(1, [" "]),
                     /* :: */[
                       visibilitySwap("#/completed", "Completed", visibility),
                       /* [] */0
@@ -24003,7 +24003,7 @@ function viewControlsClear(entriesCompleted) {
                 ]
               ]
             ], /* :: */[
-              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* Text */Block.__(1, ["Clear completed (" + (entriesCompleted + ")")]),
               /* [] */0
             ]);
 }
@@ -24048,12 +24048,12 @@ function infoFooter() {
               /* [] */0
             ], /* :: */[
               Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["Double-click to edit a todo"]),
+                    /* Text */Block.__(1, ["Double-click to edit a todo"]),
                     /* [] */0
                   ]),
               /* :: */[
                 Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                      /* Text */Block.__(0, ["Written by "]),
+                      /* Text */Block.__(1, ["Written by "]),
                       /* :: */[
                         Tea_html.a(/* None */0, /* None */0, /* :: */[
                               /* RawProp */Block.__(0, [
@@ -24062,11 +24062,11 @@ function infoFooter() {
                                 ]),
                               /* [] */0
                             ], /* :: */[
-                              /* Text */Block.__(0, ["Evan Czaplicki"]),
+                              /* Text */Block.__(1, ["Evan Czaplicki"]),
                               /* [] */0
                             ]),
                         /* :: */[
-                          /* Text */Block.__(0, [" and converted by "]),
+                          /* Text */Block.__(1, [" and converted by "]),
                           /* :: */[
                             Tea_html.a(/* None */0, /* None */0, /* :: */[
                                   /* RawProp */Block.__(0, [
@@ -24075,7 +24075,7 @@ function infoFooter() {
                                     ]),
                                   /* [] */0
                                 ], /* :: */[
-                                  /* Text */Block.__(0, ["OvermindDL1"]),
+                                  /* Text */Block.__(1, ["OvermindDL1"]),
                                   /* [] */0
                                 ]),
                             /* [] */0
@@ -24085,7 +24085,7 @@ function infoFooter() {
                     ]),
                 /* :: */[
                   Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                        /* Text */Block.__(0, ["Part of "]),
+                        /* Text */Block.__(1, ["Part of "]),
                         /* :: */[
                           Tea_html.a(/* None */0, /* None */0, /* :: */[
                                 /* RawProp */Block.__(0, [
@@ -24094,7 +24094,7 @@ function infoFooter() {
                                   ]),
                                 /* [] */0
                               ], /* :: */[
-                                /* Text */Block.__(0, ["TodoMVC"]),
+                                /* Text */Block.__(1, ["TodoMVC"]),
                                 /* [] */0
                               ]),
                           /* [] */0
@@ -25205,7 +25205,7 @@ function viewEntry(todo, _) {
                                   ])),
                             /* [] */0
                           ], /* :: */[
-                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* Text */Block.__(1, [todo[/* description */0]]),
                             /* [] */0
                           ]),
                       /* :: */[
@@ -25334,7 +25334,7 @@ function viewEntries(visibility, entries) {
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* Text */Block.__(1, ["Mark all as complete"]),
                       /* [] */0
                     ]),
                 /* :: */[
@@ -25378,7 +25378,7 @@ function viewInput(task, _) {
               /* [] */0
             ], /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["todos"]),
+                    /* Text */Block.__(1, ["todos"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -25434,11 +25434,11 @@ function viewControlsCount(entriesLeft) {
               /* [] */0
             ], /* :: */[
               Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, [left]),
+                    /* Text */Block.__(1, [left]),
                     /* [] */0
                   ]),
               /* :: */[
-                /* Text */Block.__(0, [item_ + " left"]),
+                /* Text */Block.__(1, [item_ + " left"]),
                 /* [] */0
               ]
             ]);
@@ -25465,7 +25465,7 @@ function visibilitySwap(uri, visibility, actualVisibility) {
                       /* [] */0
                     ]
                   ], /* :: */[
-                    /* Text */Block.__(0, [visibility]),
+                    /* Text */Block.__(1, [visibility]),
                     /* [] */0
                   ]),
               /* [] */0
@@ -25482,11 +25482,11 @@ function viewControlsFilters(visibility) {
             ], /* :: */[
               visibilitySwap("#/", "All", visibility),
               /* :: */[
-                /* Text */Block.__(0, [" "]),
+                /* Text */Block.__(1, [" "]),
                 /* :: */[
                   visibilitySwap("#/active", "Active", visibility),
                   /* :: */[
-                    /* Text */Block.__(0, [" "]),
+                    /* Text */Block.__(1, [" "]),
                     /* :: */[
                       visibilitySwap("#/completed", "Completed", visibility),
                       /* [] */0
@@ -25511,7 +25511,7 @@ function viewControlsClear(entriesCompleted) {
                 ]
               ]
             ], /* :: */[
-              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* Text */Block.__(1, ["Clear completed (" + (entriesCompleted + ")")]),
               /* [] */0
             ]);
 }
@@ -25557,12 +25557,12 @@ function infoFooter() {
               /* [] */0
             ], /* :: */[
               Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["Double-click to edit a todo"]),
+                    /* Text */Block.__(1, ["Double-click to edit a todo"]),
                     /* [] */0
                   ]),
               /* :: */[
                 Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                      /* Text */Block.__(0, ["Written by "]),
+                      /* Text */Block.__(1, ["Written by "]),
                       /* :: */[
                         Tea_html.a(/* None */0, /* None */0, /* :: */[
                               /* RawProp */Block.__(0, [
@@ -25571,11 +25571,11 @@ function infoFooter() {
                                 ]),
                               /* [] */0
                             ], /* :: */[
-                              /* Text */Block.__(0, ["Evan Czaplicki"]),
+                              /* Text */Block.__(1, ["Evan Czaplicki"]),
                               /* [] */0
                             ]),
                         /* :: */[
-                          /* Text */Block.__(0, [" and converted by "]),
+                          /* Text */Block.__(1, [" and converted by "]),
                           /* :: */[
                             Tea_html.a(/* None */0, /* None */0, /* :: */[
                                   /* RawProp */Block.__(0, [
@@ -25584,7 +25584,7 @@ function infoFooter() {
                                     ]),
                                   /* [] */0
                                 ], /* :: */[
-                                  /* Text */Block.__(0, ["OvermindDL1"]),
+                                  /* Text */Block.__(1, ["OvermindDL1"]),
                                   /* [] */0
                                 ]),
                             /* [] */0
@@ -25594,7 +25594,7 @@ function infoFooter() {
                     ]),
                 /* :: */[
                   Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                        /* Text */Block.__(0, ["Part of "]),
+                        /* Text */Block.__(1, ["Part of "]),
                         /* :: */[
                           Tea_html.a(/* None */0, /* None */0, /* :: */[
                                 /* RawProp */Block.__(0, [
@@ -25603,7 +25603,7 @@ function infoFooter() {
                                   ]),
                                 /* [] */0
                               ], /* :: */[
-                                /* Text */Block.__(0, ["TodoMVC"]),
+                                /* Text */Block.__(1, ["TodoMVC"]),
                                 /* [] */0
                               ]),
                           /* [] */0
@@ -25977,7 +25977,7 @@ function viewEntry(todo) {
                                   ])),
                             /* [] */0
                           ], /* :: */[
-                            /* Text */Block.__(0, [todo[/* description */0]]),
+                            /* Text */Block.__(1, [todo[/* description */0]]),
                             /* [] */0
                           ]),
                       /* :: */[
@@ -26109,7 +26109,7 @@ function viewEntries(visibility, entries) {
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Mark all as complete"]),
+                      /* Text */Block.__(1, ["Mark all as complete"]),
                       /* [] */0
                     ]),
                 /* :: */[
@@ -26135,7 +26135,7 @@ function viewInput(task) {
               /* [] */0
             ], /* :: */[
               Tea_html.h1(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["todos"]),
+                    /* Text */Block.__(1, ["todos"]),
                     /* [] */0
                   ]),
               /* :: */[
@@ -26190,11 +26190,11 @@ function viewControlsCount(entriesLeft) {
               /* [] */0
             ], /* :: */[
               Tea_html.strong(/* None */0, /* None */0, /* [] */0, /* :: */[
-                    /* Text */Block.__(0, ["" + entriesLeft]),
+                    /* Text */Block.__(1, ["" + entriesLeft]),
                     /* [] */0
                   ]),
               /* :: */[
-                /* Text */Block.__(0, [item_ + " left"]),
+                /* Text */Block.__(1, [item_ + " left"]),
                 /* [] */0
               ]
             ]);
@@ -26221,7 +26221,7 @@ function visibilitySwap(uri, visibility, actualVisibility) {
                       /* [] */0
                     ]
                   ], /* :: */[
-                    /* Text */Block.__(0, [visibility]),
+                    /* Text */Block.__(1, [visibility]),
                     /* [] */0
                   ]),
               /* [] */0
@@ -26238,11 +26238,11 @@ function viewControlsFilters(visibility) {
             ], /* :: */[
               visibilitySwap("#/", "All", visibility),
               /* :: */[
-                /* Text */Block.__(0, [" "]),
+                /* Text */Block.__(1, [" "]),
                 /* :: */[
                   visibilitySwap("#/active", "Active", visibility),
                   /* :: */[
-                    /* Text */Block.__(0, [" "]),
+                    /* Text */Block.__(1, [" "]),
                     /* :: */[
                       visibilitySwap("#/completed", "Completed", visibility),
                       /* [] */0
@@ -26267,7 +26267,7 @@ function viewControlsClear(entriesCompleted) {
                 ]
               ]
             ], /* :: */[
-              /* Text */Block.__(0, ["Clear completed (" + (entriesCompleted + ")")]),
+              /* Text */Block.__(1, ["Clear completed (" + (entriesCompleted + ")")]),
               /* [] */0
             ]);
 }
@@ -26311,12 +26311,12 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
       /* [] */0
     ], /* :: */[
       Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-            /* Text */Block.__(0, ["Double-click to edit a todo"]),
+            /* Text */Block.__(1, ["Double-click to edit a todo"]),
             /* [] */0
           ]),
       /* :: */[
         Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-              /* Text */Block.__(0, ["Written by "]),
+              /* Text */Block.__(1, ["Written by "]),
               /* :: */[
                 Tea_html.a(/* None */0, /* None */0, /* :: */[
                       /* RawProp */Block.__(0, [
@@ -26325,11 +26325,11 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
                         ]),
                       /* [] */0
                     ], /* :: */[
-                      /* Text */Block.__(0, ["Evan Czaplicki"]),
+                      /* Text */Block.__(1, ["Evan Czaplicki"]),
                       /* [] */0
                     ]),
                 /* :: */[
-                  /* Text */Block.__(0, [" and converted by "]),
+                  /* Text */Block.__(1, [" and converted by "]),
                   /* :: */[
                     Tea_html.a(/* None */0, /* None */0, /* :: */[
                           /* RawProp */Block.__(0, [
@@ -26338,7 +26338,7 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
                             ]),
                           /* [] */0
                         ], /* :: */[
-                          /* Text */Block.__(0, ["OvermindDL1"]),
+                          /* Text */Block.__(1, ["OvermindDL1"]),
                           /* [] */0
                         ]),
                     /* [] */0
@@ -26348,7 +26348,7 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
             ]),
         /* :: */[
           Tea_html.p(/* None */0, /* None */0, /* [] */0, /* :: */[
-                /* Text */Block.__(0, ["Part of "]),
+                /* Text */Block.__(1, ["Part of "]),
                 /* :: */[
                   Tea_html.a(/* None */0, /* None */0, /* :: */[
                         /* RawProp */Block.__(0, [
@@ -26357,7 +26357,7 @@ var infoFooter = Tea_html.footer(/* None */0, /* None */0, /* :: */[
                           ]),
                         /* [] */0
                       ], /* :: */[
-                        /* Text */Block.__(0, ["TodoMVC"]),
+                        /* Text */Block.__(1, ["TodoMVC"]),
                         /* [] */0
                       ]),
                   /* [] */0
@@ -26890,7 +26890,7 @@ var List          = require("bs-platform/lib/js/list");
 var Tea_html_cmds = require("./tea_html_cmds");
 
 function text(str) {
-  return /* Text */Block.__(0, [str]);
+  return /* Text */Block.__(1, [str]);
 }
 
 var lazy1 = Vdom.lazyGen
@@ -27337,7 +27337,7 @@ var Attributes = /* module */[
 
 var Cmds = 0;
 
-var noNode = /* NoVNode */0;
+var noNode = Vdom.noNode;
 
 exports.Cmds          = Cmds;
 exports.noNode        = noNode;
@@ -30285,7 +30285,7 @@ var Tea_html_cmds      = require("./tea_html_cmds");
 var svgNamespace = "http://www.w3.org/2000/svg";
 
 function text(str) {
-  return /* Text */Block.__(0, [str]);
+  return /* Text */Block.__(1, [str]);
 }
 
 var lazy1 = Vdom.lazyGen
@@ -30782,7 +30782,7 @@ var Attributes = 0;
 
 var Events = 0;
 
-var noNode = /* NoVNode */0;
+var noNode = Vdom.noNode;
 
 exports.Cmds                = Cmds;
 exports.Attributes          = Attributes;
@@ -33670,12 +33670,18 @@ var Web_node                = require("./web_node");
 var $$String                = require("bs-platform/lib/js/string");
 var List                    = require("bs-platform/lib/js/list");
 
+var noNode = /* CommentNode */Block.__(0, [""]);
+
+function comment(s) {
+  return /* CommentNode */Block.__(0, [s]);
+}
+
 function text(s) {
-  return /* Text */Block.__(0, [s]);
+  return /* Text */Block.__(1, [s]);
 }
 
 function fullnode(namespace, tagName, key, unique, props, vdoms) {
-  return /* Node */Block.__(1, [
+  return /* Node */Block.__(2, [
             namespace,
             tagName,
             key,
@@ -33693,10 +33699,10 @@ function node($staropt$star, tagName, $staropt$star$1, $staropt$star$2, props, v
 }
 
 function lazyGen(key, fn) {
-  return /* LazyGen */Block.__(2, [
+  return /* LazyGen */Block.__(3, [
             key,
             fn,
-            [/* NoVNode */0]
+            [noNode]
           ]);
 }
 
@@ -33747,141 +33753,138 @@ function styles(s) {
 function renderToHtmlString(_param) {
   while(true) {
     var param = _param;
-    if (typeof param === "number") {
-      return "";
-    }
-    else {
-      switch (param.tag | 0) {
-        case 0 : 
-            return param[0];
-        case 1 : 
-            var tagName = param[1];
-            var namespace = param[0];
-            return $$String.concat("", /* :: */[
-                        "<",
+    switch (param.tag | 0) {
+      case 0 : 
+          return "<!-- " + (param[0] + " -->");
+      case 1 : 
+          return param[0];
+      case 2 : 
+          var tagName = param[1];
+          var namespace = param[0];
+          return $$String.concat("", /* :: */[
+                      "<",
+                      /* :: */[
+                        namespace,
                         /* :: */[
-                          namespace,
+                          namespace === "" ? "" : ":",
                           /* :: */[
-                            namespace === "" ? "" : ":",
+                            tagName,
                             /* :: */[
-                              tagName,
-                              /* :: */[
-                                $$String.concat("", List.map(function (p) {
-                                          var param = p;
-                                          if (typeof param === "number") {
-                                            return "";
-                                          }
-                                          else {
-                                            switch (param.tag | 0) {
-                                              case 0 : 
-                                                  return $$String.concat("", /* :: */[
-                                                              " ",
+                              $$String.concat("", List.map(function (p) {
+                                        var param = p;
+                                        if (typeof param === "number") {
+                                          return "";
+                                        }
+                                        else {
+                                          switch (param.tag | 0) {
+                                            case 0 : 
+                                                return $$String.concat("", /* :: */[
+                                                            " ",
+                                                            /* :: */[
+                                                              param[0],
                                                               /* :: */[
-                                                                param[0],
+                                                                '="',
                                                                 /* :: */[
-                                                                  '="',
+                                                                  param[1],
                                                                   /* :: */[
-                                                                    param[1],
-                                                                    /* :: */[
-                                                                      '"',
-                                                                      /* [] */0
-                                                                    ]
+                                                                    '"',
+                                                                    /* [] */0
                                                                   ]
                                                                 ]
                                                               ]
-                                                            ]);
-                                              case 1 : 
-                                                  return $$String.concat("", /* :: */[
-                                                              " ",
+                                                            ]
+                                                          ]);
+                                            case 1 : 
+                                                return $$String.concat("", /* :: */[
+                                                            " ",
+                                                            /* :: */[
+                                                              param[1],
                                                               /* :: */[
-                                                                param[1],
+                                                                '="',
                                                                 /* :: */[
-                                                                  '="',
+                                                                  param[2],
                                                                   /* :: */[
-                                                                    param[2],
-                                                                    /* :: */[
-                                                                      '"',
-                                                                      /* [] */0
-                                                                    ]
+                                                                    '"',
+                                                                    /* [] */0
                                                                   ]
                                                                 ]
                                                               ]
-                                                            ]);
-                                              case 2 : 
-                                                  return $$String.concat("", /* :: */[
-                                                              " data-",
+                                                            ]
+                                                          ]);
+                                            case 2 : 
+                                                return $$String.concat("", /* :: */[
+                                                            " data-",
+                                                            /* :: */[
+                                                              param[0],
                                                               /* :: */[
-                                                                param[0],
+                                                                '="',
                                                                 /* :: */[
-                                                                  '="',
+                                                                  param[1],
                                                                   /* :: */[
-                                                                    param[1],
-                                                                    /* :: */[
-                                                                      '"',
-                                                                      /* [] */0
-                                                                    ]
+                                                                    '"',
+                                                                    /* [] */0
                                                                   ]
                                                                 ]
                                                               ]
-                                                            ]);
-                                              case 3 : 
-                                                  return $$String.concat("", /* :: */[
-                                                              " ",
+                                                            ]
+                                                          ]);
+                                            case 3 : 
+                                                return $$String.concat("", /* :: */[
+                                                            " ",
+                                                            /* :: */[
+                                                              param[0],
                                                               /* :: */[
-                                                                param[0],
+                                                                '="js:',
                                                                 /* :: */[
-                                                                  '="js:',
+                                                                  typeof param[2],
                                                                   /* :: */[
-                                                                    typeof param[2],
-                                                                    /* :: */[
-                                                                      '"',
-                                                                      /* [] */0
-                                                                    ]
+                                                                    '"',
+                                                                    /* [] */0
                                                                   ]
                                                                 ]
                                                               ]
-                                                            ]);
-                                              case 4 : 
-                                                  return $$String.concat("", /* :: */[
-                                                              ' style="',
-                                                              /* :: */[
-                                                                $$String.concat(";", List.map(function (param) {
-                                                                          return $$String.concat("", /* :: */[
-                                                                                      param[0],
+                                                            ]
+                                                          ]);
+                                            case 4 : 
+                                                return $$String.concat("", /* :: */[
+                                                            ' style="',
+                                                            /* :: */[
+                                                              $$String.concat(";", List.map(function (param) {
+                                                                        return $$String.concat("", /* :: */[
+                                                                                    param[0],
+                                                                                    /* :: */[
+                                                                                      ":",
                                                                                       /* :: */[
-                                                                                        ":",
+                                                                                        param[1],
                                                                                         /* :: */[
-                                                                                          param[1],
-                                                                                          /* :: */[
-                                                                                            ";",
-                                                                                            /* [] */0
-                                                                                          ]
+                                                                                          ";",
+                                                                                          /* [] */0
                                                                                         ]
                                                                                       ]
-                                                                                    ]);
-                                                                        }, param[0])),
-                                                                /* :: */[
-                                                                  '"',
-                                                                  /* [] */0
-                                                                ]
+                                                                                    ]
+                                                                                  ]);
+                                                                      }, param[0])),
+                                                              /* :: */[
+                                                                '"',
+                                                                /* [] */0
                                                               ]
-                                                            ]);
-                                              
-                                            }
+                                                            ]
+                                                          ]);
+                                            
                                           }
-                                        }, param[4])),
+                                        }
+                                      }, param[4])),
+                              /* :: */[
+                                ">",
                                 /* :: */[
-                                  ">",
+                                  $$String.concat("", List.map(renderToHtmlString, param[5])),
                                   /* :: */[
-                                    $$String.concat("", List.map(renderToHtmlString, param[5])),
+                                    "</",
                                     /* :: */[
-                                      "</",
+                                      tagName,
                                       /* :: */[
-                                        tagName,
-                                        /* :: */[
-                                          ">",
-                                          /* [] */0
-                                        ]
+                                        ">",
+                                        /* [] */0
                                       ]
                                     ]
                                   ]
@@ -33890,15 +33893,15 @@ function renderToHtmlString(_param) {
                             ]
                           ]
                         ]
-                      ]);
-        case 2 : 
-            _param = Curry._1(param[1], /* () */0);
-            continue ;
-            case 3 : 
-            _param = param[1];
-            continue ;
-            
-      }
+                      ]
+                    ]);
+      case 3 : 
+          _param = Curry._1(param[1], /* () */0);
+          continue ;
+          case 4 : 
+          _param = param[1];
+          continue ;
+          
     }
   };
 }
@@ -34264,13 +34267,7 @@ function patchVNodesOnElems_Properties(callbacks, elem, oldProperties, newProper
 }
 
 function patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, param) {
-  if (typeof param === "number") {
-    throw [
-          Caml_builtin_exceptions.failure,
-          "Node replacement should never be passed anything but a node itself"
-        ];
-  }
-  else if (param.tag === 1) {
+  if (param.tag === 2) {
     var oldChild = elems[idx];
     var newChild = Web_document.createElementNsOptional(param[0], param[1]);
     patchVNodesOnElems_Properties(callbacks, newChild, /* [] */0, param[4]);
@@ -34292,31 +34289,29 @@ function patchVNodesOnElems_CreateElement(_callbacks, _param) {
   while(true) {
     var param = _param;
     var callbacks = _callbacks;
-    if (typeof param === "number") {
-      return document.createComment("");
-    }
-    else {
-      switch (param.tag | 0) {
-        case 0 : 
-            var text = param[0];
-            return document.createTextNode(text);
-        case 1 : 
-            var newChild = Web_document.createElementNsOptional(param[0], param[1]);
-            patchVNodesOnElems_Properties(callbacks, newChild, /* [] */0, param[4]);
-            var childChildren = newChild.childNodes;
-            patchVNodesOnElems(callbacks, newChild, childChildren, 0, /* [] */0, param[5]);
-            return newChild;
-        case 2 : 
-            var vdom = Curry._1(param[1], /* () */0);
-            param[2][0] = vdom;
-            _param = vdom;
-            continue ;
-            case 3 : 
-            _param = param[1];
-            _callbacks = Curry._1(param[0], callbacks);
-            continue ;
-            
-      }
+    switch (param.tag | 0) {
+      case 0 : 
+          var text = param[0];
+          return document.createComment(text);
+      case 1 : 
+          var text$1 = param[0];
+          return document.createTextNode(text$1);
+      case 2 : 
+          var newChild = Web_document.createElementNsOptional(param[0], param[1]);
+          patchVNodesOnElems_Properties(callbacks, newChild, /* [] */0, param[4]);
+          var childChildren = newChild.childNodes;
+          patchVNodesOnElems(callbacks, newChild, childChildren, 0, /* [] */0, param[5]);
+          return newChild;
+      case 3 : 
+          var vdom = Curry._1(param[1], /* () */0);
+          param[2][0] = vdom;
+          _param = vdom;
+          continue ;
+          case 4 : 
+          _param = param[1];
+          _callbacks = Curry._1(param[0], callbacks);
+          continue ;
+          
     }
   };
 }
@@ -34329,78 +34324,187 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
     if (oldVNodes) {
       var oldNode = oldVNodes[0];
       var exit = 0;
-      if (typeof oldNode === "number") {
-        if (newVNodes) {
-          if (typeof newVNodes[0] === "number") {
-            _newVNodes = newVNodes[1];
-            _oldVNodes = oldVNodes[1];
-            _idx = idx + 1 | 0;
-            continue ;
-            
-          }
-          else {
-            exit = 1;
-          }
-        }
-        else {
-          exit = 1;
-        }
-      }
-      else {
-        switch (oldNode.tag | 0) {
-          case 0 : 
-              if (newVNodes) {
-                var match = newVNodes[0];
-                if (typeof match === "number") {
-                  exit = 1;
-                }
-                else if (match.tag) {
-                  exit = 1;
-                }
-                else {
-                  var newText = match[0];
-                  if (oldNode[0] !== newText) {
-                    var child = elems[idx];
-                    child.nodeValue = newText;
-                  }
-                  _newVNodes = newVNodes[1];
-                  _oldVNodes = oldVNodes[1];
-                  _idx = idx + 1 | 0;
-                  continue ;
-                  
-                }
+      switch (oldNode.tag | 0) {
+        case 0 : 
+            if (newVNodes) {
+              var match = newVNodes[0];
+              if (match.tag) {
+                exit = 1;
+              }
+              else if (oldNode[0] === match[0]) {
+                _newVNodes = newVNodes[1];
+                _oldVNodes = oldVNodes[1];
+                _idx = idx + 1 | 0;
+                continue ;
+                
               }
               else {
                 exit = 1;
               }
-              break;
-          case 1 : 
-              if (newVNodes) {
-                var newNode = newVNodes[0];
-                if (typeof newNode === "number") {
-                  exit = 1;
+            }
+            else {
+              exit = 1;
+            }
+            break;
+        case 1 : 
+            if (newVNodes) {
+              var match$1 = newVNodes[0];
+              if (match$1.tag === 1) {
+                var newText = match$1[0];
+                if (oldNode[0] !== newText) {
+                  var child = elems[idx];
+                  child.nodeValue = newText;
                 }
-                else if (newNode.tag === 1) {
-                  var newRest = newVNodes[1];
-                  var newChildren = newNode[5];
-                  var newProperties = newNode[4];
-                  var newUnique = newNode[3];
-                  var newKey = newNode[2];
-                  var newTagName = newNode[1];
-                  var newNamespace = newNode[0];
-                  var oldRest = oldVNodes[1];
-                  var oldChildren = oldNode[5];
-                  var oldProperties = oldNode[4];
-                  var oldUnique = oldNode[3];
-                  var oldKey = oldNode[2];
-                  var oldTagName = oldNode[1];
-                  var oldNamespace = oldNode[0];
-                  if (newKey === "" || oldKey === "") {
+                _newVNodes = newVNodes[1];
+                _oldVNodes = oldVNodes[1];
+                _idx = idx + 1 | 0;
+                continue ;
+                
+              }
+              else {
+                exit = 1;
+              }
+            }
+            else {
+              exit = 1;
+            }
+            break;
+        case 2 : 
+            if (newVNodes) {
+              var newNode = newVNodes[0];
+              if (newNode.tag === 2) {
+                var newRest = newVNodes[1];
+                var newChildren = newNode[5];
+                var newProperties = newNode[4];
+                var newUnique = newNode[3];
+                var newKey = newNode[2];
+                var newTagName = newNode[1];
+                var newNamespace = newNode[0];
+                var oldRest = oldVNodes[1];
+                var oldChildren = oldNode[5];
+                var oldProperties = oldNode[4];
+                var oldUnique = oldNode[3];
+                var oldKey = oldNode[2];
+                var oldTagName = oldNode[1];
+                var oldNamespace = oldNode[0];
+                if (newKey === "" || oldKey === "") {
+                  if (oldUnique === newUnique) {
+                    var child$1 = elems[idx];
+                    var childChildren = child$1.childNodes;
+                    patchVNodesOnElems_Properties(callbacks, child$1, oldProperties, newProperties);
+                    patchVNodesOnElems(callbacks, child$1, childChildren, 0, oldChildren, newChildren);
+                    _newVNodes = newRest;
+                    _oldVNodes = oldRest;
+                    _idx = idx + 1 | 0;
+                    continue ;
+                    
+                  }
+                  else {
+                    patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, newNode);
+                    _newVNodes = newRest;
+                    _oldVNodes = oldRest;
+                    _idx = idx + 1 | 0;
+                    continue ;
+                    
+                  }
+                }
+                else if (oldKey === newKey) {
+                  _newVNodes = newRest;
+                  _oldVNodes = oldRest;
+                  _idx = idx + 1 | 0;
+                  continue ;
+                  
+                }
+                else {
+                  var exit$1 = 0;
+                  var exit$2 = 0;
+                  if (oldRest) {
+                    var match$2 = oldRest[0];
+                    if (match$2.tag === 2) {
+                      var olderRest = oldRest[1];
+                      var olderKey = match$2[2];
+                      var olderTagName = match$2[1];
+                      var olderNamespace = match$2[0];
+                      var exit$3 = 0;
+                      if (newRest) {
+                        var match$3 = newRest[0];
+                        if (match$3.tag === 2) {
+                          if (olderNamespace === newNamespace && olderTagName === newTagName && olderKey === newKey && oldNamespace === match$3[0] && oldTagName === match$3[1] && oldKey === match$3[2]) {
+                            var firstChild = elems[idx];
+                            var secondChild = elems[idx + 1 | 0];
+                            elem.removeChild(secondChild);
+                            Web_node.insertBefore(elem, secondChild, firstChild);
+                            _newVNodes = newRest[1];
+                            _oldVNodes = olderRest;
+                            _idx = idx + 2 | 0;
+                            continue ;
+                            
+                          }
+                          else {
+                            exit$3 = 4;
+                          }
+                        }
+                        else {
+                          exit$3 = 4;
+                        }
+                      }
+                      else {
+                        exit$3 = 4;
+                      }
+                      if (exit$3 === 4) {
+                        if (olderNamespace === newNamespace && olderTagName === newTagName && olderKey === newKey) {
+                          var oldChild = elems[idx];
+                          elem.removeChild(oldChild);
+                          _newVNodes = newRest;
+                          _oldVNodes = olderRest;
+                          _idx = idx + 1 | 0;
+                          continue ;
+                          
+                        }
+                        else {
+                          exit$2 = 3;
+                        }
+                      }
+                      
+                    }
+                    else {
+                      exit$2 = 3;
+                    }
+                  }
+                  else {
+                    exit$2 = 3;
+                  }
+                  if (exit$2 === 3) {
+                    if (newRest) {
+                      var match$4 = newRest[0];
+                      if (match$4.tag === 2) {
+                        if (oldNamespace === match$4[0] && oldTagName === match$4[1] && oldKey === match$4[2]) {
+                          var oldChild$1 = elems[idx];
+                          var newChild = patchVNodesOnElems_CreateElement(callbacks, newNode);
+                          Web_node.insertBefore(elem, newChild, oldChild$1);
+                          _newVNodes = newRest;
+                          _idx = idx + 1 | 0;
+                          continue ;
+                          
+                        }
+                        else {
+                          exit$1 = 2;
+                        }
+                      }
+                      else {
+                        exit$1 = 2;
+                      }
+                    }
+                    else {
+                      exit$1 = 2;
+                    }
+                  }
+                  if (exit$1 === 2) {
                     if (oldUnique === newUnique) {
-                      var child$1 = elems[idx];
-                      var childChildren = child$1.childNodes;
-                      patchVNodesOnElems_Properties(callbacks, child$1, oldProperties, newProperties);
-                      patchVNodesOnElems(callbacks, child$1, childChildren, 0, oldChildren, newChildren);
+                      var child$2 = elems[idx];
+                      var childChildren$1 = child$2.childNodes;
+                      patchVNodesOnElems_Properties(callbacks, child$2, oldProperties, newProperties);
+                      patchVNodesOnElems(callbacks, child$2, childChildren$1, 0, oldChildren, newChildren);
                       _newVNodes = newRest;
                       _oldVNodes = oldRest;
                       _idx = idx + 1 | 0;
@@ -34416,192 +34520,58 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                       
                     }
                   }
-                  else if (oldKey === newKey) {
-                    _newVNodes = newRest;
-                    _oldVNodes = oldRest;
-                    _idx = idx + 1 | 0;
-                    continue ;
-                    
-                  }
-                  else {
-                    var exit$1 = 0;
-                    var exit$2 = 0;
-                    if (oldRest) {
-                      var match$1 = oldRest[0];
-                      if (typeof match$1 === "number") {
-                        exit$2 = 3;
-                      }
-                      else if (match$1.tag === 1) {
-                        var olderRest = oldRest[1];
-                        var olderKey = match$1[2];
-                        var olderTagName = match$1[1];
-                        var olderNamespace = match$1[0];
-                        var exit$3 = 0;
-                        if (newRest) {
-                          var match$2 = newRest[0];
-                          if (typeof match$2 === "number") {
-                            exit$3 = 4;
-                          }
-                          else if (match$2.tag === 1) {
-                            if (olderNamespace === newNamespace && olderTagName === newTagName && olderKey === newKey && oldNamespace === match$2[0] && oldTagName === match$2[1] && oldKey === match$2[2]) {
-                              var firstChild = elems[idx];
-                              var secondChild = elems[idx + 1 | 0];
-                              elem.removeChild(secondChild);
-                              Web_node.insertBefore(elem, secondChild, firstChild);
-                              _newVNodes = newRest[1];
-                              _oldVNodes = olderRest;
-                              _idx = idx + 2 | 0;
-                              continue ;
-                              
-                            }
-                            else {
-                              exit$3 = 4;
-                            }
-                          }
-                          else {
-                            exit$3 = 4;
-                          }
-                        }
-                        else {
-                          exit$3 = 4;
-                        }
-                        if (exit$3 === 4) {
-                          if (olderNamespace === newNamespace && olderTagName === newTagName && olderKey === newKey) {
-                            var oldChild = elems[idx];
-                            elem.removeChild(oldChild);
-                            _newVNodes = newRest;
-                            _oldVNodes = olderRest;
-                            _idx = idx + 1 | 0;
-                            continue ;
-                            
-                          }
-                          else {
-                            exit$2 = 3;
-                          }
-                        }
-                        
-                      }
-                      else {
-                        exit$2 = 3;
-                      }
-                    }
-                    else {
-                      exit$2 = 3;
-                    }
-                    if (exit$2 === 3) {
-                      if (newRest) {
-                        var match$3 = newRest[0];
-                        if (typeof match$3 === "number") {
-                          exit$1 = 2;
-                        }
-                        else if (match$3.tag === 1) {
-                          if (oldNamespace === match$3[0] && oldTagName === match$3[1] && oldKey === match$3[2]) {
-                            var oldChild$1 = elems[idx];
-                            var newChild = patchVNodesOnElems_CreateElement(callbacks, newNode);
-                            Web_node.insertBefore(elem, newChild, oldChild$1);
-                            _newVNodes = newRest;
-                            _idx = idx + 1 | 0;
-                            continue ;
-                            
-                          }
-                          else {
-                            exit$1 = 2;
-                          }
-                        }
-                        else {
-                          exit$1 = 2;
-                        }
-                      }
-                      else {
-                        exit$1 = 2;
-                      }
-                    }
-                    if (exit$1 === 2) {
-                      if (oldUnique === newUnique) {
-                        var child$2 = elems[idx];
-                        var childChildren$1 = child$2.childNodes;
-                        patchVNodesOnElems_Properties(callbacks, child$2, oldProperties, newProperties);
-                        patchVNodesOnElems(callbacks, child$2, childChildren$1, 0, oldChildren, newChildren);
-                        _newVNodes = newRest;
-                        _oldVNodes = oldRest;
-                        _idx = idx + 1 | 0;
-                        continue ;
-                        
-                      }
-                      else {
-                        patchVNodesOnElems_ReplaceNode(callbacks, elem, elems, idx, newNode);
-                        _newVNodes = newRest;
-                        _oldVNodes = oldRest;
-                        _idx = idx + 1 | 0;
-                        continue ;
-                        
-                      }
-                    }
-                    
-                  }
-                }
-                else {
-                  exit = 1;
+                  
                 }
               }
               else {
                 exit = 1;
               }
-              break;
-          case 2 : 
-              if (newVNodes) {
-                var match$4 = newVNodes[0];
-                if (typeof match$4 === "number") {
-                  exit = 1;
+            }
+            else {
+              exit = 1;
+            }
+            break;
+        case 3 : 
+            if (newVNodes) {
+              var match$5 = newVNodes[0];
+              if (match$5.tag === 3) {
+                var newRest$1 = newVNodes[1];
+                var newCache = match$5[2];
+                var newGen = match$5[1];
+                var newKey$1 = match$5[0];
+                var oldRest$1 = oldVNodes[1];
+                var oldCache = oldNode[2];
+                var oldKey$1 = oldNode[0];
+                if (oldKey$1 === newKey$1) {
+                  newCache[0] = oldCache[0];
+                  _newVNodes = newRest$1;
+                  _oldVNodes = oldRest$1;
+                  _idx = idx + 1 | 0;
+                  continue ;
+                  
                 }
-                else if (match$4.tag === 2) {
-                  var newRest$1 = newVNodes[1];
-                  var newCache = match$4[2];
-                  var newGen = match$4[1];
-                  var newKey$1 = match$4[0];
-                  var oldRest$1 = oldVNodes[1];
-                  var oldCache = oldNode[2];
-                  var oldKey$1 = oldNode[0];
-                  if (oldKey$1 === newKey$1) {
-                    newCache[0] = oldCache[0];
-                    _newVNodes = newRest$1;
-                    _oldVNodes = oldRest$1;
-                    _idx = idx + 1 | 0;
-                    continue ;
-                    
-                  }
-                  else {
-                    var exit$4 = 0;
-                    var exit$5 = 0;
-                    if (oldRest$1) {
-                      var match$5 = oldRest$1[0];
-                      if (typeof match$5 === "number") {
-                        exit$5 = 3;
-                      }
-                      else if (match$5.tag === 2) {
-                        var olderRest$1 = oldRest$1[1];
-                        var olderKey$1 = match$5[0];
-                        var exit$6 = 0;
-                        if (newRest$1) {
-                          var match$6 = newRest$1[0];
-                          if (typeof match$6 === "number") {
-                            exit$6 = 4;
-                          }
-                          else if (match$6.tag === 2) {
-                            if (olderKey$1 === newKey$1 && oldKey$1 === match$6[0]) {
-                              var firstChild$1 = elems[idx];
-                              var secondChild$1 = elems[idx + 1 | 0];
-                              elem.removeChild(secondChild$1);
-                              Web_node.insertBefore(elem, secondChild$1, firstChild$1);
-                              _newVNodes = newRest$1[1];
-                              _oldVNodes = olderRest$1;
-                              _idx = idx + 2 | 0;
-                              continue ;
-                              
-                            }
-                            else {
-                              exit$6 = 4;
-                            }
+                else {
+                  var exit$4 = 0;
+                  var exit$5 = 0;
+                  if (oldRest$1) {
+                    var match$6 = oldRest$1[0];
+                    if (match$6.tag === 3) {
+                      var olderRest$1 = oldRest$1[1];
+                      var olderKey$1 = match$6[0];
+                      var exit$6 = 0;
+                      if (newRest$1) {
+                        var match$7 = newRest$1[0];
+                        if (match$7.tag === 3) {
+                          if (olderKey$1 === newKey$1 && oldKey$1 === match$7[0]) {
+                            var firstChild$1 = elems[idx];
+                            var secondChild$1 = elems[idx + 1 | 0];
+                            elem.removeChild(secondChild$1);
+                            Web_node.insertBefore(elem, secondChild$1, firstChild$1);
+                            _newVNodes = newRest$1[1];
+                            _oldVNodes = olderRest$1;
+                            _idx = idx + 2 | 0;
+                            continue ;
+                            
                           }
                           else {
                             exit$6 = 4;
@@ -34610,52 +34580,49 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                         else {
                           exit$6 = 4;
                         }
-                        if (exit$6 === 4) {
-                          if (olderKey$1 === newKey$1) {
-                            var oldChild$2 = elems[idx];
-                            elem.removeChild(oldChild$2);
-                            var oldVdom = match$5[2][0];
-                            newCache[0] = oldVdom;
-                            _newVNodes = newRest$1;
-                            _oldVNodes = olderRest$1;
-                            _idx = idx + 1 | 0;
-                            continue ;
-                            
-                          }
-                          else {
-                            exit$5 = 3;
-                          }
-                        }
-                        
                       }
                       else {
-                        exit$5 = 3;
+                        exit$6 = 4;
                       }
+                      if (exit$6 === 4) {
+                        if (olderKey$1 === newKey$1) {
+                          var oldChild$2 = elems[idx];
+                          elem.removeChild(oldChild$2);
+                          var oldVdom = match$6[2][0];
+                          newCache[0] = oldVdom;
+                          _newVNodes = newRest$1;
+                          _oldVNodes = olderRest$1;
+                          _idx = idx + 1 | 0;
+                          continue ;
+                          
+                        }
+                        else {
+                          exit$5 = 3;
+                        }
+                      }
+                      
                     }
                     else {
                       exit$5 = 3;
                     }
-                    if (exit$5 === 3) {
-                      if (newRest$1) {
-                        var match$7 = newRest$1[0];
-                        if (typeof match$7 === "number") {
-                          exit$4 = 2;
-                        }
-                        else if (match$7.tag === 2) {
-                          if (match$7[0] === oldKey$1) {
-                            var oldChild$3 = elems[idx];
-                            var newVdom = Curry._1(newGen, /* () */0);
-                            newCache[0] = newVdom;
-                            var newChild$1 = patchVNodesOnElems_CreateElement(callbacks, newVdom);
-                            Web_node.insertBefore(elem, newChild$1, oldChild$3);
-                            _newVNodes = newRest$1;
-                            _idx = idx + 1 | 0;
-                            continue ;
-                            
-                          }
-                          else {
-                            exit$4 = 2;
-                          }
+                  }
+                  else {
+                    exit$5 = 3;
+                  }
+                  if (exit$5 === 3) {
+                    if (newRest$1) {
+                      var match$8 = newRest$1[0];
+                      if (match$8.tag === 3) {
+                        if (match$8[0] === oldKey$1) {
+                          var oldChild$3 = elems[idx];
+                          var newVdom = Curry._1(newGen, /* () */0);
+                          newCache[0] = newVdom;
+                          var newChild$1 = patchVNodesOnElems_CreateElement(callbacks, newVdom);
+                          Web_node.insertBefore(elem, newChild$1, oldChild$3);
+                          _newVNodes = newRest$1;
+                          _idx = idx + 1 | 0;
+                          continue ;
+                          
                         }
                         else {
                           exit$4 = 2;
@@ -34665,50 +34632,49 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
                         exit$4 = 2;
                       }
                     }
-                    if (exit$4 === 2) {
-                      var oldVdom$1 = oldCache[0];
-                      var newVdom$1 = Curry._1(newGen, /* () */0);
-                      newCache[0] = newVdom$1;
-                      _newVNodes = /* :: */[
-                        newVdom$1,
-                        newRest$1
-                      ];
-                      _oldVNodes = /* :: */[
-                        oldVdom$1,
-                        oldRest$1
-                      ];
-                      continue ;
-                      
+                    else {
+                      exit$4 = 2;
                     }
+                  }
+                  if (exit$4 === 2) {
+                    var oldVdom$1 = oldCache[0];
+                    var newVdom$1 = Curry._1(newGen, /* () */0);
+                    newCache[0] = newVdom$1;
+                    _newVNodes = /* :: */[
+                      newVdom$1,
+                      newRest$1
+                    ];
+                    _oldVNodes = /* :: */[
+                      oldVdom$1,
+                      oldRest$1
+                    ];
+                    continue ;
                     
                   }
-                }
-                else {
-                  exit = 1;
+                  
                 }
               }
               else {
                 exit = 1;
               }
-              break;
-          case 3 : 
-              _oldVNodes = /* :: */[
-                oldNode[1],
-                oldVNodes[1]
-              ];
-              continue ;
-              
-        }
+            }
+            else {
+              exit = 1;
+            }
+            break;
+        case 4 : 
+            _oldVNodes = /* :: */[
+              oldNode[1],
+              oldVNodes[1]
+            ];
+            continue ;
+            
       }
       if (exit === 1) {
         var oldRest$2 = oldVNodes[1];
         if (newVNodes) {
           var newNode$1 = newVNodes[0];
-          var exit$7 = 0;
-          if (typeof newNode$1 === "number") {
-            exit$7 = 2;
-          }
-          else if (newNode$1.tag === 3) {
+          if (newNode$1.tag === 4) {
             patchVNodesOnElems(Curry._1(newNode$1[0], callbacks), elem, elems, idx, /* :: */[
                   oldNode,
                   /* [] */0
@@ -34723,9 +34689,6 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
             
           }
           else {
-            exit$7 = 2;
-          }
-          if (exit$7 === 2) {
             var oldChild$4 = elems[idx];
             var newChild$2 = patchVNodesOnElems_CreateElement(callbacks, newNode$1);
             Web_node.insertBefore(elem, newChild$2, oldChild$4);
@@ -34736,7 +34699,6 @@ function patchVNodesOnElems(callbacks, elem, elems, _idx, _oldVNodes, _newVNodes
             continue ;
             
           }
-          
         }
         else {
           var child$3 = elems[idx];
@@ -34792,17 +34754,16 @@ function map(func, vdom) {
                 return Curry._1(callbacks[0][/* enqueue */0], Curry._1(func, msg));
               }]];
   };
-  return /* Tagger */Block.__(3, [
+  return /* Tagger */Block.__(4, [
             tagger,
             vdom
           ]);
 }
 
-var noNode = /* NoVNode */0;
-
 var noProp = /* NoProp */0;
 
 exports.noNode                                       = noNode;
+exports.comment                                      = comment;
 exports.text                                         = text;
 exports.fullnode                                     = fullnode;
 exports.node                                         = node;
@@ -36355,5 +36316,91 @@ require.alias("process/browser.js", "process");require.register("___globals___",
   
 });})();require('___globals___');
 
-require('src/main_entry.ml');
+/* jshint ignore:start */
+(function() {
+  var WebSocket = window.WebSocket || window.MozWebSocket;
+  var br = window.brunch = (window.brunch || {});
+  var ar = br['auto-reload'] = (br['auto-reload'] || {});
+  if (!WebSocket || ar.disabled) return;
+  if (window._ar) return;
+  window._ar = true;
+
+  var cacheBuster = function(url){
+    var date = Math.round(Date.now() / 1000).toString();
+    url = url.replace(/(\&|\\?)cacheBuster=\d*/, '');
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
+  };
+
+  var browser = navigator.userAgent.toLowerCase();
+  var forceRepaint = ar.forceRepaint || browser.indexOf('chrome') > -1;
+
+  var reloaders = {
+    page: function(){
+      window.location.reload(true);
+    },
+
+    stylesheet: function(){
+      [].slice
+        .call(document.querySelectorAll('link[rel=stylesheet]'))
+        .filter(function(link) {
+          var val = link.getAttribute('data-autoreload');
+          return link.href && val != 'false';
+        })
+        .forEach(function(link) {
+          link.href = cacheBuster(link.href);
+        });
+
+      // Hack to force page repaint after 25ms.
+      if (forceRepaint) setTimeout(function() { document.body.offsetHeight; }, 25);
+    },
+
+    javascript: function(){
+      var scripts = [].slice.call(document.querySelectorAll('script'));
+      var textScripts = scripts.map(function(script) { return script.text }).filter(function(text) { return text.length > 0 });
+      var srcScripts = scripts.filter(function(script) { return script.src });
+
+      var loaded = 0;
+      var all = srcScripts.length;
+      var onLoad = function() {
+        loaded = loaded + 1;
+        if (loaded === all) {
+          textScripts.forEach(function(script) { eval(script); });
+        }
+      }
+
+      srcScripts
+        .forEach(function(script) {
+          var src = script.src;
+          script.remove();
+          var newScript = document.createElement('script');
+          newScript.src = cacheBuster(src);
+          newScript.async = true;
+          newScript.onload = onLoad;
+          document.head.appendChild(newScript);
+        });
+    }
+  };
+  var port = ar.port || 9485;
+  var host = br.server || window.location.hostname || 'localhost';
+
+  var connect = function(){
+    var connection = new WebSocket('ws://' + host + ':' + port);
+    connection.onmessage = function(event){
+      if (ar.disabled) return;
+      var message = event.data;
+      var reloader = reloaders[message] || reloaders.page;
+      reloader();
+    };
+    connection.onerror = function(){
+      if (connection.readyState) connection.close();
+    };
+    connection.onclose = function(){
+      window.setTimeout(connect, 1000);
+    };
+  };
+  connect();
+})();
+/* jshint ignore:end */
+
+;require('src/main_entry.ml');
 //# sourceMappingURL=app.js.map

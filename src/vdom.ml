@@ -30,7 +30,7 @@ type 'msg properties = 'msg property list
   } *)
 
 type 'msg t =
-  | NoVNode
+  | CommentNode of string
   | Text of string
   (* Node (namespace, tagName, key, unique, properties, children)  *)
   | Node of string * string * string * string * 'msg properties * 'msg t list
@@ -50,7 +50,9 @@ type 'msg t =
 
 (* Nodes *)
 
-let noNode = NoVNode
+let noNode = CommentNode ""
+
+let comment s = CommentNode s
 
 let text s = Text s
 
@@ -64,7 +66,7 @@ let node ?(namespace="") tagName ?(key="") ?(unique="") props vdoms =
   ArrayNode (namespace, tagName, key, unique, props, vdoms) *)
 
 let lazyGen key fn =
-  LazyGen (key, fn, ref NoVNode)
+  LazyGen (key, fn, ref noNode)
 
 (* Properties *)
 
@@ -91,7 +93,7 @@ let styles s = Style s
 
 (* Inefficient, but purely for debugging *)
 let rec renderToHtmlString = function
-  | NoVNode -> ""
+  | CommentNode s -> "<!-- " ^ s ^ " -->"
   | Text s -> s
   | Node (namespace, tagName, _key, _unique, props, vdoms) ->
     let renderProp = function
@@ -157,7 +159,7 @@ let createElementFromVNode_addProps callbacks properties elem =
 let rec createElementFromVNode_addChildren callbacks children elem =
   children |> List.fold_left (fun n child -> let _childelem = Web.Node.appendChild n (createElementFromVNode callbacks child) in n) elem
     and createElementFromVNode callbacks = function
-  | NoVNode -> Web.Document.createComment ""
+  | CommentNode s -> Web.Document.createComment s
   | Text text -> Web.Document.createTextNode text
   | Node (namespace, _key_unused, tagName, properties, children) -> (* let () = Js.log (callbacks, namespace, _key_unused, tagName, properties, children) in *)
     let child = Web.Document.createElementNsOptional namespace tagName in
@@ -189,8 +191,8 @@ let createVNodeIntoElement callbacks vnode elem =
 
 (* let rec patchVNodesOnElems_Empty callbacks elem elems idx = function
   | [] -> -1
-  | NoVNode :: newVNodes ->
-    let child = Web.Document.createComment "" in
+  | NoVNode s :: newVNodes ->
+    let child = Web.Document.createComment s in
     let _newChild = Web.Node.appendChild elem child in
     patchVNodesOnElems_Empty callbacks elem elems (idx+1) newVNodes
   | Text text :: newVNodes ->
@@ -205,25 +207,6 @@ let createVNodeIntoElement callbacks vnode elem =
     (* let _child = Web.Node.removeChild elem child in *)
     (* patchVNodesOnElems_Empty callbacks elem elems idx newVNodes (* Not incrementing idx since we just removed something *) *) *)
 
-
-(* let patchVNodesOnElems_NoVNode callbacks elem elems idx = function
-  | [] -> -1
-  | NoVNode :: _newRest -> idx + 1
-  | Text text :: _newRest -> -42
-    (* let child = Web.Document.createComment "" in
-    let _attachedChild = Web.Node.appendChild elem child in
-    -1 *) *)
-
-
-(* let patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes = match oldVNodes with
-  | [] -> patchVNodesOnElems_Empty callbacks elem elems idx
-  | NoVNode :: oldRest ->
-    let newIdx = patchVNodesOnElems_NoVNode callbacks elem elems idx newVNodes in
-    if newIdx < 0 then
-      patchVNodesOnElems_DeleteRest elem elems idx
-    else
-      patchVNodesOnElems callbacks elem elems newIdx
-  | _ -> fun newish -> Js.log "Blah" *)
 
 let _handlerName idx typ =
   "_handler_" ^ (string_of_int idx) ^ typ
@@ -421,7 +404,7 @@ let rec patchVNodesOnElems_ReplaceNode callbacks elem elems idx = function [@oca
   | _ -> failwith "Node replacement should never be passed anything but a node itself"
 
 and patchVNodesOnElems_CreateElement callbacks = function
-  | NoVNode -> Web.Document.createComment ""
+  | CommentNode s -> Web.Document.createComment s
   | Text text -> Web.Document.createTextNode text
   | Node (newNamespace, newTagName, _newKey, _unique, newProperties, newChildren) ->
     let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
@@ -456,7 +439,7 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
     let child = elems.(idx) in
     let _removedChild = Web.Node.removeChild elem child in
     patchVNodesOnElems callbacks elem elems idx oldRest [] (* Not changing idx so we can delete the rest too *)
-  | NoVNode :: oldRest, NoVNode :: newRest -> patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
+  | CommentNode oldS :: oldRest, CommentNode newS :: newRest when oldS = newS -> patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
   | Text oldText :: oldRest, Text newText :: newRest ->
     let () = if oldText = newText then () else
       let child = elems.(idx) in
@@ -562,32 +545,6 @@ and patchVNodesOnElems callbacks elem elems idx oldVNodes newVNodes =
     let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
     let _removedChild = Web.Node.removeChild elem oldChild in
     patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
-  (* | _oldVnode :: oldRest, NoVNode :: newRest ->
-    let child = elems.(idx) in
-    let newChild = Web.Document.createComment "" in
-    let _attachedChild = Web.Node.insertBefore elem newChild child in
-    let _removedChild = Web.Node.removeChild elem child in
-    patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
-  | _oldVnode :: oldRest, Text newText :: newRest ->
-    let child = elems.(idx) in
-    let newChild = Web.Document.createTextNode newText in
-    let _attachedChild = Web.Node.insertBefore elem newChild child in
-    let _removedChild = Web.Node.removeChild elem child in
-    patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest
-  | oldVnodes, LazyGen (newKey, newGen, newCache) :: newRest ->
-    let vdom = newGen () in
-    let () = newCache := vdom in
-    patchVNodesOnElems callbacks elem elems idx oldVnodes (vdom :: newRest)
-  | _oldVnode :: oldRest, Node (newNamespace, newTagName, _newKey, _unique, newProperties, newChildren) :: newRest ->
-    let oldChild = elems.(idx) in
-    (* let newChild = patchVNodesOnElems_createElement callbacks newNamespace newTagName newProperties in *)
-    let newChild = Web.Document.createElementNsOptional newNamespace newTagName in
-    let () = patchVNodesOnElems_Properties callbacks newChild [] newProperties in
-    let childChildren = Web.Node.childNodes newChild in
-    let () = patchVNodesOnElems callbacks newChild childChildren 0 [] newChildren in
-    let _attachedChild = Web.Node.insertBefore elem newChild oldChild in
-    let _removedChild = Web.Node.removeChild elem oldChild in
-    patchVNodesOnElems callbacks elem elems (idx+1) oldRest newRest *)
 
 
 
