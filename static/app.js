@@ -19560,7 +19560,7 @@ function bookTextView(valueText) {
                         valueText
                       ]),
                     /* :: */[
-                      Curry._1(Tea_html.Attributes[/* disabled */2], /* true */1),
+                      Curry._1(Tea_html.Attributes[/* disabled */3], /* true */1),
                       /* :: */[
                         bookTextViewStyle,
                         /* [] */0
@@ -21243,94 +21243,115 @@ function init() {
           /* record */[
             /* data */$$Array.make_matrix(31, 31, 0),
             /* maxValue */1,
-            /* value */0
+            /* value */0,
+            /* tickTime */5.0
           ],
           /* NoCmd */0
         ];
 }
 
 function update(model, param) {
-  if (param.tag) {
-    var data = model[/* data */0];
-    var fullX = data.length;
-    var fullY = data[0].length;
-    var halfX = fullX / 2 | 0;
-    var halfY = fullY / 2 | 0;
-    data[halfX][halfY] = data[halfX][halfY] + model[/* value */2] | 0;
-    $$Array.fill(data[0], 0, fullY, 0);
-    $$Array.fill(data[fullX - 2 | 0], 0, fullY, 0);
-    for(var x = 1 ,x_finish = data.length - 2 | 0; x <= x_finish; ++x){
-      data[x][0] = 0;
-      data[x][fullY - 2 | 0] = 0;
-      (function(x){
-      for(var y = 1 ,y_finish = data[0].length - 2 | 0; y <= y_finish; ++y){
-        data[x][y] = data[x][y] - 3000 | 0;
-        if (data[x][y] < 0) {
-          data[x][y] = 0;
+  switch (param.tag | 0) {
+    case 0 : 
+        var value;
+        try {
+          value = Caml_format.caml_int_of_string(param[0]);
         }
-        var processSide = (function(y){
-        return function (xx, yy) {
-          if (Caml_int32.imul(data[xx][yy], 12) < Caml_int32.imul(data[x][y], 10)) {
-            var diff = data[x][y] - data[xx][yy] | 0;
-            var diff$1 = diff / 20 | 0;
-            data[xx][yy] = data[xx][yy] + diff$1 | 0;
-            data[x][y] = data[x][y] - diff$1 | 0;
-            return /* () */0;
-          }
-          else {
-            return /* () */0;
-          }
+        catch (exn){
+          value = model[/* value */2];
         }
-        }(y));
-        processSide(x - 1 | 0, y);
-        processSide(x + 1 | 0, y);
-        processSide(x, y - 1 | 0);
-        processSide(x, y + 1 | 0);
-      }
-      }(x));
-    }
-    var inner = function (value, arr) {
-      return $$Array.fold_left(function (maxValue, value) {
-                  if (Caml_obj.caml_greaterthan(maxValue, value)) {
-                    return maxValue;
-                  }
-                  else {
-                    return value;
-                  }
-                }, value, arr);
-    };
-    var maxValue = $$Array.fold_left(inner, 1, data);
-    return /* tuple */[
-            /* record */[
-              /* data */data,
-              /* maxValue */maxValue,
-              /* value */model[/* value */2]
-            ],
-            /* NoCmd */0
-          ];
-  }
-  else {
-    var value;
-    try {
-      value = Caml_format.caml_int_of_string(param[0]);
-    }
-    catch (exn){
-      value = model[/* value */2];
-    }
-    return /* tuple */[
-            /* record */[
-              /* data */model[/* data */0],
-              /* maxValue */model[/* maxValue */1],
-              /* value */value
-            ],
-            /* NoCmd */0
-          ];
+        return /* tuple */[
+                /* record */[
+                  /* data */model[/* data */0],
+                  /* maxValue */model[/* maxValue */1],
+                  /* value */value,
+                  /* tickTime */model[/* tickTime */3]
+                ],
+                /* NoCmd */0
+              ];
+    case 1 : 
+        var tickTime;
+        try {
+          tickTime = Caml_format.caml_float_of_string(param[0]);
+        }
+        catch (exn$1){
+          tickTime = model[/* tickTime */3];
+        }
+        return /* tuple */[
+                /* record */[
+                  /* data */model[/* data */0],
+                  /* maxValue */model[/* maxValue */1],
+                  /* value */model[/* value */2],
+                  /* tickTime */tickTime
+                ],
+                /* NoCmd */0
+              ];
+    case 2 : 
+        var data = model[/* data */0];
+        var fullX = data.length;
+        var fullY = data[0].length;
+        var halfX = fullX / 2 | 0;
+        var halfY = fullY / 2 | 0;
+        data[halfX][halfY] = data[halfX][halfY] + model[/* value */2] | 0;
+        $$Array.fill(data[0], 0, fullY, 0);
+        $$Array.fill(data[fullX - 2 | 0], 0, fullY, 0);
+        for(var x = 1 ,x_finish = data.length - 2 | 0; x <= x_finish; ++x){
+          data[x][0] = 0;
+          data[x][fullY - 2 | 0] = 0;
+          (function(x){
+          for(var y = 1 ,y_finish = data[0].length - 2 | 0; y <= y_finish; ++y){
+            data[x][y] = data[x][y] - 3000 | 0;
+            if (data[x][y] < 0) {
+              data[x][y] = 0;
+            }
+            var processSide = (function(y){
+            return function (xx, yy) {
+              if (Caml_int32.imul(data[xx][yy], 12) < Caml_int32.imul(data[x][y], 10)) {
+                var diff = data[x][y] - data[xx][yy] | 0;
+                var diff$1 = diff / 20 | 0;
+                data[xx][yy] = data[xx][yy] + diff$1 | 0;
+                data[x][y] = data[x][y] - diff$1 | 0;
+                return /* () */0;
+              }
+              else {
+                return /* () */0;
+              }
+            }
+            }(y));
+            processSide(x - 1 | 0, y);
+            processSide(x + 1 | 0, y);
+            processSide(x, y - 1 | 0);
+            processSide(x, y + 1 | 0);
+          }
+          }(x));
+        }
+        var inner = function (value, arr) {
+          return $$Array.fold_left(function (maxValue, value) {
+                      if (Caml_obj.caml_greaterthan(maxValue, value)) {
+                        return maxValue;
+                      }
+                      else {
+                        return value;
+                      }
+                    }, value, arr);
+        };
+        var maxValue = $$Array.fold_left(inner, 1, data);
+        return /* tuple */[
+                /* record */[
+                  /* data */data,
+                  /* maxValue */maxValue,
+                  /* value */model[/* value */2],
+                  /* tickTime */model[/* tickTime */3]
+                ],
+                /* NoCmd */0
+              ];
+    
   }
 }
 
-function subscriptions() {
-  return Tea_time.every(50.0, function (t) {
-              return /* DoUpdate */Block.__(1, [t]);
+function subscriptions(model) {
+  return Tea_time.every(model[/* tickTime */3], function (t) {
+              return /* DoUpdate */Block.__(2, [t]);
             });
 }
 
@@ -21411,38 +21432,109 @@ function view(model) {
                   }, value));
   };
   var valueArray = $$Array.mapi(mapperX, model[/* data */0]);
+  var valueStep = "" + (model[/* value */2] / 20 | 0);
+  var str = "" + model[/* value */2];
+  var str$1 = "" + (model[/* tickTime */3] | 0);
   return Tea_html.div(/* None */0, /* None */0, /* [] */0, /* :: */[
-              Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
-                    /* RawProp */Block.__(0, [
-                        "placeholder",
-                        "Integer value"
-                      ]),
-                    /* :: */[
-                      Tea_html.onInput(/* None */0, function (s) {
-                            return /* UpdateValue */Block.__(0, [s]);
-                          }),
-                      /* [] */0
-                    ]
-                  ], /* [] */0),
+              Tea_html.label(/* None */0, /* None */0, /* [] */0, /* :: */[
+                    /* Text */Block.__(1, ["Center input value per tick:"]),
+                    /* [] */0
+                  ]),
               /* :: */[
-                Tea_html.br(/* [] */0),
-                /* :: */[
-                  Tea_svg.svg(/* None */0, /* None */0, /* :: */[
-                        /* Attribute */Block.__(1, [
-                            "",
-                            "viewBox",
-                            "0 0 300 300"
-                          ]),
+                Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
+                      /* RawProp */Block.__(0, [
+                          "placeholder",
+                          "Integer value"
+                        ]),
+                      /* :: */[
+                        Tea_html.onInput(/* None */0, function (s) {
+                              return /* UpdateValue */Block.__(0, [s]);
+                            }),
                         /* :: */[
-                          /* Attribute */Block.__(1, [
-                              "",
-                              "width",
-                              "300px"
+                          /* RawProp */Block.__(0, [
+                              "type",
+                              "number"
                             ]),
+                          /* :: */[
+                            Curry._1(Tea_html.Attributes[/* min */1], "0"),
+                            /* :: */[
+                              Curry._1(Tea_html.Attributes[/* max */0], "100000000"),
+                              /* :: */[
+                                Curry._1(Tea_html.Attributes[/* step */2], valueStep),
+                                /* :: */[
+                                  /* RawProp */Block.__(0, [
+                                      "value",
+                                      str
+                                    ]),
+                                  /* [] */0
+                                ]
+                              ]
+                            ]
+                          ]
+                        ]
+                      ]
+                    ], /* [] */0),
+                /* :: */[
+                  Tea_html.br(/* [] */0),
+                  /* :: */[
+                    Tea_html.label(/* None */0, /* None */0, /* [] */0, /* :: */[
+                          /* Text */Block.__(1, ["Time per tick:"]),
+                          /* [] */0
+                        ]),
+                    /* :: */[
+                      Tea_html.input$prime(/* None */0, /* None */0, /* :: */[
+                            /* RawProp */Block.__(0, [
+                                "placeholder",
+                                "Time per tick (ms)"
+                              ]),
+                            /* :: */[
+                              Tea_html.onInput(/* None */0, function (s) {
+                                    return /* UpdateTickTime */Block.__(1, [s]);
+                                  }),
+                              /* :: */[
+                                /* RawProp */Block.__(0, [
+                                    "type",
+                                    "number"
+                                  ]),
+                                /* :: */[
+                                  Curry._1(Tea_html.Attributes[/* min */1], "5"),
+                                  /* :: */[
+                                    Curry._1(Tea_html.Attributes[/* step */2], "5"),
+                                    /* :: */[
+                                      /* RawProp */Block.__(0, [
+                                          "value",
+                                          str$1
+                                        ]),
+                                      /* [] */0
+                                    ]
+                                  ]
+                                ]
+                              ]
+                            ]
+                          ], /* [] */0),
+                      /* :: */[
+                        Tea_html.br(/* [] */0),
+                        /* :: */[
+                          Tea_svg.svg(/* None */0, /* None */0, /* :: */[
+                                /* Attribute */Block.__(1, [
+                                    "",
+                                    "viewBox",
+                                    "0 0 300 300"
+                                  ]),
+                                /* :: */[
+                                  /* Attribute */Block.__(1, [
+                                      "",
+                                      "width",
+                                      "300px"
+                                    ]),
+                                  /* [] */0
+                                ]
+                              ], List.concat($$Array.to_list(valueArray))),
                           /* [] */0
                         ]
-                      ], List.concat($$Array.to_list(valueArray))),
-                  /* [] */0
+                      ]
+                    ]
+                  ]
                 ]
               ]
             ]);
@@ -27316,6 +27408,14 @@ function min(value) {
           ]);
 }
 
+function step(value) {
+  return /* Attribute */Block.__(1, [
+            "",
+            "step",
+            value
+          ]);
+}
+
 function disabled(b) {
   if (b) {
     return /* Attribute */Block.__(1, [
@@ -27332,6 +27432,7 @@ function disabled(b) {
 var Attributes = /* module */[
   /* max */max,
   /* min */min,
+  /* step */step,
   /* disabled */disabled
 ];
 
@@ -33963,7 +34064,7 @@ function patchVNodesOnElems_PropertiesApply_Add(callbacks, elem, idx, param) {
           return Web_node.addEventListener(elem, param[0], handler, /* false */0);
       case 4 : 
           return List.fold_left(function (_, param) {
-                      return Web_node.setStyle(elem, param[0], param[1]);
+                      return Web_node.setStyleProperty(elem, /* None */0, param[0], param[1]);
                     }, /* () */0, param[0]);
       
     }
@@ -34008,7 +34109,7 @@ function patchVNodesOnElems_PropertiesApply_Remove(_, elem, idx, param) {
           return /* () */0;
       case 4 : 
           return List.fold_left(function (_, param) {
-                      return Web_node.setStyle(elem, param[0], null);
+                      return Web_node.setStyleProperty(elem, /* None */0, param[0], null);
                     }, /* () */0, param[0]);
       
     }
@@ -34087,12 +34188,12 @@ function patchVNodesOnElems_PropertiesApply_Mutate(callbacks, elem, idx, oldProp
                             return /* () */0;
                           }
                           else {
-                            return Web_node.setStyle(elem, nk, nv);
+                            return Web_node.setStyleProperty(elem, /* None */0, nk, nv);
                           }
                         }
                         else {
-                          Web_node.setStyle(elem, ok, null);
-                          return Web_node.setStyle(elem, nk, nv);
+                          Web_node.setStyleProperty(elem, /* None */0, ok, null);
+                          return Web_node.setStyleProperty(elem, /* None */0, nk, nv);
                         }
                       }, /* () */0, oldProp[0], _newProp[0]);
           }
@@ -35156,6 +35257,18 @@ function setStyle(n, key, value) {
   return n.style[key] = value;
 }
 
+function setStyleProperty(n, $staropt$star, key, value) {
+  var priority = $staropt$star ? $staropt$star[0] : /* false */0;
+  var style = n.style;
+  var match = style.setProperty;
+  if (match !== undefined) {
+    return style.setProperty(key, value, priority ? "important" : null);
+  }
+  else {
+    return setStyle(n, key, value);
+  }
+}
+
 function childNodes(n) {
   return n.childNodes;
 }
@@ -35252,6 +35365,7 @@ function remove_polyfill() {
 exports.style                     = style;
 exports.getStyle                  = getStyle;
 exports.setStyle                  = setStyle;
+exports.setStyleProperty          = setStyleProperty;
 exports.childNodes                = childNodes;
 exports.firstChild                = firstChild;
 exports.appendChild               = appendChild;
@@ -36316,91 +36430,5 @@ require.alias("process/browser.js", "process");require.register("___globals___",
   
 });})();require('___globals___');
 
-/* jshint ignore:start */
-(function() {
-  var WebSocket = window.WebSocket || window.MozWebSocket;
-  var br = window.brunch = (window.brunch || {});
-  var ar = br['auto-reload'] = (br['auto-reload'] || {});
-  if (!WebSocket || ar.disabled) return;
-  if (window._ar) return;
-  window._ar = true;
-
-  var cacheBuster = function(url){
-    var date = Math.round(Date.now() / 1000).toString();
-    url = url.replace(/(\&|\\?)cacheBuster=\d*/, '');
-    return url + (url.indexOf('?') >= 0 ? '&' : '?') +'cacheBuster=' + date;
-  };
-
-  var browser = navigator.userAgent.toLowerCase();
-  var forceRepaint = ar.forceRepaint || browser.indexOf('chrome') > -1;
-
-  var reloaders = {
-    page: function(){
-      window.location.reload(true);
-    },
-
-    stylesheet: function(){
-      [].slice
-        .call(document.querySelectorAll('link[rel=stylesheet]'))
-        .filter(function(link) {
-          var val = link.getAttribute('data-autoreload');
-          return link.href && val != 'false';
-        })
-        .forEach(function(link) {
-          link.href = cacheBuster(link.href);
-        });
-
-      // Hack to force page repaint after 25ms.
-      if (forceRepaint) setTimeout(function() { document.body.offsetHeight; }, 25);
-    },
-
-    javascript: function(){
-      var scripts = [].slice.call(document.querySelectorAll('script'));
-      var textScripts = scripts.map(function(script) { return script.text }).filter(function(text) { return text.length > 0 });
-      var srcScripts = scripts.filter(function(script) { return script.src });
-
-      var loaded = 0;
-      var all = srcScripts.length;
-      var onLoad = function() {
-        loaded = loaded + 1;
-        if (loaded === all) {
-          textScripts.forEach(function(script) { eval(script); });
-        }
-      }
-
-      srcScripts
-        .forEach(function(script) {
-          var src = script.src;
-          script.remove();
-          var newScript = document.createElement('script');
-          newScript.src = cacheBuster(src);
-          newScript.async = true;
-          newScript.onload = onLoad;
-          document.head.appendChild(newScript);
-        });
-    }
-  };
-  var port = ar.port || 9485;
-  var host = br.server || window.location.hostname || 'localhost';
-
-  var connect = function(){
-    var connection = new WebSocket('ws://' + host + ':' + port);
-    connection.onmessage = function(event){
-      if (ar.disabled) return;
-      var message = event.data;
-      var reloader = reloaders[message] || reloaders.page;
-      reloader();
-    };
-    connection.onerror = function(){
-      if (connection.readyState) connection.close();
-    };
-    connection.onclose = function(){
-      window.setTimeout(connect, 1000);
-    };
-  };
-  connect();
-})();
-/* jshint ignore:end */
-
-;require('src/main_entry.ml');
+require('src/main_entry.ml');
 //# sourceMappingURL=app.js.map

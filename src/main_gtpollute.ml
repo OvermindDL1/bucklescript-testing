@@ -7,11 +7,13 @@ type model =
   { data : int array array
   ; maxValue : int
   ; value : int
+  ; tickTime : float
   }
 
 
 type msg =
   | UpdateValue of string
+  | UpdateTickTime of string
   | DoUpdate of Time.t
 
 
@@ -19,6 +21,7 @@ let init () =
   { data = Array.make_matrix 31 31 0
   ; maxValue = 1
   ; value = 0
+  ; tickTime = 5.0
   }, Cmd.none
 
 
@@ -28,6 +31,11 @@ let update model = function
       try int_of_string sValue
       with _ -> model.value in
     { model with value }, Cmd.none
+  | UpdateTickTime sValue ->
+    let tickTime =
+      try float_of_string sValue
+      with _ -> model.tickTime in
+    { model with tickTime}, Cmd.none
   | DoUpdate _ ->
     let data : int array array =
       let data = model.data in
@@ -67,8 +75,8 @@ let update model = function
       Array.fold_left inner 1 data in
     { model with data; maxValue }, Cmd.none
 
-let subscriptions _model =
-  Time.every (Time.inMilliseconds 50.0) (fun t -> DoUpdate t)
+let subscriptions model =
+  Time.every (Time.inMilliseconds model.tickTime) (fun t -> DoUpdate t)
 
 let view model =
   let open Svg in
@@ -103,8 +111,33 @@ let view model =
     let values = Array.mapi (mapperY coordX) value in
     Array.to_list values in
   let valueArray = Array.mapi mapperX model.data in
+  let valueStep = string_of_int (model.value / 20) in
+    (* if model.value <= 100000 then *)
+    (*   "10000" else *)
+    (* if model.value <= 1000000 then *)
+    (*   "100000" *)
+    (* else "1000000" in *)
   Html.div []
-    [ Html.input' [ Html.placeholder "Integer value"; Html.onInput (fun s -> UpdateValue s) ] []
+    [ Html.label [] [ text "Center input value per tick:" ]
+      ; Html.input'
+        [ Html.placeholder "Integer value"
+        ; Html.onInput (fun s -> UpdateValue s)
+        ; Html.type' "number"
+        ; Html.Attributes.min "0"
+        ; Html.Attributes.max "100000000"
+        ; Html.Attributes.step valueStep
+        ; Html.value (string_of_int model.value)
+        ] []
+    ; Html.br []
+    ; Html.label [] [ text "Time per tick:" ]
+    ; Html.input'
+        [ Html.placeholder "Time per tick (ms)"
+        ; Html.onInput (fun s -> UpdateTickTime s)
+        ; Html.type' "number"
+        ; Html.Attributes.min "5"
+        ; Html.Attributes.step "5"
+        ; Html.value (int_of_float model.tickTime |> string_of_int)
+        ] []
     ; Html.br []
     ; svg [ viewBox "0 0 300 300"; width "300px" ]
         ( Array.to_list valueArray |> List.concat )

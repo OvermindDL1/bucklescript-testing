@@ -144,7 +144,7 @@ let rec renderToHtmlString = function
              | Some msg -> !callbacks.enqueue msg in
          let () = Web_node.addEventListener elem typ cb false in
          elem
-       | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k (Js.Null.return v) in elem) elem s
+       | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyleProperty elem k (Js.Null.return v) in elem) elem s
        (* | Style s -> List.fold_left (fun (k, v) elem -> let _ = elem##style##set k v in elem) elem s *)
     ) elem curProperties
 
@@ -244,7 +244,7 @@ let patchVNodesOnElems_PropertiesApply_Add callbacks elem idx = function
     let () = Web.Node.setProp_asEventListener elem (_handlerName idx "") (Js.Undefined.return handler) in
     Web.Node.addEventListener elem t handler false
   | Style s ->
-    List.fold_left (fun () (k, v) -> Web.Node.setStyle elem k (Js.Null.return v)) () s
+    List.fold_left (fun () (k, v) -> Web.Node.setStyleProperty elem k (Js.Null.return v)) () s
 
 let patchVNodesOnElems_PropertiesApply_Remove _callbacks elem idx = function
   | NoProp -> ()
@@ -259,7 +259,7 @@ let patchVNodesOnElems_PropertiesApply_Remove _callbacks elem idx = function
     let () = Web.Node.setProp elem (_handlerName idx "cb") Js.Undefined.empty in
     let () = Web.Node.setProp_asEventListener elem (_handlerName idx "") Js.Undefined.empty in
     ()
-  | Style s -> List.fold_left (fun () (k, _v) -> Web.Node.setStyle elem k Js.Null.empty) () s
+  | Style s -> List.fold_left (fun () (k, _v) -> Web.Node.setStyleProperty elem k Js.Null.empty) () s
 
 let patchVNodesOnElems_PropertiesApply_RemoveAdd callbacks elem idx oldProp newProp =
   let () = patchVNodesOnElems_PropertiesApply_Remove callbacks elem idx oldProp in
@@ -296,10 +296,10 @@ let patchVNodesOnElems_PropertiesApply_Mutate callbacks elem idx oldProp = funct
             if ov = nv then
               ()
             else
-              Web.Node.setStyle elem nk (Js.Null.return nv)
+              Web.Node.setStyleProperty elem nk (Js.Null.return nv)
           else
-            let () = Web.Node.setStyle elem ok Js.Null.empty in
-            Web.Node.setStyle elem nk (Js.Null.return nv)
+            let () = Web.Node.setStyleProperty elem ok Js.Null.empty in
+            Web.Node.setStyleProperty elem nk (Js.Null.return nv)
         ) () oldS s
     | _ -> failwith "Passed a non-Style to a new Style as a Mutations while the old Style is not actually a style!"
 
@@ -374,7 +374,7 @@ let patchVNodesOnElems_Properties callbacks elem oldProperties newProperties =
            !callbacks.enqueue msg in
        let () = Web_node.addEventListener elem typ cb false in
        elem
-     | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyle elem k v in elem) elem s *)
+     | Style s -> List.fold_left (fun elem (k, v) -> let () = Web.Node.setStyleProperty elem k v in elem) elem s *)
 
 
 (* let patchVNodesOnElems_ReplaceVnodeAt callbacks elem elems idx vnode =

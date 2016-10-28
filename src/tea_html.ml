@@ -166,6 +166,8 @@ module Attributes = struct
 
   let min value = attribute "" "min" value
 
+  let step value = attribute "" "step" value
+
   let disabled b = if b then attribute "" "disabled" "true" else noProp
 
 end
